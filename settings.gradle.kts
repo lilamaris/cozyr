@@ -15,3 +15,6 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "cozyr"
+
+include("kernel:kernel-core")
+include("kernel:kernel-test")
