@@ -9,6 +9,7 @@ import com.lilamaris.cozyr.board.application.model.cursor.CursorResult;
 import com.lilamaris.cozyr.board.application.port.out.BoardReader;
 import com.lilamaris.cozyr.board.domain.Board;
 import com.lilamaris.cozyr.board.persistence.jpa.repository.BoardRepository;
+import com.lilamaris.cozyr.board.persistence.jpa.sql.BoardSql;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
@@ -30,18 +31,7 @@ public class BoardReaderJpaAdapter implements BoardReader {
 
     @Override
     public Optional<BoardDetail> findDetailById(UUID id) {
-        var sql = """
-                SELECT
-                    id AS boardId,
-                    name AS name,
-                    description AS description,
-                    created_at AS createdAt,
-                    updated_at AS updatedAt
-                FROM board
-                WHERE id = :id
-                """;
-
-        return jdbcClient.sql(sql)
+        return jdbcClient.sql(BoardSql.FIND_DETAIL_BY_ID)
                 .param("id", id)
                 .query(BoardDetail.class)
                 .optional();
@@ -52,8 +42,8 @@ public class BoardReaderJpaAdapter implements BoardReader {
         var cursor = request.cursor();
 
         var sql = cursor == null
-                ? boardFirstPageSql()
-                : boardNextPageSql();
+                ? BoardSql.LIST_SUMMARY_FIRST_PAGE
+                : BoardSql.LIST_SUMMARY_NEXT_PAGE;
 
         var rows = jdbcClient.sql(sql)
                 .param("lastCreatedAt", cursor == null ? null : cursor.createdAt().atOffset(ZoneOffset.UTC))
@@ -74,37 +64,5 @@ public class BoardReaderJpaAdapter implements BoardReader {
         }
 
         return CursorResult.of(content, nextCursor, hasNext);
-    }
-
-    private String boardFirstPageSql() {
-        return """
-                SELECT
-                    id AS boardId,
-                    name AS name,
-                    description AS description,
-                    created_at AS createdAt
-                FROM board
-                ORDER BY created_at DESC, id DESC
-                LIMIT :limit
-                """;
-    }
-
-    private String boardNextPageSql() {
-        return """
-                SELECT
-                    id AS boardId,
-                    name AS name,
-                    description AS description,
-                    created_at AS createdAt
-                FROM board
-                WHERE
-                    (
-                        :lastCreatedAt IS NULL
-                        OR created_at < :lastCreatedAt
-                        OR (created_at = :lastCreatedAt AND id < :lastBoardId)
-                    )
-                ORDER BY created_at DESC, id DESC
-                LIMIT :limit
-                """;
     }
 }
