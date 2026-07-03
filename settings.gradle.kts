@@ -19,3 +19,9 @@ rootProject.name = "cozyr"
 include("kernel:kernel-core")
 include("kernel:kernel-test")
 include("kernel:kernel-application")
+
+include("board-service:domain")
+include("board-service:application")
+include("board-service:jpa")
+include("board-service:launcher")
+include("board-service:web")
