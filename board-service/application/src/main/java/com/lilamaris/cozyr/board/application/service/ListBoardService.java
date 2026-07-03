@@ -1,7 +1,7 @@
 package com.lilamaris.cozyr.board.application.service;
 
 import com.lilamaris.cozyr.board.application.model.board.BoardCursor;
-import com.lilamaris.cozyr.board.application.model.board.BoardDetail;
+import com.lilamaris.cozyr.board.application.model.board.BoardSummary;
 import com.lilamaris.cozyr.board.application.model.cursor.CursorRequest;
 import com.lilamaris.cozyr.board.application.model.cursor.CursorResult;
 import com.lilamaris.cozyr.board.application.port.in.ListBoardUseCase;
@@ -18,9 +18,10 @@ public class ListBoardService implements ListBoardUseCase {
     }
 
     @Override
-    public CursorResult<BoardDetail, BoardCursor> list(ListBoardQuery query) {
+    public CursorResult<BoardSummary, BoardCursor> list(ListBoardQuery query) {
         var filter = query.filter();
         var request = CursorRequest.of(query.cursor(), query.size());
-        return reader.findDetailBy(filter, request);
+        return reader.findSummaries(filter, request)
+                .map(summary -> summary.truncate(30));
     }
 }

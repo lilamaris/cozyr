@@ -3,6 +3,7 @@ package com.lilamaris.cozyr.board.persistence.jpa;
 import com.lilamaris.cozyr.board.application.model.board.BoardCursor;
 import com.lilamaris.cozyr.board.application.model.board.BoardDetail;
 import com.lilamaris.cozyr.board.application.model.board.BoardFilter;
+import com.lilamaris.cozyr.board.application.model.board.BoardSummary;
 import com.lilamaris.cozyr.board.application.model.cursor.CursorRequest;
 import com.lilamaris.cozyr.board.application.model.cursor.CursorResult;
 import com.lilamaris.cozyr.board.application.port.out.BoardReader;
@@ -12,8 +13,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
 
-import java.sql.Timestamp;
-import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.Optional;
 import java.util.UUID;
@@ -49,7 +48,7 @@ public class BoardReaderJpaAdapter implements BoardReader {
     }
 
     @Override
-    public CursorResult<BoardDetail, BoardCursor> findDetailBy(BoardFilter filter, CursorRequest<BoardCursor> request) {
+    public CursorResult<BoardSummary, BoardCursor> findSummaries(BoardFilter filter, CursorRequest<BoardCursor> request) {
         var cursor = request.cursor();
 
         var sql = cursor == null
@@ -60,7 +59,7 @@ public class BoardReaderJpaAdapter implements BoardReader {
                 .param("lastCreatedAt", cursor == null ? null : cursor.createdAt().atOffset(ZoneOffset.UTC))
                 .param("lastBoardId", cursor == null ? null : cursor.boardId())
                 .param("limit", request.size() + 1)
-                .query(BoardDetail.class)
+                .query(BoardSummary.class)
                 .list();
 
         boolean hasNext = rows.size() > request.size();
@@ -83,8 +82,7 @@ public class BoardReaderJpaAdapter implements BoardReader {
                     id AS boardId,
                     name AS name,
                     description AS description,
-                    created_at AS createdAt,
-                    updated_at AS updatedAt
+                    created_at AS createdAt
                 FROM board
                 ORDER BY created_at DESC, id DESC
                 LIMIT :limit
@@ -97,8 +95,7 @@ public class BoardReaderJpaAdapter implements BoardReader {
                     id AS boardId,
                     name AS name,
                     description AS description,
-                    created_at AS createdAt,
-                    updated_at AS updatedAt
+                    created_at AS createdAt
                 FROM board
                 WHERE
                     (

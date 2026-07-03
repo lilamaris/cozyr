@@ -3,6 +3,7 @@ package com.lilamaris.cozyr.board.web.controller;
 import com.lilamaris.cozyr.board.application.model.board.BoardCursor;
 import com.lilamaris.cozyr.board.application.model.board.BoardDetail;
 import com.lilamaris.cozyr.board.application.model.board.BoardFilter;
+import com.lilamaris.cozyr.board.application.model.board.BoardSummary;
 import com.lilamaris.cozyr.board.application.model.cursor.CursorResult;
 import com.lilamaris.cozyr.board.application.port.in.CreateBoardUseCase;
 import com.lilamaris.cozyr.board.application.port.in.FindBoardUseCase;
@@ -58,7 +59,7 @@ public class BoardController {
     }
 
     @GetMapping
-    public ResponseEntity<CursorResult<BoardDetail, BoardCursor>> list(
+    public ResponseEntity<CursorResult<BoardSummary, BoardCursor>> list(
             @RequestParam(name = "name", required = false) String name,
             @RequestParam(name = "description", required = false) String description,
             @RequestParam(name = "bid", required = false) UUID boardId,
