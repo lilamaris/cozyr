@@ -1,6 +1,6 @@
 package com.lilamaris.cozyr.board.application.service;
 
-import com.lilamaris.cozyr.board.application.exception.ApplicationErrorCode;
+import com.lilamaris.cozyr.board.application.exception.BoardServiceProgressCode;
 import com.lilamaris.cozyr.board.application.port.in.UpdateBoardUseCase;
 import com.lilamaris.cozyr.board.application.port.in.command.UpdateBoardCommand;
 import com.lilamaris.cozyr.board.application.port.in.result.UpdatedBoardResult;
@@ -24,7 +24,7 @@ public class UpdateBoardService implements UpdateBoardUseCase {
     public UpdatedBoardResult update(UpdateBoardCommand command) {
         var boardId = command.boardId();
         var board = reader.findById(boardId)
-                .orElseThrow(() -> new ApplicationException(ApplicationErrorCode.BOARD_NOT_FOUND));
+                .orElseThrow(() -> new ApplicationException(BoardServiceProgressCode.BOARD_NOT_FOUND));
 
         var now = clock.instant();
         var name = command.name();
