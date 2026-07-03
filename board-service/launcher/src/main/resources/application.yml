@@ -1,0 +1,58 @@
+cozyr:
+  board-service:
+    web:
+      baseUrl: http://localhost:8081
+
+server:
+  port: ${PORT:8081}
+
+logging:
+  file:
+    name: ${LOCAL_LOG_DIR:./log}/${spring.application.name}.log
+
+spring:
+  application:
+    name: board-service
+
+  datasource:
+    url: ${LOCAL_DB_URL:jdbc:h2:mem:${spring.application.name};DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE}
+    username: ${LOCAL_DB_USERNAME:sa}
+    password: ${LOCAL_DB_PASSWORD:}
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health,info,prometheus"
+  endpoint:
+    health:
+      probe:
+        enabled: true
+      roles: ADMIN
+      show-details: when-authorized
+      show-components: when-authorized
+      group:
+        liveness:
+          include: "livenessState"
+        readiness:
+          include: "readinessState,db"
+  metrics:
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+  tracing:
+    sampling:
+      probability: 0.1
+  otlp:
+    metrics:
+      export:
+        enabled: false
+  opentelemetry:
+    tracing:
+      export:
+        otlp:
+          endpoint: ${OTLP_ENDPOINT:}
