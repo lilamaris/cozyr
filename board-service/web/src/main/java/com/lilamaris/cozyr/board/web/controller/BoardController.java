@@ -6,11 +6,11 @@ import com.lilamaris.cozyr.board.application.model.board.BoardFilter;
 import com.lilamaris.cozyr.board.application.model.board.BoardSummary;
 import com.lilamaris.cozyr.board.application.model.cursor.CursorResult;
 import com.lilamaris.cozyr.board.application.port.in.CreateBoardUseCase;
-import com.lilamaris.cozyr.board.application.port.in.FindBoardUseCase;
-import com.lilamaris.cozyr.board.application.port.in.ListBoardUseCase;
+import com.lilamaris.cozyr.board.application.port.in.FindBoardDetailUseCase;
+import com.lilamaris.cozyr.board.application.port.in.ListBoardSummaryUseCase;
 import com.lilamaris.cozyr.board.application.port.in.UpdateBoardUseCase;
-import com.lilamaris.cozyr.board.application.port.in.query.FindBoardQuery;
-import com.lilamaris.cozyr.board.application.port.in.query.ListBoardQuery;
+import com.lilamaris.cozyr.board.application.port.in.query.FindBoardDetailQuery;
+import com.lilamaris.cozyr.board.application.port.in.query.ListBoardSummaryQuery;
 import com.lilamaris.cozyr.board.application.port.in.result.CreatedBoardResult;
 import com.lilamaris.cozyr.board.application.port.in.result.UpdatedBoardResult;
 import com.lilamaris.cozyr.board.web.request.CreateBoardRequest;
@@ -31,8 +31,8 @@ public class BoardController {
     private final CreateBoardUseCase createBoardUseCase;
     private final UpdateBoardUseCase updateBoardUseCase;
 
-    private final FindBoardUseCase findBoardUseCase;
-    private final ListBoardUseCase listBoardUseCase;
+    private final FindBoardDetailUseCase findBoardDetailUseCase;
+    private final ListBoardSummaryUseCase listBoardSummaryUseCase;
 
     @PostMapping
     public ResponseEntity<CreatedBoardResult> create(
@@ -75,8 +75,8 @@ public class BoardController {
                 .withName(name)
                 .withDescription(description);
 
-        var query = ListBoardQuery.of(filter, cursor, size);
-        var result = listBoardUseCase.list(query);
+        var query = ListBoardSummaryQuery.of(filter, cursor, size);
+        var result = listBoardSummaryUseCase.list(query);
         return ResponseEntity.ok(result);
     }
 
@@ -84,8 +84,8 @@ public class BoardController {
     public ResponseEntity<BoardDetail> find(
             @PathVariable("boardId") UUID boardId
     ) {
-        var query = FindBoardQuery.of(boardId);
-        var result = findBoardUseCase.find(query);
+        var query = FindBoardDetailQuery.of(boardId);
+        var result = findBoardDetailUseCase.find(query);
         return ResponseEntity.ok(result);
     }
 }

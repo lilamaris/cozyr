@@ -6,17 +6,17 @@ import com.lilamaris.cozyr.kernel.core.condition.NumberPrecondition;
 import com.lilamaris.cozyr.kernel.core.condition.ObjectPrecondition;
 import org.jspecify.annotations.Nullable;
 
-public record ListBoardQuery(
+public record ListBoardSummaryQuery(
         BoardFilter filter,
         @Nullable BoardCursor cursor,
         int size
 ) {
-    public ListBoardQuery {
+    public ListBoardSummaryQuery {
         ObjectPrecondition.requireNonNull(filter, "filter");
         NumberPrecondition.requirePositive(size, "size");
     }
 
-    public static ListBoardQuery of(BoardFilter filter, BoardCursor cursor, int size) {
-        return new ListBoardQuery(filter, cursor, size);
+    public static ListBoardSummaryQuery of(BoardFilter filter, BoardCursor cursor, int size) {
+        return new ListBoardSummaryQuery(filter, cursor, size);
     }
 }

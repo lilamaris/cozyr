@@ -4,12 +4,12 @@ import com.lilamaris.cozyr.kernel.core.condition.ObjectPrecondition;
 
 import java.util.UUID;
 
-public record FindBoardQuery(UUID boardId) {
-    public FindBoardQuery {
+public record FindBoardDetailQuery(UUID boardId) {
+    public FindBoardDetailQuery {
         ObjectPrecondition.requireNonNull(boardId, "boardId");
     }
 
-    public static FindBoardQuery of(UUID boardId) {
-        return new FindBoardQuery(boardId);
+    public static FindBoardDetailQuery of(UUID boardId) {
+        return new FindBoardDetailQuery(boardId);
     }
 }
