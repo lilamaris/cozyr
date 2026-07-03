@@ -6,6 +6,7 @@ import com.lilamaris.cozyr.board.application.port.in.result.CreatedBoardResult;
 import com.lilamaris.cozyr.board.application.port.out.BoardStore;
 import com.lilamaris.cozyr.board.domain.Board;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Clock;
 
@@ -20,6 +21,7 @@ public class CreateBoardService implements CreateBoardUseCase {
     }
 
     @Override
+    @Transactional
     public CreatedBoardResult create(CreateBoardCommand command) {
         var now = clock.instant();
         var name = command.name();

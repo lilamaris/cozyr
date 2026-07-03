@@ -7,6 +7,7 @@ import com.lilamaris.cozyr.board.application.port.in.query.FindBoardQuery;
 import com.lilamaris.cozyr.board.application.port.out.BoardReader;
 import com.lilamaris.shrturl.kernel.application.exception.ApplicationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class FindBoardService implements FindBoardUseCase {
@@ -17,6 +18,7 @@ public class FindBoardService implements FindBoardUseCase {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public BoardDetail find(FindBoardQuery query) {
         var boardId = query.boardId();
         return reader.findDetailById(boardId)

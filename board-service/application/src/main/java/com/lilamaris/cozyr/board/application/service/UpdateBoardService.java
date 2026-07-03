@@ -7,6 +7,7 @@ import com.lilamaris.cozyr.board.application.port.in.result.UpdatedBoardResult;
 import com.lilamaris.cozyr.board.application.port.out.BoardReader;
 import com.lilamaris.shrturl.kernel.application.exception.ApplicationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Clock;
 
@@ -21,6 +22,7 @@ public class UpdateBoardService implements UpdateBoardUseCase {
     }
 
     @Override
+    @Transactional
     public UpdatedBoardResult update(UpdateBoardCommand command) {
         var boardId = command.boardId();
         var board = reader.findById(boardId)

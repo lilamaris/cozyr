@@ -8,6 +8,7 @@ import com.lilamaris.cozyr.board.application.port.in.ListBoardUseCase;
 import com.lilamaris.cozyr.board.application.port.in.query.ListBoardQuery;
 import com.lilamaris.cozyr.board.application.port.out.BoardReader;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class ListBoardService implements ListBoardUseCase {
@@ -18,6 +19,7 @@ public class ListBoardService implements ListBoardUseCase {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public CursorResult<BoardSummary, BoardCursor> list(ListBoardQuery query) {
         var filter = query.filter();
         var request = CursorRequest.of(query.cursor(), query.size());
