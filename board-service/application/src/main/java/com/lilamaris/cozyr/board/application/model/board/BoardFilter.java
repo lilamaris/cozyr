@@ -6,6 +6,11 @@ public record BoardFilter(
         @Nullable String name,
         @Nullable String description
 ) {
+    public BoardFilter {
+        name = normalize(name);
+        description = normalize(description);
+    }
+
     public static BoardFilter empty() {
         return new BoardFilter(null, null);
     }
@@ -16,5 +21,10 @@ public record BoardFilter(
 
     public BoardFilter withDescription(String description) {
         return new BoardFilter(name, description);
+    }
+
+    private String normalize(@Nullable String value) {
+        if (value == null || value.isBlank()) return null;
+        return value.trim();
     }
 }

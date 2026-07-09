@@ -12,31 +12,13 @@ public class BoardSql {
             WHERE id = :id
             """;
 
-    public static final String LIST_SUMMARY_FIRST_PAGE = """
+    public static final String LIST_SUMMARIES = """
             SELECT
                 id AS boardId,
                 name AS name,
                 description AS description,
                 created_at AS createdAt
             FROM board
-            ORDER BY created_at DESC, id DESC
-            LIMIT :limit
-            """;
-
-    public static final String LIST_SUMMARY_NEXT_PAGE = """
-            SELECT
-                id AS boardId,
-                name AS name,
-                description AS description,
-                created_at AS createdAt
-            FROM board
-            WHERE
-                (
-                    :lastCreatedAt IS NULL
-                    OR created_at < :lastCreatedAt
-                    OR (created_at = :lastCreatedAt AND id < :lastBoardId)
-                )
-            ORDER BY created_at DESC, id DESC
-            LIMIT :limit
+            WHERE 1 = 1
             """;
 }
