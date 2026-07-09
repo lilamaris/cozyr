@@ -1,0 +1,26 @@
+package com.lilamaris.cozyr.board.application.port.in.result;
+
+import com.lilamaris.cozyr.board.domain.Post;
+
+import java.time.Instant;
+import java.util.UUID;
+
+public record UpdatedPostResult(
+        long postId,
+        UUID boardId,
+        String title,
+        String content,
+        Instant createdAt,
+        Instant updatedAt
+) {
+    public static UpdatedPostResult from(Post post) {
+        return new UpdatedPostResult(
+                post.getId(),
+                post.getBoardId(),
+                post.getTitle(),
+                post.getContent(),
+                post.getCreatedAt(),
+                post.getUpdatedAt()
+        );
+    }
+}
