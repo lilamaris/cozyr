@@ -4,6 +4,7 @@ import com.lilamaris.cozyr.board.application.model.comment.CommentCursor;
 import com.lilamaris.cozyr.board.application.model.comment.CommentDetail;
 import com.lilamaris.cozyr.board.application.model.cursor.CursorResult;
 import com.lilamaris.cozyr.board.application.port.in.*;
+import com.lilamaris.cozyr.board.application.port.in.command.DeleteCommentCommand;
 import com.lilamaris.cozyr.board.application.port.in.query.ListReplyCommentQuery;
 import com.lilamaris.cozyr.board.application.port.in.query.ListRootCommentQuery;
 import com.lilamaris.cozyr.board.application.port.in.result.CreatedCommentResult;
@@ -27,6 +28,7 @@ public class CommentController {
     private final CreateCommentUseCase createCommentUseCase;
     private final UpdateCommentUseCase updateCommentUseCase;
     private final ReplyCommentUseCase replyCommentUseCase;
+    private final DeleteCommentUseCase deleteCommentUseCase;
 
     private final ListRootCommentUseCase listRootCommentUseCase;
     private final ListReplyCommentUseCase listReplyCommentUseCase;
@@ -104,5 +106,13 @@ public class CommentController {
         return ResponseEntity.ok(result);
     }
 
+    @DeleteMapping("/{commentId}")
+    public ResponseEntity<Void> delete(
+            @PathVariable("commentId") Long commentId
+    ) {
+        var command = DeleteCommentCommand.of(commentId);
+        deleteCommentUseCase.delete(command);
+        return ResponseEntity.noContent().build();
+    }
 
 }
