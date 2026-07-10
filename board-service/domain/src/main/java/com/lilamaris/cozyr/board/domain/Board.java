@@ -5,8 +5,8 @@ import com.lilamaris.cozyr.kernel.core.condition.StringPrecondition;
 import com.lilamaris.cozyr.kernel.core.condition.TimePrecondition;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -14,7 +14,7 @@ import java.util.UUID;
 @Entity
 @Table(name = "board")
 @Getter
-@AllArgsConstructor(access = AccessLevel.PROTECTED)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Board {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
