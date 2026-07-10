@@ -35,26 +35,39 @@ public class Post {
     @Column(name = "updated_at")
     private Instant updatedAt;
 
+    @Column(name = "deleted", nullable = false)
+    private boolean deleted;
+
+    @Column(name = "deleted_at")
+    private Instant deletedAt;
+
     private Post(
             UUID boardId,
             String title,
             String content,
             Instant createdAt,
-            Instant updatedAt
+            Instant updatedAt,
+            boolean deleted,
+            Instant deletedAt
     ) {
         this.boardId = ObjectPrecondition.requireNonNull(boardId, "boardId");
         this.title = StringPrecondition.requireNonBlank(title, "title");
         this.content = StringPrecondition.requireNonBlank(content, "content");
         this.createdAt = ObjectPrecondition.requireNonNull(createdAt, "createdAt");
         this.updatedAt = updatedAt;
+        this.deleted = deleted;
 
         if (updatedAt != null) {
             TimePrecondition.requireAfterOrEqual(updatedAt, createdAt, "updatedAt", "createdAt");
         }
+
+        if (deleted) {
+            this.deletedAt = TimePrecondition.requireAfterOrEqual(deletedAt, createdAt, "deletedAt", "createdAt");
+        }
     }
 
     public static Post of(UUID boardId, String title, String content, Instant createdAt) {
-        return new Post(boardId, title, content, createdAt, null);
+        return new Post(boardId, title, content, createdAt, null, false, null);
     }
 
     public void updateTitle(String title, Instant updatedAt) {
@@ -65,5 +78,11 @@ public class Post {
     public void updateContent(String content, Instant updatedAt) {
         this.updatedAt = TimePrecondition.requireAfterOrEqual(updatedAt, createdAt, "updatedAt", "createdAt");
         this.content = StringPrecondition.requireNonBlank(content, "content");
+    }
+
+    public void delete(Instant deletedAt) {
+        if (deleted) return;
+        this.deletedAt = TimePrecondition.requireAfterOrEqual(deletedAt, createdAt, "deletedAt", "createdAt");
+        this.deleted = true;
     }
 }
