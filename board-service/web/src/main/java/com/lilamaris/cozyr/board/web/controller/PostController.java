@@ -5,10 +5,8 @@ import com.lilamaris.cozyr.board.application.model.post.PostCursor;
 import com.lilamaris.cozyr.board.application.model.post.PostDetail;
 import com.lilamaris.cozyr.board.application.model.post.PostFilter;
 import com.lilamaris.cozyr.board.application.model.post.PostSummary;
-import com.lilamaris.cozyr.board.application.port.in.CreatePostUseCase;
-import com.lilamaris.cozyr.board.application.port.in.FindPostDetailUseCase;
-import com.lilamaris.cozyr.board.application.port.in.ListPostSummaryUseCase;
-import com.lilamaris.cozyr.board.application.port.in.UpdatePostUseCase;
+import com.lilamaris.cozyr.board.application.port.in.*;
+import com.lilamaris.cozyr.board.application.port.in.command.DeletePostCommand;
 import com.lilamaris.cozyr.board.application.port.in.query.FindPostDetailQuery;
 import com.lilamaris.cozyr.board.application.port.in.query.ListPostSummaryQuery;
 import com.lilamaris.cozyr.board.application.port.in.result.CreatedPostResult;
@@ -30,6 +28,7 @@ import java.util.UUID;
 public class PostController {
     private final CreatePostUseCase createPostUseCase;
     private final UpdatePostUseCase updatePostUseCase;
+    private final DeletePostUseCase deletePostUseCase;
 
     private final FindPostDetailUseCase findPostDetailUseCase;
     private final ListPostSummaryUseCase listPostSummaryUseCase;
@@ -89,5 +88,14 @@ public class PostController {
         var query = FindPostDetailQuery.of(postId);
         var result = findPostDetailUseCase.find(query);
         return ResponseEntity.ok(result);
+    }
+
+    @DeleteMapping("/{postId}")
+    public ResponseEntity<Void> delete(
+            @PathVariable("postId") Long postId
+    ) {
+        var command = DeletePostCommand.of(postId);
+        deletePostUseCase.delete(command);
+        return ResponseEntity.noContent().build();
     }
 }
