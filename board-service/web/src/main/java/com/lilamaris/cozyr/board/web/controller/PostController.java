@@ -13,8 +13,16 @@ import com.lilamaris.cozyr.board.application.port.in.result.CreatedPostResult;
 import com.lilamaris.cozyr.board.application.port.in.result.UpdatedPostResult;
 import com.lilamaris.cozyr.board.web.request.CreatePostRequest;
 import com.lilamaris.cozyr.board.web.request.UpdatePostRequest;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -25,6 +33,7 @@ import java.util.UUID;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/boards/{boardId}/posts")
+@Tag(name = "Posts", description = "게시글 API")
 public class PostController {
     private final CreatePostUseCase createPostUseCase;
     private final UpdatePostUseCase updatePostUseCase;
@@ -33,8 +42,31 @@ public class PostController {
     private final FindPostDetailUseCase findPostDetailUseCase;
     private final ListPostSummaryUseCase listPostSummaryUseCase;
 
+    @Operation(summary = "게시글 생성", description = "게시판에 새 게시글을 생성합니다.")
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "201",
+                    description = "게시글 생성 성공",
+                    content = @Content(schema = @Schema(implementation = CreatedPostResult.class))
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "잘못된 요청",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "게시판을 찾을 수 없음",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))
+            )
+    })
     @PostMapping
     public ResponseEntity<CreatedPostResult> create(
+            @Parameter(
+                    description = "게시판 ID",
+                    required = true,
+                    schema = @Schema(type = "string", format = "uuid")
+            )
             @PathVariable("boardId") UUID boardId,
             @Valid @RequestBody CreatePostRequest body
     ) {
@@ -48,8 +80,27 @@ public class PostController {
         return ResponseEntity.created(location).body(result);
     }
 
+    @Operation(summary = "게시글 수정", description = "게시글 제목과 본문을 수정합니다.")
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "게시글 수정 성공",
+                    content = @Content(schema = @Schema(implementation = UpdatedPostResult.class))
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "잘못된 요청",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "게시글을 찾을 수 없음",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))
+            )
+    })
     @PutMapping("/{postId}")
     public ResponseEntity<UpdatedPostResult> update(
+            @Parameter(description = "게시글 ID", required = true, schema = @Schema(type = "integer", format = "int64"))
             @PathVariable("postId") long postId,
             @Valid @RequestBody UpdatePostRequest body
     ) {
@@ -58,13 +109,36 @@ public class PostController {
         return ResponseEntity.ok(result);
     }
 
+    @Operation(summary = "게시글 목록 조회", description = "게시판의 게시글을 커서 기반으로 조회합니다.")
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "게시글 목록 조회 성공",
+                    content = @Content(schema = @Schema(implementation = CursorResult.class))
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "잘못된 요청",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))
+            )
+    })
     @GetMapping
     public ResponseEntity<CursorResult<PostSummary, PostCursor>> list(
+            @Parameter(
+                    description = "게시판 ID",
+                    required = true,
+                    schema = @Schema(type = "string", format = "uuid")
+            )
             @PathVariable("boardId") UUID boardId,
+            @Parameter(description = "제목 검색어", schema = @Schema(type = "string", example = "공지"))
             @RequestParam(name = "title", required = false) String title,
+            @Parameter(description = "본문 검색어", schema = @Schema(type = "string", example = "이벤트"))
             @RequestParam(name = "content", required = false) String content,
+            @Parameter(description = "커서 게시글 ID", schema = @Schema(type = "integer", format = "int64"))
             @RequestParam(name = "pid", required = false) Long postId,
+            @Parameter(description = "커서 생성 시각", schema = @Schema(type = "string", format = "date-time"))
             @RequestParam(name = "ca", required = false) Instant createdAt,
+            @Parameter(description = "조회 개수", required = true, schema = @Schema(type = "integer", minimum = "1", example = "20"))
             @RequestParam(name = "size") int size
     ) {
         PostCursor cursor = null;
@@ -81,8 +155,27 @@ public class PostController {
         return ResponseEntity.ok(result);
     }
 
+    @Operation(summary = "게시글 상세 조회", description = "게시글 ID로 게시글 상세 정보를 조회합니다.")
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "게시글 상세 조회 성공",
+                    content = @Content(schema = @Schema(implementation = PostDetail.class))
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "잘못된 요청",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "게시글을 찾을 수 없음",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))
+            )
+    })
     @GetMapping("/{postId}")
     public ResponseEntity<PostDetail> find(
+            @Parameter(description = "게시글 ID", required = true, schema = @Schema(type = "integer", format = "int64"))
             @PathVariable("postId") Long postId
     ) {
         var query = FindPostDetailQuery.of(postId);
@@ -90,8 +183,23 @@ public class PostController {
         return ResponseEntity.ok(result);
     }
 
+    @Operation(summary = "게시글 삭제", description = "게시글을 삭제 상태로 변경합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "게시글 삭제 성공"),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "잘못된 요청",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "게시글을 찾을 수 없음",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))
+            )
+    })
     @DeleteMapping("/{postId}")
     public ResponseEntity<Void> delete(
+            @Parameter(description = "게시글 ID", required = true, schema = @Schema(type = "integer", format = "int64"))
             @PathVariable("postId") Long postId
     ) {
         var command = DeletePostCommand.of(postId);
