@@ -83,7 +83,7 @@ public class CommentReaderJpaAdapter implements CommentReader {
                 ORDER BY created_at DESC, id DESC
                 LIMIT :limit
                 """);
-        params.addValue("limit", request.size());
+        params.addValue("limit", request.size() + 1);
     }
 
     private CursorResult<CommentDetail, CommentCursor> buildCursorResult(List<CommentDetail> rows, CursorRequest<CommentCursor> request) {
