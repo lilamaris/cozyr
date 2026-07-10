@@ -21,4 +21,26 @@ public class StringPreconditionTest {
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("value must not be blank.");
     }
+
+    @Test
+    @DisplayName("특정 문자열을 포함하지 않는 값을 요구할 수 있다")
+    void require_not_contain() {
+        assertThat(StringPrecondition.requireNotContain("text", "z", "text")).isEqualTo("text");
+
+        assertThatThrownBy(() -> StringPrecondition.requireNotContain("text", "e", "text"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("text must not contain 'e'.");
+        assertThatThrownBy(() -> StringPrecondition.requireNotContain(null, "x", "text"))
+                .isInstanceOf(NullPointerException.class)
+                .hasMessage("text must not be null.");
+        assertThatThrownBy(() -> StringPrecondition.requireNotContain(" ", "x", "text"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("text must not be blank.");
+        assertThatThrownBy(() -> StringPrecondition.requireNotContain("text", null, "text"))
+                .isInstanceOf(NullPointerException.class)
+                .hasMessage("s must not be null.");
+        assertThatThrownBy(() -> StringPrecondition.requireNotContain("text", " ", "text"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("s must not be blank.");
+    }
 }
