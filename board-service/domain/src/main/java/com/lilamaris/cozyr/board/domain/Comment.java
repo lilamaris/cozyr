@@ -35,10 +35,17 @@ public class Comment {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
-    private Comment(Long postId, Long parentId, String content, Instant createdAt, Instant updatedAt) {
+    @Column(name = "deleted", nullable = false)
+    private boolean deleted;
+
+    @Column(name = "deleted_at")
+    private Instant deletedAt;
+
+    private Comment(Long postId, Long parentId, String content, Instant createdAt, Instant updatedAt, boolean deleted, Instant deletedAt) {
         this.postId = NumberPrecondition.requireNonNegative(postId, "postId");
         this.content = StringPrecondition.requireNonBlank(content, "content");
         this.createdAt = ObjectPrecondition.requireNonNull(createdAt, "createdAt");
+        this.deleted = deleted;
 
         if (parentId != null) {
             this.parentId = NumberPrecondition.requireNonNegative(parentId, "parentId");
@@ -47,22 +54,32 @@ public class Comment {
         if (updatedAt != null) {
             this.updatedAt = TimePrecondition.requireAfterOrEqual(updatedAt, createdAt, "updatedAt", "createdAt");
         }
+
+        if (deleted) {
+            this.deletedAt = TimePrecondition.requireAfterOrEqual(deletedAt, createdAt, "deletedAt", "createdAt");
+        }
     }
 
     public static Comment root(Long postId, String content, Instant createdAt) {
-        return new Comment(postId, null, content, createdAt, createdAt);
+        return new Comment(postId, null, content, createdAt, createdAt, false, null);
     }
 
     public static Comment reply(Long postId, Long parentId, String content, Instant createdAt) {
-        return new Comment(postId, parentId, content, createdAt, createdAt);
+        return new Comment(postId, parentId, content, createdAt, createdAt, false, null);
     }
 
     public static Comment reply(Comment parent, String content, Instant createdAt) {
-        return new Comment(parent.getPostId(), parent.getId(), content, createdAt, createdAt);
+        return new Comment(parent.getPostId(), parent.getId(), content, createdAt, createdAt, false, null);
     }
 
     public void updateContent(String content, Instant updatedAt) {
         this.updatedAt = TimePrecondition.requireAfterOrEqual(updatedAt, createdAt, "updatedAt", "createdAt");
         this.content = content;
+    }
+
+    public void delete(Instant deletedAt) {
+        if (deleted) return;
+        this.deletedAt = TimePrecondition.requireAfterOrEqual(deletedAt, createdAt, "deletedAt", "createdAt");
+        this.deleted = true;
     }
 }
