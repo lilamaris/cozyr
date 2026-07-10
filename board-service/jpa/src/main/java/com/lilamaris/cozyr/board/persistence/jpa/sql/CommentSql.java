@@ -6,7 +6,10 @@ public class CommentSql {
                 id AS commentId,
                 post_id AS postId,
                 parent_id AS parentId,
-                content AS content,
+                CASE
+                    WHEN deleted = true THEN 'Deleted'
+                    ELSE content
+                END AS content,
                 created_at AS createdAt,
                 updated_at AS updatedAt
             FROM comment
@@ -19,7 +22,10 @@ public class CommentSql {
                 id AS commentId,
                 parent_id AS parentId,
                 post_id AS postId,
-                content AS content,
+                CASE
+                    WHEN deleted = true THEN 'Deleted'
+                    ELSE content
+                END AS content,
                 created_at AS createdAt,
                 updated_at AS updatedAt
             FROM comment
