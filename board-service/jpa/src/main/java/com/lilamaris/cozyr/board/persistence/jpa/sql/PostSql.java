@@ -11,6 +11,7 @@ public final class PostSql {
                 updated_at AS updatedAt
             FROM post
             WHERE id = :id
+                AND deleted = false
             """;
 
     public static final String LIST_SUMMARIES = """
@@ -21,34 +22,6 @@ public final class PostSql {
                 created_at AS createdAt
             FROM post
             WHERE board_id = :boardId
-            """;
-
-    public static final String LIST_SUMMARY_FIRST_PAGE = """
-            SELECT
-                id AS postId,
-                title AS title,
-                content AS content,
-                created_at AS createdAt
-            FROM post
-            WHERE board_id = :boardId
-            ORDER BY created_at DESC, id DESC
-            LIMIT :limit
-            """;
-
-    public static final String LIST_SUMMARY_NEXT_PAGE = """
-            SELECT
-                id AS postId,
-                title AS title,
-                content AS content,
-                created_at AS createdAt
-            FROM post
-            WHERE board_id = :boardId
-                AND (
-                    :lastCreatedAt IS NULL
-                    OR created_at < :lastCreatedAt
-                    OR (created_at = :lastCreatedAt AND id < :lastPostId)
-                )
-            ORDER BY created_at DESC, id DESC
-            LIMIT :limit
+                AND deleted = false
             """;
 }
