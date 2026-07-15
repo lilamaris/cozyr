@@ -20,6 +20,8 @@ include("kernel:kernel-core")
 include("kernel:kernel-test")
 include("kernel:kernel-application")
 
+include("gateway")
+
 include("board-service:domain")
 include("board-service:application")
 include("board-service:jpa")
