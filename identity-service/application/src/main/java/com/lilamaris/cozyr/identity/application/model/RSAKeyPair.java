@@ -27,8 +27,17 @@ public record RSAKeyPair(
         }
     }
 
-    public static RSAKeyPair of(String kid, RSAPublicKey publicKey, RSAPrivateKey privateKey) {
+    public static RSAKeyPair signable(String kid, RSAPublicKey publicKey, RSAPrivateKey privateKey) {
+        ObjectPrecondition.requireNonNull(privateKey, "privateKey");
         return new RSAKeyPair(kid, publicKey, privateKey);
+    }
+
+    public static RSAKeyPair verifiable(String kid, RSAPublicKey publicKey) {
+        return new RSAKeyPair(kid, publicKey, null);
+    }
+
+    public RSAKeyPair toVerifiable() {
+        return RSAKeyPair.verifiable(kid, publicKey);
     }
 
     private void validateKeyPair(String kid, RSAPublicKey publicKey, RSAPrivateKey privateKey) throws GeneralSecurityException {

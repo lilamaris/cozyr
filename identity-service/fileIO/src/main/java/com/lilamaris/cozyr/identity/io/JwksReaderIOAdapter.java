@@ -2,19 +2,14 @@ package com.lilamaris.cozyr.identity.io;
 
 import com.lilamaris.cozyr.identity.application.model.RSAKeyPair;
 import com.lilamaris.cozyr.identity.application.port.out.JwksReader;
-import com.lilamaris.cozyr.identity.domain.RSAKey;
 import com.lilamaris.cozyr.identity.io.config.FileIOJwksProperties;
 import com.lilamaris.cozyr.kernel.core.condition.ObjectPrecondition;
 import com.lilamaris.cozyr.kernel.core.condition.StringPrecondition;
-import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
-import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
-import java.security.GeneralSecurityException;
 import java.security.KeyFactory;
-import java.security.Signature;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.PKCS8EncodedKeySpec;
@@ -55,10 +50,8 @@ public class JwksReaderIOAdapter implements JwksReader {
     }
 
     @Override
-    public List<RSAKey> findVerifiableKeys() {
-        return keyMap.values().stream()
-                .map(keyPair -> RSAKey.verifiable(keyPair.kid(), keyPair.publicKey()))
-                .toList();
+    public List<RSAKeyPair> findVerifiableKeys() {
+        return keyMap.values().stream().toList();
     }
 
     private RSAKeyPair loadKey(String kid, ResourceLoader resourceLoader) {
@@ -79,7 +72,7 @@ public class JwksReaderIOAdapter implements JwksReader {
             throw new IllegalStateException("Failed to load key. kid=%s, publicKey location=%s, privateKey location=%s".formatted(kid, publicKeyLocation, privateKeyLocation), e);
         }
 
-        return RSAKeyPair.of(kid, publicKey, privateKey);
+        return RSAKeyPair.signable(kid, publicKey, privateKey);
     }
 
     private String keyLocation(String kid, String filename) {
