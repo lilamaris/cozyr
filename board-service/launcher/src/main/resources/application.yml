@@ -1,7 +1,9 @@
 cozyr:
   board-service:
     web:
-      baseUrl: http://localhost:8081
+      baseUrl: ${BASE_URL:http://cozyr}
+    security:
+      jwksUri: ${JWKS_URL:http://localhost:8080/.well-known/jwks.json}
 
 server:
   port: ${PORT:8081}

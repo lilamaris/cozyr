@@ -24,6 +24,7 @@ include("gateway")
 
 include("board-service:domain")
 include("board-service:application")
+include("board-service:security")
 include("board-service:jpa")
 include("board-service:launcher")
 include("board-service:web")

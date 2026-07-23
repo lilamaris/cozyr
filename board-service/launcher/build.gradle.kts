@@ -10,4 +10,5 @@ dependencies {
     implementation(project(":board-service:domain"))
     implementation(project(":board-service:jpa"))
     implementation(project(":board-service:web"))
+    implementation(project(":board-service:security"))
 }
