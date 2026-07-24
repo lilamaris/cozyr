@@ -1,0 +1,69 @@
+services:
+  kafka:
+    image: "${KAFKA_IMAGE:-confluentinc/cp-kafka:latest}"
+    restart: unless-stopped
+    cpus: 1.0
+    mem_limit: 1g
+    env_file:
+      - .env.kafka
+    ports:
+      - ${BIND_HOST}:9092:9092
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+    healthcheck:
+      test:
+        [ "CMD-SHELL", "kafka-topics --bootstrap-server localhost:29092 --list >/dev/null 2>&1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+  kafka-exporter:
+    image: "${KAFKA_EXPORTER_IMAGE:-danielqsj/kafka-exporter:v1.8.0}"
+    restart: unless-stopped
+    depends_on:
+      kafka:
+        condition: service_healthy
+    cpus: 0.2
+    mem_limit: 1g
+    command: [ "--kafka.server=${KAFKA_EXPORTER_BOOTSTRAP_SERVERS:-kafka:29092}" ]
+    ports:
+      - ${BIND_HOST:-0.0.0.0}:9308:9308
+
+  kafka-jmx-exporter:
+    image: "${KAFKA_JMX_EXPORTER_IMAGE:-bitnami/jmx-exporter:latest}"
+    restart: unless-stopped
+    depends_on:
+      kafka:
+        condition: service_healthy
+    cpus: 0.2
+    mem_limit: 1g
+    environment:
+      - JVM_OPTS=-Xms256m -Xmx512m -XX:+UseG1GC
+    command: [ "9404", "/opt/bitnami/jmx-exporter/config/kafka.yml" ]
+    volumes:
+      - ./conf/kafka-jmx-exporter/kafka.yml:/opt/bitnami/jmx-exporter/config/kafka.yml:ro
+    ports:
+      - ${BIND_HOST:-0.0.0.0}:9404:9404
+
+  prometheus:
+    image: prom/prometheus
+    container_name: PROMETHEUS
+    restart: unless-stopped
+    ports:
+      - ${BIND_HOST:-0.0.0.0}:9090:9090
+    volumes:
+      - ./conf/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --web.enable-remote-write-receiver
+    healthcheck:
+      test: [ "CMD", "wget", "http://localhost:9090" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+volumes:
+  kafka-data:
+  prometheus-data:
