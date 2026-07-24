@@ -27,6 +27,17 @@ spring:
     hibernate:
       ddl-auto: ${DDL_AUTO:update}
 
+  kafka:
+    bootstrap-servers: ${KAFKA_URL:kafka:9092}
+    client-id: ${spring.application.name}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JacksonJsonSerializer
+      acks: all
+      retries: 3
+      properties:
+        spring.json.add.type.headers: true
+
 management:
   endpoints:
     web:
