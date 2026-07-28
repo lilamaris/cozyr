@@ -41,6 +41,9 @@ public class Post {
     @Column(name = "deleted_at")
     private Instant deletedAt;
 
+    @Column(name = "author_user_id", nullable = false)
+    private UUID authorUserId;
+
     private Post(
             UUID boardId,
             String title,
@@ -48,7 +51,8 @@ public class Post {
             Instant createdAt,
             Instant updatedAt,
             boolean deleted,
-            Instant deletedAt
+            Instant deletedAt,
+            UUID authorUserId
     ) {
         this.boardId = ObjectPrecondition.requireNonNull(boardId, "boardId");
         this.title = StringPrecondition.requireNonBlank(title, "title");
@@ -56,6 +60,7 @@ public class Post {
         this.createdAt = ObjectPrecondition.requireNonNull(createdAt, "createdAt");
         this.updatedAt = updatedAt;
         this.deleted = deleted;
+        this.authorUserId = ObjectPrecondition.requireNonNull(authorUserId, "authorUserId");
 
         if (updatedAt != null) {
             TimePrecondition.requireAfterOrEqual(updatedAt, createdAt, "updatedAt", "createdAt");
@@ -66,8 +71,8 @@ public class Post {
         }
     }
 
-    public static Post of(UUID boardId, String title, String content, Instant createdAt) {
-        return new Post(boardId, title, content, createdAt, null, false, null);
+    public static Post of(UUID boardId, String title, String content, Instant createdAt, UUID authorUserId) {
+        return new Post(boardId, title, content, createdAt, null, false, null, authorUserId);
     }
 
     public void updateTitle(String title, Instant updatedAt) {

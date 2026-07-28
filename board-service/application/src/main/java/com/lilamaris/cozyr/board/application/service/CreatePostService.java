@@ -27,8 +27,9 @@ public class CreatePostService implements CreatePostUseCase {
         var boardId = command.boardId();
         var title = command.title();
         var content = command.content();
+        var authorUserId = command.authorUserId();
 
-        var post = Post.of(boardId, title, content, now);
+        var post = Post.of(boardId, title, content, now, authorUserId);
         var saved = store.save(post);
 
         return CreatedPostResult.from(saved);

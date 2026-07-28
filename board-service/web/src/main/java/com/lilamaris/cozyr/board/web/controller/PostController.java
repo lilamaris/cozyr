@@ -12,6 +12,7 @@ import com.lilamaris.cozyr.board.application.port.in.result.CreatedPostResult;
 import com.lilamaris.cozyr.board.application.port.in.result.UpdatedPostResult;
 import com.lilamaris.cozyr.board.web.request.CreatePostRequest;
 import com.lilamaris.cozyr.board.web.request.UpdatePostRequest;
+import com.lilamaris.cozyr.identity.contract.context.IdentityContextHolder;
 import com.lilamaris.shrturl.kernel.application.model.cursor.CursorResult;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -42,6 +43,8 @@ public class PostController {
     private final FindPostDetailUseCase findPostDetailUseCase;
     private final ListPostSummaryUseCase listPostSummaryUseCase;
 
+    private final IdentityContextHolder identityContextHolder;
+
     @Operation(summary = "게시글 생성", description = "게시판에 새 게시글을 생성합니다.")
     @ApiResponses({
             @ApiResponse(
@@ -70,7 +73,8 @@ public class PostController {
             @PathVariable("boardId") UUID boardId,
             @Valid @RequestBody CreatePostRequest body
     ) {
-        var command = body.toCommand(boardId);
+        var identity = identityContextHolder.get();
+        var command = body.toCommand(boardId, identity.id());
         var result = createPostUseCase.create(command);
 
         var location = ServletUriComponentsBuilder.fromCurrentRequest()

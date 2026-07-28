@@ -12,7 +12,7 @@ public record CreatePostRequest(
         @Schema(description = "게시글 본문", example = "게시글 본문입니다.")
         String content
 ) {
-    public CreatePostCommand toCommand(UUID boardId) {
-        return CreatePostCommand.of(boardId, title, content);
+    public CreatePostCommand toCommand(UUID boardId, UUID authorUserId) {
+        return CreatePostCommand.of(boardId, title, content, authorUserId);
     }
 }
