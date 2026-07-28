@@ -10,6 +10,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.Instant;
+import java.util.UUID;
 
 @Entity
 @Table(name = "comment")
@@ -41,11 +42,15 @@ public class Comment {
     @Column(name = "deleted_at")
     private Instant deletedAt;
 
-    private Comment(Long postId, Long parentId, String content, Instant createdAt, Instant updatedAt, boolean deleted, Instant deletedAt) {
+    @Column(name = "author_user_id", nullable = false)
+    private UUID authorUserId;
+
+    private Comment(Long postId, Long parentId, String content, Instant createdAt, Instant updatedAt, boolean deleted, Instant deletedAt, UUID authorUserId) {
         this.postId = NumberPrecondition.requireNonNegative(postId, "postId");
         this.content = StringPrecondition.requireNonBlank(content, "content");
         this.createdAt = ObjectPrecondition.requireNonNull(createdAt, "createdAt");
         this.deleted = deleted;
+        this.authorUserId = ObjectPrecondition.requireNonNull(authorUserId, "authorUserId");
 
         if (parentId != null) {
             this.parentId = NumberPrecondition.requireNonNegative(parentId, "parentId");
@@ -60,16 +65,16 @@ public class Comment {
         }
     }
 
-    public static Comment root(Long postId, String content, Instant createdAt) {
-        return new Comment(postId, null, content, createdAt, createdAt, false, null);
+    public static Comment root(Long postId, String content, Instant createdAt, UUID authorUserId) {
+        return new Comment(postId, null, content, createdAt, createdAt, false, null, authorUserId);
     }
 
-    public static Comment reply(Long postId, Long parentId, String content, Instant createdAt) {
-        return new Comment(postId, parentId, content, createdAt, createdAt, false, null);
+    public static Comment reply(Long postId, Long parentId, String content, Instant createdAt, UUID authorUserId) {
+        return new Comment(postId, parentId, content, createdAt, createdAt, false, null, authorUserId);
     }
 
-    public static Comment reply(Comment parent, String content, Instant createdAt) {
-        return new Comment(parent.getPostId(), parent.getId(), content, createdAt, createdAt, false, null);
+    public static Comment reply(Comment parent, String content, Instant createdAt, UUID authorUserId) {
+        return new Comment(parent.getPostId(), parent.getId(), content, createdAt, createdAt, false, null, authorUserId);
     }
 
     public void updateContent(String content, Instant updatedAt) {

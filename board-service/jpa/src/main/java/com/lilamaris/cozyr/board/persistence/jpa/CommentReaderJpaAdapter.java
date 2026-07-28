@@ -5,6 +5,7 @@ import com.lilamaris.cozyr.board.application.model.comment.CommentDetail;
 import com.lilamaris.cozyr.board.application.port.out.CommentReader;
 import com.lilamaris.cozyr.board.domain.Comment;
 import com.lilamaris.cozyr.board.persistence.jpa.repository.CommentRepository;
+import com.lilamaris.cozyr.board.persistence.jpa.row.CommentRow;
 import com.lilamaris.cozyr.board.persistence.jpa.sql.CommentSql;
 import com.lilamaris.shrturl.kernel.application.model.cursor.CursorRequest;
 import com.lilamaris.shrturl.kernel.application.model.cursor.CursorResult;
@@ -37,7 +38,7 @@ public class CommentReaderJpaAdapter implements CommentReader {
 
         var rows = jdbcClient.sql(sql.toString())
                 .paramSource(params)
-                .query(CommentDetail.class)
+                .query(CommentRow.Detail.class)
                 .list();
 
         return buildCursorResult(rows, request);
@@ -53,7 +54,7 @@ public class CommentReaderJpaAdapter implements CommentReader {
 
         var rows = jdbcClient.sql(sql.toString())
                 .paramSource(params)
-                .query(CommentDetail.class)
+                .query(CommentRow.Detail.class)
                 .list();
 
         return buildCursorResult(rows, request);
@@ -86,9 +87,12 @@ public class CommentReaderJpaAdapter implements CommentReader {
         params.addValue("limit", request.size() + 1);
     }
 
-    private CursorResult<CommentDetail, CommentCursor> buildCursorResult(List<CommentDetail> rows, CursorRequest<CommentCursor> request) {
+    private CursorResult<CommentDetail, CommentCursor> buildCursorResult(List<CommentRow.Detail> rows, CursorRequest<CommentCursor> request) {
         var hasNext = rows.size() > request.size();
-        var content = rows.stream().limit(request.size()).toList();
+        var content = rows.stream()
+                .limit(request.size())
+                .map(CommentRow.Detail::toDetail)
+                .toList();
 
         CommentCursor nextCursor = null;
         if (hasNext && !content.isEmpty()) {

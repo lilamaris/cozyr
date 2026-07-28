@@ -12,6 +12,7 @@ import com.lilamaris.cozyr.board.application.port.in.result.UpdatedCommentResult
 import com.lilamaris.cozyr.board.web.request.CreateCommentRequest;
 import com.lilamaris.cozyr.board.web.request.ReplyCommentRequest;
 import com.lilamaris.cozyr.board.web.request.UpdateCommentRequest;
+import com.lilamaris.cozyr.identity.contract.context.IdentityContextHolder;
 import com.lilamaris.shrturl.kernel.application.model.cursor.CursorResult;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -44,6 +45,8 @@ public class CommentController {
     private final ListRootCommentUseCase listRootCommentUseCase;
     private final ListReplyCommentUseCase listReplyCommentUseCase;
 
+    private final IdentityContextHolder identityContextHolder;
+
     @Operation(summary = "댓글 생성", description = "게시글에 루트 댓글을 생성합니다.")
     @Parameters({
             @Parameter(name = "boardId", description = "게시판 ID", required = true, in = ParameterIn.PATH, schema = @Schema(type = "string", format = "uuid")),
@@ -66,7 +69,8 @@ public class CommentController {
             @PathVariable("postId") Long postId,
             @Valid @RequestBody CreateCommentRequest body
     ) {
-        var command = body.toCommand(postId);
+        var identity = identityContextHolder.get();
+        var command = body.toCommand(postId, identity.id());
         var result = createCommentUseCase.create(command);
 
         var location = ServletUriComponentsBuilder.fromCurrentRequest()
@@ -104,7 +108,8 @@ public class CommentController {
             @PathVariable("commentId") Long parentId,
             @Valid @RequestBody ReplyCommentRequest body
     ) {
-        var command = body.toCommand(parentId);
+        var identity = identityContextHolder.get();
+        var command = body.toCommand(parentId, identity.id());
         var result = replyCommentUseCase.reply(command);
         var location = ServletUriComponentsBuilder.fromCurrentContextPath()
                 .path("replies")

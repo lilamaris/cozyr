@@ -26,8 +26,9 @@ public class CreateCommentService implements CreateCommentUseCase {
         var now = clock.instant();
         var postId = command.postId();
         var content = command.content();
+        var authorUserId = command.authorUserId();
 
-        var comment = Comment.root(postId, content, now);
+        var comment = Comment.root(postId, content, now, authorUserId);
         var saved = store.save(comment);
 
         return CreatedCommentResult.of(saved);

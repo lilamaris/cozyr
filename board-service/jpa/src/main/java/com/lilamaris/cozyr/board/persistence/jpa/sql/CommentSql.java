@@ -3,32 +3,40 @@ package com.lilamaris.cozyr.board.persistence.jpa.sql;
 public class CommentSql {
     public static final String LIST_ROOT_BY_POST_ID = """
             SELECT
-                id AS commentId,
-                post_id AS postId,
-                parent_id AS parentId,
+                c.id AS commentId,
+                c.post_id AS postId,
+                c.parent_id AS parentId,
                 CASE
-                    WHEN deleted = true THEN 'Deleted'
-                    ELSE content
+                    WHEN c.deleted = true THEN 'Deleted'
+                    ELSE c.content
                 END AS content,
-                created_at AS createdAt,
-                updated_at AS updatedAt
-            FROM comment
+                c.created_at AS createdAt,
+                c.updated_at AS updatedAt,
+                u.user_id AS authorUserId,
+                u.display_name AS displayName
+            FROM comment c
+            JOIN user_snapshot u
+                ON u.user_id = c.author_user_id
             WHERE post_id = :postId
                 AND parent_id IS NULL
             """;
 
     public static final String LIST_REPLIES_BY_PARENT_ID = """
             SELECT
-                id AS commentId,
-                parent_id AS parentId,
-                post_id AS postId,
+                c.id AS commentId,
+                c.parent_id AS parentId,
+                c.post_id AS postId,
                 CASE
-                    WHEN deleted = true THEN 'Deleted'
-                    ELSE content
+                    WHEN c.deleted = true THEN 'Deleted'
+                    ELSE c.content
                 END AS content,
-                created_at AS createdAt,
-                updated_at AS updatedAt
-            FROM comment
+                c.created_at AS createdAt,
+                c.updated_at AS updatedAt,
+                u.user_id AS authorUserId,
+                u.display_name AS displayName
+            FROM comment c
+            JOIN user_snapshot u
+                ON u.user_id = c.author_user_id
             WHERE parent_id = :parentId
             """;
 }

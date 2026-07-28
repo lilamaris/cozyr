@@ -34,7 +34,8 @@ public class ReplyCommentService implements ReplyCommentUseCase {
 
         var now = clock.instant();
         var content = command.content();
-        var comment = Comment.reply(parent, content, now);
+        var authorUserId = command.authorUserId();
+        var comment = Comment.reply(parent, content, now, authorUserId);
         var saved = store.save(comment);
 
         return RepliedCommentResult.of(saved);
