@@ -36,7 +36,7 @@ public class PrincipalJpaAdapter implements PrincipalReader {
                 .flatMap(Optional::stream)
                 .collect(Collectors.toUnmodifiableSet());
 
-        var principal = AuthenticatedPrincipal.of(first.userId(), first.displayName(), scopes);
+        var principal = AuthenticatedPrincipal.of(first.userId(), first.displayName(), first.version(), scopes);
         return Optional.of(principal);
     }
 }

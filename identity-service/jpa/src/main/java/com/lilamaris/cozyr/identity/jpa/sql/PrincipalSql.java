@@ -5,6 +5,7 @@ public class PrincipalSql {
             SELECT
                 u.id AS userId,
                 u.display_name AS displayName,
+                u.version AS version,
                 us.service AS service,
                 us.role AS roleName
             FROM cozyr_user u

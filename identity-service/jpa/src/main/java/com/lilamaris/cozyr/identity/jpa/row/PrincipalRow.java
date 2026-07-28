@@ -10,6 +10,7 @@ import java.util.UUID;
 public record PrincipalRow(
         UUID userId,
         String displayName,
+        long version,
         @Nullable String service,
         @Nullable String roleName
 ) {

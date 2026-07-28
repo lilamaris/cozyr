@@ -13,6 +13,7 @@ import java.util.UUID;
 @NullMarked
 public class IdentityAuthenticationConverter implements Converter<Jwt, IdentityAuthenticationToken> {
     private static final String DISPLAY_NAME_CLAIM = "displayName";
+    private static final String VERSION_CLAIM = "version";
 
     @Override
     public IdentityAuthenticationToken convert(Jwt source) {
@@ -27,7 +28,7 @@ public class IdentityAuthenticationConverter implements Converter<Jwt, IdentityA
         var subject = ObjectPrecondition.requireNonNull(source.getSubject(), "subject");
         var id = UUID.fromString(subject);
         var displayName = StringPrecondition.requireNonBlank(source.getClaim(DISPLAY_NAME_CLAIM), "displayName");
-
-        return SimpleIdentity.of(id, displayName);
+        var version = (Long) source.getClaim(VERSION_CLAIM);
+        return SimpleIdentity.of(id, displayName, version);
     }
 }

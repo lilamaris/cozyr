@@ -6,4 +6,6 @@ public interface Identity {
     UUID id();
 
     String displayName();
+
+    long version();
 }
