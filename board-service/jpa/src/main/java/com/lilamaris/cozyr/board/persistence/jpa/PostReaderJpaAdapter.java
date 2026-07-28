@@ -7,6 +7,7 @@ import com.lilamaris.cozyr.board.application.model.post.PostSummary;
 import com.lilamaris.cozyr.board.application.port.out.PostReader;
 import com.lilamaris.cozyr.board.domain.Post;
 import com.lilamaris.cozyr.board.persistence.jpa.repository.PostRepository;
+import com.lilamaris.cozyr.board.persistence.jpa.row.PostRow;
 import com.lilamaris.cozyr.board.persistence.jpa.sql.PostSql;
 import com.lilamaris.shrturl.kernel.application.model.cursor.CursorRequest;
 import com.lilamaris.shrturl.kernel.application.model.cursor.CursorResult;
@@ -16,6 +17,7 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -34,8 +36,9 @@ public class PostReaderJpaAdapter implements PostReader {
     public Optional<PostDetail> findDetailById(long id) {
         return jdbcClient.sql(PostSql.FIND_DETAIL_BY_ID)
                 .param("id", id)
-                .query(PostDetail.class)
-                .optional();
+                .query(PostRow.Detail.class)
+                .optional()
+                .map(PostRow.Detail::toDetail);
     }
 
     @Override
@@ -55,12 +58,16 @@ public class PostReaderJpaAdapter implements PostReader {
 
         var rows = jdbcClient.sql(sql.toString())
                 .paramSource(params)
-                .query(PostSummary.class)
+                .query(PostRow.Summary.class)
                 .list();
 
         boolean hasNext = rows.size() > request.size();
 
-        var content = rows.stream().limit(request.size()).toList();
+        var content = rows.stream()
+                .limit(request.size())
+                .filter(Objects::nonNull)
+                .map(PostRow.Summary::toSummary)
+                .toList();
 
         PostCursor nextCursor = null;
         if (hasNext && !content.isEmpty()) {
