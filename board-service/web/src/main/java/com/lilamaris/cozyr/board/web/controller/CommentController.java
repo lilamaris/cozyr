@@ -2,10 +2,10 @@ package com.lilamaris.cozyr.board.web.controller;
 
 import com.lilamaris.cozyr.board.application.model.comment.CommentCursor;
 import com.lilamaris.cozyr.board.application.model.comment.CommentDetail;
+import com.lilamaris.cozyr.board.application.model.comment.CommentFilter;
 import com.lilamaris.cozyr.board.application.port.in.*;
 import com.lilamaris.cozyr.board.application.port.in.command.DeleteCommentCommand;
-import com.lilamaris.cozyr.board.application.port.in.query.ListReplyCommentQuery;
-import com.lilamaris.cozyr.board.application.port.in.query.ListRootCommentQuery;
+import com.lilamaris.cozyr.board.application.port.in.query.ListCommentDetailQuery;
 import com.lilamaris.cozyr.board.application.port.in.result.CreatedCommentResult;
 import com.lilamaris.cozyr.board.application.port.in.result.RepliedCommentResult;
 import com.lilamaris.cozyr.board.application.port.in.result.UpdatedCommentResult;
@@ -42,8 +42,7 @@ public class CommentController {
     private final ReplyCommentUseCase replyCommentUseCase;
     private final DeleteCommentUseCase deleteCommentUseCase;
 
-    private final ListRootCommentUseCase listRootCommentUseCase;
-    private final ListReplyCommentUseCase listReplyCommentUseCase;
+    private final ListCommentDetailUseCase listCommentDetailUseCase;
 
     private final IdentityContextHolder identityContextHolder;
 
@@ -183,8 +182,11 @@ public class CommentController {
             cursor = CommentCursor.of(createdAt, commentId);
         }
 
-        var query = ListRootCommentQuery.of(postId, cursor, size);
-        var result = listRootCommentUseCase.list(query);
+        var filter = CommentFilter.empty()
+                .withPostId(postId);
+
+        var query = ListCommentDetailQuery.of(filter, cursor, size);
+        var result = listCommentDetailUseCase.list(query);
         return ResponseEntity.ok(result);
     }
 
@@ -221,8 +223,11 @@ public class CommentController {
             cursor = CommentCursor.of(createdAt, commentId);
         }
 
-        var query = ListReplyCommentQuery.of(parentId, cursor, size);
-        var result = listReplyCommentUseCase.list(query);
+        var filter = CommentFilter.empty()
+                .withParentId(parentId);
+
+        var query = ListCommentDetailQuery.of(filter, cursor, size);
+        var result = listCommentDetailUseCase.list(query);
         return ResponseEntity.ok(result);
     }
 

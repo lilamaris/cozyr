@@ -2,6 +2,7 @@ package com.lilamaris.cozyr.board.persistence.jpa;
 
 import com.lilamaris.cozyr.board.application.model.comment.CommentCursor;
 import com.lilamaris.cozyr.board.application.model.comment.CommentDetail;
+import com.lilamaris.cozyr.board.application.model.comment.CommentFilter;
 import com.lilamaris.cozyr.board.application.port.out.CommentReader;
 import com.lilamaris.cozyr.board.domain.Comment;
 import com.lilamaris.cozyr.board.persistence.jpa.repository.CommentRepository;
@@ -29,11 +30,11 @@ public class CommentReaderJpaAdapter implements CommentReader {
     }
 
     @Override
-    public CursorResult<CommentDetail, CommentCursor> findByPostId(Long postId, CursorRequest<CommentCursor> request) {
-        var sql = new StringBuilder(CommentSql.LIST_ROOT_BY_POST_ID);
+    public CursorResult<CommentDetail, CommentCursor> findByPostId(CommentFilter filter, CursorRequest<CommentCursor> request) {
+        var sql = new StringBuilder(CommentSql.LIST_DETAILS);
         var params = new MapSqlParameterSource();
-        params.addValue("postId", postId);
 
+        appendFilterCondition(sql, params, filter);
         appendCursorCondition(sql, params, request);
 
         var rows = jdbcClient.sql(sql.toString())
@@ -44,20 +45,40 @@ public class CommentReaderJpaAdapter implements CommentReader {
         return buildCursorResult(rows, request);
     }
 
-    @Override
-    public CursorResult<CommentDetail, CommentCursor> findReplies(Long parentId, CursorRequest<CommentCursor> request) {
-        var sql = new StringBuilder(CommentSql.LIST_REPLIES_BY_PARENT_ID);
-        var params = new MapSqlParameterSource();
-        params.addValue("parentId", parentId);
+    private void appendFilterCondition(
+            StringBuilder sql,
+            MapSqlParameterSource params,
+            CommentFilter filter
+    ) {
+        Optional.ofNullable(filter.postId())
+                .ifPresent(postId -> {
+                    sql.append("""
+                            AND post_id = :postId
+                            """);
+                    params.addValue("postId", postId);
+                });
 
-        appendCursorCondition(sql, params, request);
+        Optional.ofNullable(filter.parentId())
+                .ifPresentOrElse(
+                        parentId -> {
+                            sql.append("""
+                                    AND parent_id = :parentId
+                                    """);
+                            params.addValue("parentId", parentId);
+                        },
+                        () -> sql.append("""
+                                AND parent_id IS NULL
+                                """)
+                );
 
-        var rows = jdbcClient.sql(sql.toString())
-                .paramSource(params)
-                .query(CommentRow.Detail.class)
-                .list();
 
-        return buildCursorResult(rows, request);
+        Optional.ofNullable(filter.authorUserId())
+                .ifPresent(authorUserId -> {
+                    sql.append("""
+                            AND author_user_id = :authorUserId
+                            """);
+                    params.addValue("authorUserId", authorUserId);
+                });
     }
 
     private void appendCursorCondition(
