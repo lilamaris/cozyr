@@ -11,4 +11,5 @@ dependencies {
     implementation(project(":board-service:jpa"))
     implementation(project(":board-service:web"))
     implementation(project(":board-service:security"))
+    implementation(project(":board-service:kafka"))
 }

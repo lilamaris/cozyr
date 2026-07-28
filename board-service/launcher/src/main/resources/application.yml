@@ -26,6 +26,27 @@ spring:
     hibernate:
       ddl-auto: ${DDL_AUTO:update}
 
+  kafka:
+    bootstrap-servers: ${KAFKA_URL:kafka:9092}
+    consumer:
+      group-id: ${spring.application.name}
+      enable-auto-commit: false
+      auto-offset-reset: earliest
+      key-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+      properties:
+        spring:
+          deserializer:
+            key:
+              delegate:
+                class: org.apache.kafka.common.serialization.StringDeserializer
+            value:
+              delegate:
+                class: org.springframework.kafka.support.serializer.JacksonJsonDeserializer
+          json:
+            trusted.packages: "*"
+            use.type.headers: true
+
 management:
   endpoints:
     web:

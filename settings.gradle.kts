@@ -28,6 +28,7 @@ include("board-service:security")
 include("board-service:jpa")
 include("board-service:launcher")
 include("board-service:web")
+include("board-service:kafka")
 
 include("identity-service:identity-contract")
 include("identity-service:identity-resource-server")
