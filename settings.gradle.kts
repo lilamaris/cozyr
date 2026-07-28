@@ -30,6 +30,7 @@ include("board-service:launcher")
 include("board-service:web")
 
 include("identity-service:identity-contract")
+include("identity-service:identity-resource-server")
 include("identity-service:domain")
 include("identity-service:application")
 include("identity-service:security")

@@ -1,5 +1,7 @@
 package com.lilamaris.cozyr.identity.security.config;
 
+import com.lilamaris.cozyr.identity.resource.server.filter.IdentityAuthenticationConverter;
+import com.lilamaris.cozyr.identity.resource.server.filter.IdentityContextBindingFilter;
 import com.lilamaris.cozyr.identity.security.credential.filter.JsonCredentialSignInProcessingFilter;
 import com.lilamaris.cozyr.identity.security.credential.filter.JsonCredentialSignUpProcessingFilter;
 import com.lilamaris.cozyr.identity.security.credential.provider.CredentialSignInProvider;
@@ -19,6 +21,8 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -44,6 +48,9 @@ public class SecurityAutoConfiguration {
     @ConditionalOnMissingBean(SecurityFilterChain.class)
     SecurityFilterChain securityFilterChain(
             HttpSecurity http,
+            JwtDecoder jwtDecoder,
+            IdentityContextBindingFilter contextBindingFilter,
+            IdentityAuthenticationConverter authenticationConverter,
             ObjectProvider<CorsConfigurationSource> corsSourceProvider,
             JsonCredentialSignInProcessingFilter signInProcessingFilter,
             JsonCredentialSignUpProcessingFilter signUpProcessingFilter,
@@ -59,11 +66,22 @@ public class SecurityAutoConfiguration {
 
         http
                 .authorizeHttpRequests(request -> request
-                        .requestMatchers("/.well-known/jwks.json", "/api/v1/**")
-                        .permitAll()
+                        .requestMatchers("/.well-known/jwks.json", "/api/v1/auth/**").permitAll()
+                        .requestMatchers("/api/v1/user/**").authenticated()
+                        .anyRequest().denyAll()
                 )
                 .addFilterBefore(signInProcessingFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(signUpProcessingFilter, UsernamePasswordAuthenticationFilter.class);
+
+        http
+                .oauth2ResourceServer(
+                        oauth2 -> oauth2.jwt(
+                                jwt -> jwt
+                                        .decoder(jwtDecoder)
+                                        .jwtAuthenticationConverter(authenticationConverter)
+                        )
+                )
+                .addFilterAfter(contextBindingFilter, BearerTokenAuthenticationFilter.class);
 
         return http.build();
     }
