@@ -1,12 +1,12 @@
 package com.lilamaris.cozyr.board.application.service;
 
-import com.lilamaris.cozyr.board.application.model.cursor.CursorRequest;
-import com.lilamaris.cozyr.board.application.model.cursor.CursorResult;
 import com.lilamaris.cozyr.board.application.model.post.PostCursor;
 import com.lilamaris.cozyr.board.application.model.post.PostSummary;
 import com.lilamaris.cozyr.board.application.port.in.ListPostSummaryUseCase;
 import com.lilamaris.cozyr.board.application.port.in.query.ListPostSummaryQuery;
 import com.lilamaris.cozyr.board.application.port.out.PostReader;
+import com.lilamaris.shrturl.kernel.application.model.cursor.CursorRequest;
+import com.lilamaris.shrturl.kernel.application.model.cursor.CursorResult;
 import org.springframework.stereotype.Service;
 
 @Service

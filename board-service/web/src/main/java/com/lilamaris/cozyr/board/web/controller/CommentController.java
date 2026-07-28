@@ -2,7 +2,6 @@ package com.lilamaris.cozyr.board.web.controller;
 
 import com.lilamaris.cozyr.board.application.model.comment.CommentCursor;
 import com.lilamaris.cozyr.board.application.model.comment.CommentDetail;
-import com.lilamaris.cozyr.board.application.model.cursor.CursorResult;
 import com.lilamaris.cozyr.board.application.port.in.*;
 import com.lilamaris.cozyr.board.application.port.in.command.DeleteCommentCommand;
 import com.lilamaris.cozyr.board.application.port.in.query.ListReplyCommentQuery;
@@ -13,6 +12,7 @@ import com.lilamaris.cozyr.board.application.port.in.result.UpdatedCommentResult
 import com.lilamaris.cozyr.board.web.request.CreateCommentRequest;
 import com.lilamaris.cozyr.board.web.request.ReplyCommentRequest;
 import com.lilamaris.cozyr.board.web.request.UpdateCommentRequest;
+import com.lilamaris.shrturl.kernel.application.model.cursor.CursorResult;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;

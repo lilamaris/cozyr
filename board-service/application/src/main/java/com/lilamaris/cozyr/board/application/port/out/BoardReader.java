@@ -4,9 +4,9 @@ import com.lilamaris.cozyr.board.application.model.board.BoardCursor;
 import com.lilamaris.cozyr.board.application.model.board.BoardDetail;
 import com.lilamaris.cozyr.board.application.model.board.BoardFilter;
 import com.lilamaris.cozyr.board.application.model.board.BoardSummary;
-import com.lilamaris.cozyr.board.application.model.cursor.CursorRequest;
-import com.lilamaris.cozyr.board.application.model.cursor.CursorResult;
 import com.lilamaris.cozyr.board.domain.Board;
+import com.lilamaris.shrturl.kernel.application.model.cursor.CursorRequest;
+import com.lilamaris.shrturl.kernel.application.model.cursor.CursorResult;
 
 import java.util.Optional;
 import java.util.UUID;

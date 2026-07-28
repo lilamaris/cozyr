@@ -2,11 +2,11 @@ package com.lilamaris.cozyr.board.application.service;
 
 import com.lilamaris.cozyr.board.application.model.board.BoardCursor;
 import com.lilamaris.cozyr.board.application.model.board.BoardSummary;
-import com.lilamaris.cozyr.board.application.model.cursor.CursorRequest;
-import com.lilamaris.cozyr.board.application.model.cursor.CursorResult;
 import com.lilamaris.cozyr.board.application.port.in.ListBoardSummaryUseCase;
 import com.lilamaris.cozyr.board.application.port.in.query.ListBoardSummaryQuery;
 import com.lilamaris.cozyr.board.application.port.out.BoardReader;
+import com.lilamaris.shrturl.kernel.application.model.cursor.CursorRequest;
+import com.lilamaris.shrturl.kernel.application.model.cursor.CursorResult;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

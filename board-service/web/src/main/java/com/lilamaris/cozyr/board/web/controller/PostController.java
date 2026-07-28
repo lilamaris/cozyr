@@ -1,6 +1,5 @@
 package com.lilamaris.cozyr.board.web.controller;
 
-import com.lilamaris.cozyr.board.application.model.cursor.CursorResult;
 import com.lilamaris.cozyr.board.application.model.post.PostCursor;
 import com.lilamaris.cozyr.board.application.model.post.PostDetail;
 import com.lilamaris.cozyr.board.application.model.post.PostFilter;
@@ -13,6 +12,7 @@ import com.lilamaris.cozyr.board.application.port.in.result.CreatedPostResult;
 import com.lilamaris.cozyr.board.application.port.in.result.UpdatedPostResult;
 import com.lilamaris.cozyr.board.web.request.CreatePostRequest;
 import com.lilamaris.cozyr.board.web.request.UpdatePostRequest;
+import com.lilamaris.shrturl.kernel.application.model.cursor.CursorResult;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;

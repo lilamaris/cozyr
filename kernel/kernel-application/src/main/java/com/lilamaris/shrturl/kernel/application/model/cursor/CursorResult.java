@@ -1,4 +1,4 @@
-package com.lilamaris.cozyr.board.application.model.cursor;
+package com.lilamaris.shrturl.kernel.application.model.cursor;
 
 import com.lilamaris.cozyr.kernel.core.condition.ObjectPrecondition;
 import org.jspecify.annotations.Nullable;

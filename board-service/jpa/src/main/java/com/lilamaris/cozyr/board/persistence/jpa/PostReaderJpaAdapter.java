@@ -1,7 +1,5 @@
 package com.lilamaris.cozyr.board.persistence.jpa;
 
-import com.lilamaris.cozyr.board.application.model.cursor.CursorRequest;
-import com.lilamaris.cozyr.board.application.model.cursor.CursorResult;
 import com.lilamaris.cozyr.board.application.model.post.PostCursor;
 import com.lilamaris.cozyr.board.application.model.post.PostDetail;
 import com.lilamaris.cozyr.board.application.model.post.PostFilter;
@@ -10,6 +8,8 @@ import com.lilamaris.cozyr.board.application.port.out.PostReader;
 import com.lilamaris.cozyr.board.domain.Post;
 import com.lilamaris.cozyr.board.persistence.jpa.repository.PostRepository;
 import com.lilamaris.cozyr.board.persistence.jpa.sql.PostSql;
+import com.lilamaris.shrturl.kernel.application.model.cursor.CursorRequest;
+import com.lilamaris.shrturl.kernel.application.model.cursor.CursorResult;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;

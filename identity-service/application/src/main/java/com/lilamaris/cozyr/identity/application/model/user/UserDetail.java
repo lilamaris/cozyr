@@ -1,4 +1,4 @@
-package com.lilamaris.cozyr.identity.application.model;
+package com.lilamaris.cozyr.identity.application.model.user;
 
 import com.lilamaris.cozyr.kernel.core.condition.ObjectPrecondition;
 import com.lilamaris.cozyr.kernel.core.condition.StringPrecondition;

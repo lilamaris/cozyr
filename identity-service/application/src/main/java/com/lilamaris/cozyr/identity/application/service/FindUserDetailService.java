@@ -1,7 +1,7 @@
 package com.lilamaris.cozyr.identity.application.service;
 
 import com.lilamaris.cozyr.identity.application.exception.IdentityServiceProgressCode;
-import com.lilamaris.cozyr.identity.application.model.UserDetail;
+import com.lilamaris.cozyr.identity.application.model.user.UserDetail;
 import com.lilamaris.cozyr.identity.application.port.in.FindUserDetailUseCase;
 import com.lilamaris.cozyr.identity.application.port.in.query.FindUserDetailQuery;
 import com.lilamaris.cozyr.identity.application.port.out.UserReader;

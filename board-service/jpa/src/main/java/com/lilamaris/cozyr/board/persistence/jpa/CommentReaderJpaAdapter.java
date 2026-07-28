@@ -2,12 +2,12 @@ package com.lilamaris.cozyr.board.persistence.jpa;
 
 import com.lilamaris.cozyr.board.application.model.comment.CommentCursor;
 import com.lilamaris.cozyr.board.application.model.comment.CommentDetail;
-import com.lilamaris.cozyr.board.application.model.cursor.CursorRequest;
-import com.lilamaris.cozyr.board.application.model.cursor.CursorResult;
 import com.lilamaris.cozyr.board.application.port.out.CommentReader;
 import com.lilamaris.cozyr.board.domain.Comment;
 import com.lilamaris.cozyr.board.persistence.jpa.repository.CommentRepository;
 import com.lilamaris.cozyr.board.persistence.jpa.sql.CommentSql;
+import com.lilamaris.shrturl.kernel.application.model.cursor.CursorRequest;
+import com.lilamaris.shrturl.kernel.application.model.cursor.CursorResult;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.simple.JdbcClient;

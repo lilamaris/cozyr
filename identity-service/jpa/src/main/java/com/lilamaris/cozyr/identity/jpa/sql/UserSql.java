@@ -10,4 +10,13 @@ public class UserSql {
             FROM cozyr_user
             WHERE id = :userId
             """;
+
+    public static final String LIST_SUMMARIES = """
+            SELECT
+                id AS userId,
+                display_name AS displayName,
+                created_at AS createdAt
+            FROM cozyr_user
+            WHERE 1 = 1
+            """;
 }
