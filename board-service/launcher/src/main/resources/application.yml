@@ -2,7 +2,8 @@ cozyr:
   board-service:
     web:
       baseUrl: ${BASE_URL:http://cozyr}
-    security:
+  identity-service:
+    resource-server:
       jwksUri: ${JWKS_URL:http://localhost:8080/.well-known/jwks.json}
 
 server:
