@@ -9,6 +9,7 @@ public enum BoardServiceProgressCode implements ApplicationProgressCode {
     BOARD_NOT_FOUND(ProcessReason.REJECTED, "board", "not-found", "게시판을 찾을 수 없습니다."),
     POST_NOT_FOUND(ProcessReason.REJECTED, "post", "not-found", "게시글을 찾을 수 없습니다."),
     COMMENT_NOT_FOUND(ProcessReason.REJECTED, "comment", "not-found", "댓글을 찾을 수 없습니다."),
+    CATEGORY_NOT_FOUND(ProcessReason.REJECTED, "category", "not-found", "카테고리를 찾을 수 없습니다."),
 
     POST_UPDATE_ACCESS_DENIED(ProcessReason.REJECTED, "post", "access-denied", "게시글을 수정할 권한이 없습니다."),
     POST_DELETE_ACCESS_DENIED(ProcessReason.REJECTED, "post", "access-denied", "게시글을 삭제할 권한이 없습니다."),
