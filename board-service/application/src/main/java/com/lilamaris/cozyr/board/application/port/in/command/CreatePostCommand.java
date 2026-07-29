@@ -7,18 +7,20 @@ import java.util.UUID;
 
 public record CreatePostCommand(
         UUID boardId,
+        UUID categoryId,
         String title,
         String content,
         UUID authorUserId
 ) {
     public CreatePostCommand {
         ObjectPrecondition.requireNonNull(boardId, "boardId");
+        ObjectPrecondition.requireNonNull(categoryId, "categoryId");
         StringPrecondition.requireNonBlank(title, "title");
         StringPrecondition.requireNonBlank(content, "content");
         ObjectPrecondition.requireNonNull(authorUserId, "authorUserId");
     }
 
-    public static CreatePostCommand of(UUID boardId, String title, String content, UUID authorUserId) {
-        return new CreatePostCommand(boardId, title, content, authorUserId);
+    public static CreatePostCommand of(UUID boardId, UUID categoryId, String title, String content, UUID authorUserId) {
+        return new CreatePostCommand(boardId, categoryId, title, content, authorUserId);
     }
 }

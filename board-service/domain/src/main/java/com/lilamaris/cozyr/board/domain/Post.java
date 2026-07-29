@@ -23,6 +23,9 @@ public class Post {
     @Column(name = "board_id", nullable = false, updatable = false)
     private UUID boardId;
 
+    @Column(name = "category_id", nullable = false)
+    private UUID categoryId;
+
     @Column(name = "title")
     private String title;
 
@@ -46,6 +49,7 @@ public class Post {
 
     private Post(
             UUID boardId,
+            UUID categoryId,
             String title,
             String content,
             Instant createdAt,
@@ -55,6 +59,7 @@ public class Post {
             UUID authorUserId
     ) {
         this.boardId = ObjectPrecondition.requireNonNull(boardId, "boardId");
+        this.categoryId = ObjectPrecondition.requireNonNull(categoryId, "categoryId");
         this.title = StringPrecondition.requireNonBlank(title, "title");
         this.content = StringPrecondition.requireNonBlank(content, "content");
         this.createdAt = ObjectPrecondition.requireNonNull(createdAt, "createdAt");
@@ -71,8 +76,13 @@ public class Post {
         }
     }
 
-    public static Post of(UUID boardId, String title, String content, Instant createdAt, UUID authorUserId) {
-        return new Post(boardId, title, content, createdAt, null, false, null, authorUserId);
+    public static Post of(UUID boardId, UUID categoryId, String title, String content, Instant createdAt, UUID authorUserId) {
+        return new Post(boardId, categoryId, title, content, createdAt, null, false, null, authorUserId);
+    }
+
+    public void updateCategoryId(UUID categoryId, Instant updatedAt) {
+        this.updatedAt = TimePrecondition.requireAfterOrEqual(updatedAt, createdAt, "updatedAt", "createdAt");
+        this.categoryId = ObjectPrecondition.requireNonNull(categoryId, "categoryId");
     }
 
     public void updateTitle(String title, Instant updatedAt) {
