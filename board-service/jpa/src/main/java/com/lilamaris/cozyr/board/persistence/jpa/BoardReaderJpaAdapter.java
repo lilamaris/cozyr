@@ -26,6 +26,11 @@ public class BoardReaderJpaAdapter implements BoardReader {
     private final JdbcClient jdbcClient;
 
     @Override
+    public boolean existsById(UUID id) {
+        return repository.existsById(id);
+    }
+
+    @Override
     public Optional<Board> findById(UUID id) {
         return repository.findById(id);
     }

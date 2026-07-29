@@ -12,6 +12,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface BoardReader {
+    boolean existsById(UUID id);
+
     Optional<Board> findById(UUID id);
 
     Optional<BoardDetail> findDetailById(UUID id);
