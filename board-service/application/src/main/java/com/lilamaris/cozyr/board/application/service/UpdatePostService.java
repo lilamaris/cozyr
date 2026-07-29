@@ -1,6 +1,7 @@
 package com.lilamaris.cozyr.board.application.service;
 
 import com.lilamaris.cozyr.board.application.exception.BoardServiceProgressCode;
+import com.lilamaris.cozyr.board.application.policy.PostAccessPolicy;
 import com.lilamaris.cozyr.board.application.port.in.UpdatePostUseCase;
 import com.lilamaris.cozyr.board.application.port.in.command.UpdatePostCommand;
 import com.lilamaris.cozyr.board.application.port.in.result.UpdatedPostResult;
@@ -14,10 +15,12 @@ import java.time.Clock;
 @Service
 public class UpdatePostService implements UpdatePostUseCase {
     private final PostReader reader;
+    private final PostAccessPolicy policy;
     private final Clock clock;
 
-    public UpdatePostService(PostReader reader, Clock clock) {
+    public UpdatePostService(PostReader reader, PostAccessPolicy policy, Clock clock) {
         this.reader = reader;
+        this.policy = policy;
         this.clock = clock;
     }
 
@@ -27,6 +30,10 @@ public class UpdatePostService implements UpdatePostUseCase {
         var postId = command.postId();
         var post = reader.findById(postId)
                 .orElseThrow(() -> new ApplicationException(BoardServiceProgressCode.POST_NOT_FOUND));
+
+        var actorUserId = command.actorUserId();
+        if (!policy.canUpdate(post, actorUserId))
+            throw new ApplicationException(BoardServiceProgressCode.POST_UPDATE_ACCESS_DENIED);
 
         var now = clock.instant();
         var title = command.title();

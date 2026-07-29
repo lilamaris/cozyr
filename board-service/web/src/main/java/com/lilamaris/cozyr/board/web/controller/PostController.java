@@ -108,7 +108,8 @@ public class PostController {
             @PathVariable("postId") long postId,
             @Valid @RequestBody UpdatePostRequest body
     ) {
-        var command = body.toCommand(postId);
+        var identity = identityContextHolder.get();
+        var command = body.toCommand(postId, identity.id());
         var result = updatePostUseCase.update(command);
         return ResponseEntity.ok(result);
     }
@@ -206,7 +207,8 @@ public class PostController {
             @Parameter(description = "게시글 ID", required = true, schema = @Schema(type = "integer", format = "int64"))
             @PathVariable("postId") Long postId
     ) {
-        var command = DeletePostCommand.of(postId);
+        var identity = identityContextHolder.get();
+        var command = DeletePostCommand.of(postId, identity.id());
         deletePostUseCase.delete(command);
         return ResponseEntity.noContent().build();
     }
