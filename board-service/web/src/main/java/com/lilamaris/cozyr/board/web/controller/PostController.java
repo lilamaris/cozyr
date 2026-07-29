@@ -16,6 +16,8 @@ import com.lilamaris.cozyr.identity.contract.context.IdentityContextHolder;
 import com.lilamaris.shrturl.kernel.application.model.cursor.CursorResult;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -45,7 +47,7 @@ public class PostController {
 
     private final IdentityContextHolder identityContextHolder;
 
-    @Operation(summary = "게시글 생성", description = "게시판에 새 게시글을 생성합니다.")
+    @Operation(summary = "게시글 생성", description = "게시판 카테고리에 새 게시글을 생성합니다.")
     @ApiResponses({
             @ApiResponse(
                     responseCode = "201",
@@ -59,7 +61,7 @@ public class PostController {
             ),
             @ApiResponse(
                     responseCode = "404",
-                    description = "게시판을 찾을 수 없음",
+                    description = "게시판 또는 카테고리를 찾을 수 없음",
                     content = @Content(schema = @Schema(implementation = ProblemDetail.class))
             )
     })
@@ -84,7 +86,11 @@ public class PostController {
         return ResponseEntity.created(location).body(result);
     }
 
-    @Operation(summary = "게시글 수정", description = "게시글 제목과 본문을 수정합니다.")
+    @Operation(summary = "게시글 수정", description = "게시글 카테고리, 제목과 본문을 수정합니다.")
+    @Parameters({
+            @Parameter(name = "boardId", description = "게시판 ID", required = true, in = ParameterIn.PATH, schema = @Schema(type = "string", format = "uuid")),
+            @Parameter(name = "postId", description = "게시글 ID", required = true, in = ParameterIn.PATH, schema = @Schema(type = "integer", format = "int64"))
+    })
     @ApiResponses({
             @ApiResponse(
                     responseCode = "200",
@@ -98,13 +104,12 @@ public class PostController {
             ),
             @ApiResponse(
                     responseCode = "404",
-                    description = "게시글을 찾을 수 없음",
+                    description = "게시글 또는 카테고리를 찾을 수 없음",
                     content = @Content(schema = @Schema(implementation = ProblemDetail.class))
             )
     })
     @PutMapping("/{postId}")
     public ResponseEntity<UpdatedPostResult> update(
-            @Parameter(description = "게시글 ID", required = true, schema = @Schema(type = "integer", format = "int64"))
             @PathVariable("postId") long postId,
             @Valid @RequestBody UpdatePostRequest body
     ) {
@@ -161,6 +166,10 @@ public class PostController {
     }
 
     @Operation(summary = "게시글 상세 조회", description = "게시글 ID로 게시글 상세 정보를 조회합니다.")
+    @Parameters({
+            @Parameter(name = "boardId", description = "게시판 ID", required = true, in = ParameterIn.PATH, schema = @Schema(type = "string", format = "uuid")),
+            @Parameter(name = "postId", description = "게시글 ID", required = true, in = ParameterIn.PATH, schema = @Schema(type = "integer", format = "int64"))
+    })
     @ApiResponses({
             @ApiResponse(
                     responseCode = "200",
@@ -180,7 +189,6 @@ public class PostController {
     })
     @GetMapping("/{postId}")
     public ResponseEntity<PostDetail> find(
-            @Parameter(description = "게시글 ID", required = true, schema = @Schema(type = "integer", format = "int64"))
             @PathVariable("postId") Long postId
     ) {
         var query = FindPostDetailQuery.of(postId);
@@ -189,6 +197,10 @@ public class PostController {
     }
 
     @Operation(summary = "게시글 삭제", description = "게시글을 삭제 상태로 변경합니다.")
+    @Parameters({
+            @Parameter(name = "boardId", description = "게시판 ID", required = true, in = ParameterIn.PATH, schema = @Schema(type = "string", format = "uuid")),
+            @Parameter(name = "postId", description = "게시글 ID", required = true, in = ParameterIn.PATH, schema = @Schema(type = "integer", format = "int64"))
+    })
     @ApiResponses({
             @ApiResponse(responseCode = "204", description = "게시글 삭제 성공"),
             @ApiResponse(
@@ -204,7 +216,6 @@ public class PostController {
     })
     @DeleteMapping("/{postId}")
     public ResponseEntity<Void> delete(
-            @Parameter(description = "게시글 ID", required = true, schema = @Schema(type = "integer", format = "int64"))
             @PathVariable("postId") Long postId
     ) {
         var identity = identityContextHolder.get();
