@@ -21,6 +21,11 @@ public class CredentialJpaAdapter implements CredentialReader, CredentialStore {
     }
 
     @Override
+    public Optional<Credential> findByUserId(UUID userId) {
+        return repository.findByUserId(userId);
+    }
+
+    @Override
     public Optional<Credential> findByEmail(String email) {
         return repository.findByEmail(email);
     }

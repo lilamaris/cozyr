@@ -26,6 +26,11 @@ public class UserJpaAdapter implements UserReader, UserStore {
     private final JdbcClient jdbcClient;
 
     @Override
+    public boolean existsById(UUID userId) {
+        return repository.existsById(userId);
+    }
+
+    @Override
     public Optional<User> findById(UUID id) {
         return repository.findById(id);
     }

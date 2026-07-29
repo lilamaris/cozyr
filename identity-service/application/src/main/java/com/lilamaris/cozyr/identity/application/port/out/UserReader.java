@@ -12,6 +12,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface UserReader {
+    boolean existsById(UUID userId);
+
     Optional<User> findById(UUID id);
 
     Optional<UserDetail> findDetailById(UUID userId);
