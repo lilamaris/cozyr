@@ -1,5 +1,7 @@
 cozyr:
   identity-service:
+    web:
+      baseUrl: ${BASE_URL:http://cozyr}
     jwks:
       io:
         activeSignableKid: "key-20260715-005317"
