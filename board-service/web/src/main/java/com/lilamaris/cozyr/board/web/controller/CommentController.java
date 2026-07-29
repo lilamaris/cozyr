@@ -145,7 +145,8 @@ public class CommentController {
             @PathVariable("commentId") Long commentId,
             @Valid @RequestBody UpdateCommentRequest body
     ) {
-        var command = body.toCommand(commentId);
+        var identity = identityContextHolder.get();
+        var command = body.toCommand(commentId, identity.id());
         var result = updateCommentUseCase.update(command);
         return ResponseEntity.ok(result);
     }
@@ -254,7 +255,8 @@ public class CommentController {
     public ResponseEntity<Void> delete(
             @PathVariable("commentId") Long commentId
     ) {
-        var command = DeleteCommentCommand.of(commentId);
+        var identity = identityContextHolder.get();
+        var command = DeleteCommentCommand.of(commentId, identity.id());
         deleteCommentUseCase.delete(command);
         return ResponseEntity.noContent().build();
     }
