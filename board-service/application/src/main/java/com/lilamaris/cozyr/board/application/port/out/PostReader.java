@@ -12,6 +12,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface PostReader {
+    boolean existsById(long id);
+
     Optional<Post> findById(long id);
 
     Optional<PostDetail> findDetailById(long id);

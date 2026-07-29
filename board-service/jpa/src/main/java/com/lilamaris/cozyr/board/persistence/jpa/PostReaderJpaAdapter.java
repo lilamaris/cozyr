@@ -28,6 +28,11 @@ public class PostReaderJpaAdapter implements PostReader {
     private final JdbcClient jdbcClient;
 
     @Override
+    public boolean existsById(long id) {
+        return repository.existsById(id);
+    }
+
+    @Override
     public Optional<Post> findById(long id) {
         return repository.findById(id);
     }
