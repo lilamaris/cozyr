@@ -148,7 +148,7 @@ public class PostController {
             @RequestParam(name = "pid", required = false) Long postId,
             @Parameter(description = "커서 생성 시각", schema = @Schema(type = "string", format = "date-time"))
             @RequestParam(name = "ca", required = false) Instant createdAt,
-            @Parameter(description = "조회 개수", required = true, schema = @Schema(type = "integer", minimum = "1", example = "20"))
+            @Parameter(description = "조회 개수", required = true, example = "20", schema = @Schema(type = "integer", minimum = "1"))
             @RequestParam(name = "size") int size
     ) {
         PostCursor cursor = null;
