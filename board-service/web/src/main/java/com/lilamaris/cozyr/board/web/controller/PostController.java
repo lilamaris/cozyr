@@ -157,10 +157,11 @@ public class PostController {
         }
 
         var filter = PostFilter.empty()
+                .withBoardId(boardId)
                 .withTitle(title)
                 .withContent(content);
 
-        var query = ListPostSummaryQuery.of(boardId, filter, cursor, size);
+        var query = ListPostSummaryQuery.of(filter, cursor, size);
         var result = listPostSummaryUseCase.list(query);
         return ResponseEntity.ok(result);
     }

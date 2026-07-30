@@ -19,10 +19,9 @@ public class ListPostSummaryService implements ListPostSummaryUseCase {
 
     @Override
     public CursorResult<PostSummary, PostCursor> list(ListPostSummaryQuery query) {
-        var boardId = query.boardId();
         var filter = query.filter();
         var request = CursorRequest.of(query.cursor(), query.size());
-        return reader.findSummaries(boardId, filter, request)
+        return reader.findSummaries(filter, request)
                 .map(summary -> summary.truncate(50));
     }
 }

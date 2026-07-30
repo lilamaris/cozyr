@@ -18,7 +18,10 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 @Slf4j
 @Component
@@ -47,10 +50,9 @@ public class PostReaderJpaAdapter implements PostReader {
     }
 
     @Override
-    public CursorResult<PostSummary, PostCursor> findSummaries(UUID boardId, PostFilter filter, CursorRequest<PostCursor> request) {
+    public CursorResult<PostSummary, PostCursor> findSummaries(PostFilter filter, CursorRequest<PostCursor> request) {
         var conditions = new ArrayList<String>();
         var params = new MapSqlParameterSource()
-                .addValue("boardId", boardId)
                 .addValue("limit", request.size() + 1);
 
         appendFilterCondition(conditions, params, filter);
@@ -98,6 +100,11 @@ public class PostReaderJpaAdapter implements PostReader {
         Optional.ofNullable(filter.content()).ifPresent(content -> {
             conditions.add("p.content ILIKE :content");
             params.addValue("content", "%" + escapeLike(content) + "%");
+        });
+
+        Optional.ofNullable(filter.boardId()).ifPresent(boardId -> {
+            conditions.add("p.board_id = :boardId");
+            params.addValue("boardId", boardId);
         });
 
         Optional.ofNullable(filter.authorUserId()).ifPresent(authorUserId -> {

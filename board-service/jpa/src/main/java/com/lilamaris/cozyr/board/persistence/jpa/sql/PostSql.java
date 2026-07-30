@@ -32,8 +32,7 @@ public final class PostSql {
                     p.category_id,
                     p.author_user_id
                 FROM post p
-                WHERE p.board_id = :boardId
-                    AND p.deleted = false
+                WHERE p.deleted = false
                     %s
                 ORDER BY p.created_at DESC, p.id DESC
                 LIMIT :limit

@@ -9,7 +9,6 @@ import com.lilamaris.shrturl.kernel.application.model.cursor.CursorRequest;
 import com.lilamaris.shrturl.kernel.application.model.cursor.CursorResult;
 
 import java.util.Optional;
-import java.util.UUID;
 
 public interface PostReader {
     boolean existsById(long id);
@@ -18,5 +17,5 @@ public interface PostReader {
 
     Optional<PostDetail> findDetailById(long id);
 
-    CursorResult<PostSummary, PostCursor> findSummaries(UUID boardId, PostFilter filter, CursorRequest<PostCursor> request);
+    CursorResult<PostSummary, PostCursor> findSummaries(PostFilter filter, CursorRequest<PostCursor> request);
 }
