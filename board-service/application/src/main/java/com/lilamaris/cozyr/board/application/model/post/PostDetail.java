@@ -1,5 +1,6 @@
 package com.lilamaris.cozyr.board.application.model.post;
 
+import com.lilamaris.cozyr.board.application.model.category.CategorySummary;
 import com.lilamaris.cozyr.board.application.model.user.UserProjection;
 import com.lilamaris.cozyr.kernel.core.condition.NumberPrecondition;
 import com.lilamaris.cozyr.kernel.core.condition.ObjectPrecondition;
@@ -16,6 +17,7 @@ public record PostDetail(
         String content,
         Instant createdAt,
         @Nullable Instant updatedAt,
+        CategorySummary category,
         UserProjection author
 ) {
     public PostDetail {
@@ -24,10 +26,11 @@ public record PostDetail(
         StringPrecondition.requireNonBlank(title, "title");
         StringPrecondition.requireNonBlank(content, "content");
         ObjectPrecondition.requireNonNull(createdAt, "createdAt");
+        ObjectPrecondition.requireNonNull(category, "category");
         ObjectPrecondition.requireNonNull(author, "author");
     }
 
-    public static PostDetail of(long postId, UUID boardId, String title, String content, Instant createdAt, Instant updatedAt, UserProjection author) {
-        return new PostDetail(postId, boardId, title, content, createdAt, updatedAt, author);
+    public static PostDetail of(long postId, UUID boardId, String title, String content, Instant createdAt, Instant updatedAt, CategorySummary category, UserProjection author) {
+        return new PostDetail(postId, boardId, title, content, createdAt, updatedAt, category, author);
     }
 }

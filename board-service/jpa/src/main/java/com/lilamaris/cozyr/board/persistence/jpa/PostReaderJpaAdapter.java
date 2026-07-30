@@ -12,15 +12,15 @@ import com.lilamaris.cozyr.board.persistence.jpa.sql.PostSql;
 import com.lilamaris.shrturl.kernel.application.model.cursor.CursorRequest;
 import com.lilamaris.shrturl.kernel.application.model.cursor.CursorResult;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.Nullable;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
 
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class PostReaderJpaAdapter implements PostReader {
@@ -48,23 +48,24 @@ public class PostReaderJpaAdapter implements PostReader {
 
     @Override
     public CursorResult<PostSummary, PostCursor> findSummaries(UUID boardId, PostFilter filter, CursorRequest<PostCursor> request) {
-        var sql = new StringBuilder(PostSql.LIST_SUMMARIES);
-        var params = new MapSqlParameterSource();
+        var conditions = new ArrayList<String>();
+        var params = new MapSqlParameterSource()
+                .addValue("boardId", boardId)
+                .addValue("limit", request.size() + 1);
 
-        appendFilterCondition(sql, params, filter);
-        appendCursorCondition(sql, params, request.cursor());
+        appendFilterCondition(conditions, params, filter);
+        appendCursorCondition(conditions, params, request.cursor());
 
-        sql.append("""
-                ORDER BY created_at DESC, id DESC
-                LIMIT :limit
-                """);
-        params.addValue("boardId", boardId);
-        params.addValue("limit", request.size() + 1);
+        var dynamicWhere = conditions.isEmpty()
+                ? ""
+                : "AND " + String.join("\nAND ", conditions);
 
-        var rows = jdbcClient.sql(sql.toString())
-                .paramSource(params)
-                .query(PostRow.Summary.class)
-                .list();
+        var sql = PostSql.LIST_SUMMARIES.formatted(dynamicWhere);
+
+        var rows = jdbcClient.sql(sql)
+                    .paramSource(params)
+                    .query(PostRow.Summary.class)
+                    .list();
 
         boolean hasNext = rows.size() > request.size();
 
@@ -85,44 +86,41 @@ public class PostReaderJpaAdapter implements PostReader {
     }
 
     private void appendFilterCondition(
-            StringBuilder sql,
+            List<String> conditions,
             MapSqlParameterSource params,
             PostFilter filter
     ) {
-        Optional.ofNullable(filter.title())
-                .ifPresent(title -> {
-                    sql.append("""
-                            AND title ILIKE :title ESCAPE '\\'
-                            """);
-                    params.addValue("title", "%" + escapeLike(title) + "%");
-                });
+        Optional.ofNullable(filter.title()).ifPresent(title -> {
+            conditions.add("p.title ILIKE :title");
+            params.addValue("title", "%" + escapeLike(title) + "%");
+        });
 
-        Optional.ofNullable(filter.content())
-                .ifPresent(content -> {
-                    sql.append("""
-                            AND content ILIKE :content ESCAPE '\\'
-                            """);
-                    params.addValue("content", "%" + escapeLike(content) + "%");
-                });
+        Optional.ofNullable(filter.content()).ifPresent(content -> {
+            conditions.add("p.content ILIKE :content");
+            params.addValue("content", "%" + escapeLike(content) + "%");
+        });
+
+        Optional.ofNullable(filter.authorUserId()).ifPresent(authorUserId -> {
+            conditions.add("p.author_user_id = :authorUserId");
+            params.addValue("authorUserId", authorUserId);
+        });
+
+        Optional.ofNullable(filter.categoryId()).ifPresent(categoryId -> {
+            conditions.add("p.category_id = :categoryId");
+            params.addValue("categoryId", categoryId);
+        });
     }
 
     private void appendCursorCondition(
-            StringBuilder sql,
+            List<String> conditions,
             MapSqlParameterSource params,
             @Nullable PostCursor cursor
     ) {
-        Optional.ofNullable(cursor)
-                .ifPresent(title -> {
-                    sql.append("""
-                            AND (
-                                created_at <: cursorCreatedAt
-                                OR (created_at = :cursorCreatedAt AND id < :cursorId)
-                            )
-                            """);
+        if (cursor == null) return;
 
-                    params.addValue("cursorCreatedAt", cursor.createdAt());
-                    params.addValue("cursorId", cursor.postId());
-                });
+        conditions.add("(p.creatd_at, p.id) < (:cursorCreatedAt, :cursorId)");
+        params.addValue("cursorCreatedAt", cursor.createdAt());
+        params.addValue("cursorId", cursor.postId());
     }
 
     private String escapeLike(String value) {

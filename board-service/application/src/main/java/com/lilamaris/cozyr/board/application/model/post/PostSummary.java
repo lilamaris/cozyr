@@ -1,5 +1,6 @@
 package com.lilamaris.cozyr.board.application.model.post;
 
+import com.lilamaris.cozyr.board.application.model.category.CategorySummary;
 import com.lilamaris.cozyr.board.application.model.user.UserProjection;
 import com.lilamaris.cozyr.kernel.core.condition.NumberPrecondition;
 import com.lilamaris.cozyr.kernel.core.condition.ObjectPrecondition;
@@ -12,6 +13,7 @@ public record PostSummary(
         String title,
         String content,
         Instant createdAt,
+        CategorySummary category,
         UserProjection author
 ) {
     public PostSummary {
@@ -19,17 +21,18 @@ public record PostSummary(
         StringPrecondition.requireNonBlank(title, "title");
         StringPrecondition.requireNonBlank(content, "content");
         ObjectPrecondition.requireNonNull(createdAt, "createdAt");
+        ObjectPrecondition.requireNonNull(category, "category");
         ObjectPrecondition.requireNonNull(author, "author");
     }
 
-    public static PostSummary of(long postId, String title, String content, Instant createdAt, UserProjection author) {
-        return new PostSummary(postId, title, content, createdAt, author);
+    public static PostSummary of(long postId, String title, String content, Instant createdAt, CategorySummary category, UserProjection author) {
+        return new PostSummary(postId, title, content, createdAt, category, author);
     }
 
     public PostSummary truncate(int maxPreviewLength) {
         var truncated = content.length() > maxPreviewLength
                 ? content.substring(0, maxPreviewLength)
                 : content;
-        return PostSummary.of(postId, title, truncated, createdAt, author);
+        return PostSummary.of(postId, title, truncated, createdAt, category, author);
     }
 }

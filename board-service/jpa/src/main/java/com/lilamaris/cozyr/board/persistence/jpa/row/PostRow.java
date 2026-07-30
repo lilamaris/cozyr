@@ -1,5 +1,6 @@
 package com.lilamaris.cozyr.board.persistence.jpa.row;
 
+import com.lilamaris.cozyr.board.application.model.category.CategorySummary;
 import com.lilamaris.cozyr.board.application.model.post.PostDetail;
 import com.lilamaris.cozyr.board.application.model.post.PostSummary;
 import com.lilamaris.cozyr.board.application.model.user.UserProjection;
@@ -15,12 +16,15 @@ public class PostRow {
             String content,
             Instant createdAt,
             Instant updatedAt,
+            UUID categoryId,
+            String categoryName,
             UUID authorUserId,
             String displayName
     ) {
         public PostDetail toDetail() {
             var userProjection = UserProjection.of(authorUserId, displayName);
-            return PostDetail.of(postId, boardId, title, content, createdAt, updatedAt, userProjection);
+            var category = CategorySummary.of(categoryId, categoryName);
+            return PostDetail.of(postId, boardId, title, content, createdAt, updatedAt, category, userProjection);
         }
     }
 
@@ -29,12 +33,15 @@ public class PostRow {
             String title,
             String content,
             Instant createdAt,
+            UUID categoryId,
+            String categoryName,
             UUID authorUserId,
             String displayName
     ) {
         public PostSummary toSummary() {
             var userProjection = UserProjection.of(authorUserId, displayName);
-            return PostSummary.of(postId, title, content, createdAt, userProjection);
+            var category = CategorySummary.of(categoryId, categoryName);
+            return PostSummary.of(postId, title, content, createdAt, category, userProjection);
         }
     }
 }
