@@ -126,7 +126,8 @@ public class GlobalControllerAdvice {
                 "Unhandled exception. type={}, path={}, message={}",
                 exception.getClass().getSimpleName(),
                 request.getRequestURI(),
-                exception.getMessage()
+                exception.getMessage(),
+                exception
         );
 
         var problem = ProblemDetail.forStatusAndDetail(
