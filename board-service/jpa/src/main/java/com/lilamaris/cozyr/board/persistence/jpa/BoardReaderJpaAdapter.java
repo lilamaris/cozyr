@@ -4,9 +4,11 @@ import com.lilamaris.cozyr.board.application.model.board.BoardCursor;
 import com.lilamaris.cozyr.board.application.model.board.BoardDetail;
 import com.lilamaris.cozyr.board.application.model.board.BoardFilter;
 import com.lilamaris.cozyr.board.application.model.board.BoardSummary;
+import com.lilamaris.cozyr.board.application.model.category.CategorySummary;
 import com.lilamaris.cozyr.board.application.port.out.BoardReader;
 import com.lilamaris.cozyr.board.domain.Board;
 import com.lilamaris.cozyr.board.persistence.jpa.repository.BoardRepository;
+import com.lilamaris.cozyr.board.persistence.jpa.row.BoardRow;
 import com.lilamaris.cozyr.board.persistence.jpa.sql.BoardSql;
 import com.lilamaris.shrturl.kernel.application.model.cursor.CursorRequest;
 import com.lilamaris.shrturl.kernel.application.model.cursor.CursorResult;
@@ -16,6 +18,8 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -37,10 +41,23 @@ public class BoardReaderJpaAdapter implements BoardReader {
 
     @Override
     public Optional<BoardDetail> findDetailById(UUID id) {
-        return jdbcClient.sql(BoardSql.FIND_DETAIL_BY_ID)
+        var rows = jdbcClient.sql(BoardSql.FIND_DETAIL_BY_ID)
                 .param("id", id)
-                .query(BoardDetail.class)
-                .optional();
+                .query(BoardRow.Detail.class)
+                .list();
+
+        if (rows.isEmpty()) return Optional.empty();
+
+        var first = rows.getFirst();
+        if (first == null) return Optional.empty();
+
+        List<CategorySummary> categories = rows.stream()
+                .filter(Objects::nonNull)
+                .map(BoardRow.Detail::toCategory)
+                .flatMap(Optional::stream)
+                .toList();
+
+        return Optional.of(first.toDetail(categories));
     }
 
     @Override
