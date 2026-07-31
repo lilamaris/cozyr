@@ -5,12 +5,15 @@ import com.lilamaris.cozyr.board.application.model.post.PostDetail;
 import com.lilamaris.cozyr.board.application.model.post.PostFilter;
 import com.lilamaris.cozyr.board.application.model.post.PostSummary;
 import com.lilamaris.cozyr.board.application.port.in.*;
+import com.lilamaris.cozyr.board.application.port.in.command.CancelReactPostCommand;
 import com.lilamaris.cozyr.board.application.port.in.command.DeletePostCommand;
 import com.lilamaris.cozyr.board.application.port.in.query.FindPostDetailQuery;
 import com.lilamaris.cozyr.board.application.port.in.query.ListPostSummaryQuery;
 import com.lilamaris.cozyr.board.application.port.in.result.CreatedPostResult;
+import com.lilamaris.cozyr.board.application.port.in.result.ReactedPostResult;
 import com.lilamaris.cozyr.board.application.port.in.result.UpdatedPostResult;
 import com.lilamaris.cozyr.board.web.request.CreatePostRequest;
+import com.lilamaris.cozyr.board.web.request.ReactPostRequest;
 import com.lilamaris.cozyr.board.web.request.UpdatePostRequest;
 import com.lilamaris.cozyr.identity.contract.context.IdentityContextHolder;
 import com.lilamaris.shrturl.kernel.application.model.cursor.CursorResult;
@@ -41,6 +44,8 @@ public class PostController {
     private final CreatePostUseCase createPostUseCase;
     private final UpdatePostUseCase updatePostUseCase;
     private final DeletePostUseCase deletePostUseCase;
+    private final ReactPostUseCase reactPostUseCase;
+    private final CancelReactPostUseCase cancelReactPostUseCase;
 
     private final FindPostDetailUseCase findPostDetailUseCase;
     private final ListPostSummaryUseCase listPostSummaryUseCase;
@@ -84,6 +89,39 @@ public class PostController {
                 .buildAndExpand(result.postId())
                 .toUri();
         return ResponseEntity.created(location).body(result);
+    }
+
+    @Operation(summary = "게시글 반응", description = "게시글에 반응을 추가합니다.")
+    @Parameters({
+            @Parameter(name = "boardId", description = "게시판 ID", required = true, in = ParameterIn.PATH, schema = @Schema(type = "string", format = "uuid")),
+            @Parameter(name = "postId", description = "게시글 ID", required = true, in = ParameterIn.PATH, schema = @Schema(type = "integer", format = "int64"))
+    })
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "게시글 반응 성공",
+                    content = @Content(schema = @Schema(implementation = ReactedPostResult.class))
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "잘못된 요청",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "게시글을 찾을 수 없음",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))
+            )
+    })
+    @PostMapping("/{postId}/reactions")
+    public ResponseEntity<ReactedPostResult> reaction(
+            @PathVariable("postId") long postId,
+            @Valid @RequestBody ReactPostRequest body
+    ) {
+        var identity = identityContextHolder.get();
+        var command = body.toCommand(postId, identity.id());
+        var result = reactPostUseCase.react(command);
+        return ResponseEntity.ok(result);
     }
 
     @Operation(summary = "게시글 수정", description = "게시글 카테고리, 제목과 본문을 수정합니다.")
@@ -222,6 +260,35 @@ public class PostController {
         var identity = identityContextHolder.get();
         var command = DeletePostCommand.of(postId, identity.id());
         deletePostUseCase.delete(command);
+        return ResponseEntity.noContent().build();
+    }
+
+    @Operation(summary = "게시글 반응 취소", description = "게시글에 추가한 반응을 취소합니다.")
+    @Parameters({
+            @Parameter(name = "boardId", description = "게시판 ID", required = true, in = ParameterIn.PATH, schema = @Schema(type = "string", format = "uuid")),
+            @Parameter(name = "postId", description = "게시글 ID", required = true, in = ParameterIn.PATH, schema = @Schema(type = "integer", format = "int64")),
+            @Parameter(name = "reactionId", description = "반응 ID", required = true, in = ParameterIn.PATH, schema = @Schema(type = "string", format = "uuid"))
+    })
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "게시글 반응 취소 성공"),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "잘못된 요청",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "반응을 찾을 수 없음",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))
+            )
+    })
+    @DeleteMapping("/{postId}/reactions/{reactionId}")
+    public ResponseEntity<Void> cancelReaction(
+            @PathVariable("reactionId") UUID reactionId
+    ) {
+        var identity = identityContextHolder.get();
+        var command = CancelReactPostCommand.of(reactionId, identity.id());
+        cancelReactPostUseCase.cancel(command);
         return ResponseEntity.noContent().build();
     }
 }
