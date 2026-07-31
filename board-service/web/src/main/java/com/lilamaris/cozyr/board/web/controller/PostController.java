@@ -4,10 +4,12 @@ import com.lilamaris.cozyr.board.application.model.post.PostCursor;
 import com.lilamaris.cozyr.board.application.model.post.PostDetail;
 import com.lilamaris.cozyr.board.application.model.post.PostFilter;
 import com.lilamaris.cozyr.board.application.model.post.PostSummary;
+import com.lilamaris.cozyr.board.application.model.reaction.PostReactionSummary;
 import com.lilamaris.cozyr.board.application.port.in.*;
 import com.lilamaris.cozyr.board.application.port.in.command.CancelReactPostCommand;
 import com.lilamaris.cozyr.board.application.port.in.command.DeletePostCommand;
 import com.lilamaris.cozyr.board.application.port.in.query.FindPostDetailQuery;
+import com.lilamaris.cozyr.board.application.port.in.query.FindPostReactionSummaryQuery;
 import com.lilamaris.cozyr.board.application.port.in.query.ListPostSummaryQuery;
 import com.lilamaris.cozyr.board.application.port.in.result.CreatedPostResult;
 import com.lilamaris.cozyr.board.application.port.in.result.ReactedPostResult;
@@ -49,6 +51,7 @@ public class PostController {
 
     private final FindPostDetailUseCase findPostDetailUseCase;
     private final ListPostSummaryUseCase listPostSummaryUseCase;
+    private final FindPostReactionSummaryUseCase findPostReactionSummaryUseCase;
 
     private final IdentityContextHolder identityContextHolder;
 
@@ -232,6 +235,37 @@ public class PostController {
     ) {
         var query = FindPostDetailQuery.of(postId);
         var result = findPostDetailUseCase.find(query);
+        return ResponseEntity.ok(result);
+    }
+
+    @Operation(summary = "게시글 반응 요약 조회", description = "게시글에 추가된 반응 요약을 조회합니다.")
+    @Parameters({
+            @Parameter(name = "boardId", description = "게시판 ID", required = true, in = ParameterIn.PATH, schema = @Schema(type = "string", format = "uuid")),
+            @Parameter(name = "postId", description = "게시글 ID", required = true, in = ParameterIn.PATH, schema = @Schema(type = "integer", format = "int64"))
+    })
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "게시글 반응 요약 조회 성공",
+                    content = @Content(schema = @Schema(implementation = PostReactionSummary.class))
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "잘못된 요청",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "게시글 또는 반응을 찾을 수 없음",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))
+            )
+    })
+    @GetMapping("/{postId}/reactions")
+    public ResponseEntity<PostReactionSummary> findReactionSummaries(
+            @PathVariable("postId") Long postId
+    ) {
+        var query = FindPostReactionSummaryQuery.of(postId);
+        var result = findPostReactionSummaryUseCase.find(query);
         return ResponseEntity.ok(result);
     }
 
