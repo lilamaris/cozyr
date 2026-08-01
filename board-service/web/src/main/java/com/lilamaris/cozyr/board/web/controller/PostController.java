@@ -270,6 +270,38 @@ public class PostController {
         return ResponseEntity.ok(result);
     }
 
+    @Operation(summary = "내 게시글 반응 조회", description = "인증된 사용자가 특정 게시글에 추가한 반응을 조회합니다.")
+    @Parameters({
+            @Parameter(name = "boardId", description = "게시판 ID", required = true, in = ParameterIn.PATH, schema = @Schema(type = "string", format = "uuid")),
+            @Parameter(name = "postId", description = "게시글 ID", required = true, in = ParameterIn.PATH, schema = @Schema(type = "integer", format = "int64"))
+    })
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "내 게시글 반응 조회 성공",
+                    content = @Content(schema = @Schema(implementation = PostReactionSummary.class))
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "잘못된 요청",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "게시글 또는 반응을 찾을 수 없음",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))
+            )
+    })
+    @GetMapping("/{postId}/reactions/me")
+    public ResponseEntity<PostReactionSummary> findMeReactionSummaries(
+            @PathVariable("postId") Long postId
+    ) {
+        var identity = identityContextHolder.get();
+        var query = FindPostReactionSummaryQuery.of(postId, identity.id());
+        var result = findPostReactionSummaryUseCase.find(query);
+        return ResponseEntity.ok(result);
+    }
+
     @Operation(summary = "게시글 삭제", description = "게시글을 삭제 상태로 변경합니다.")
     @Parameters({
             @Parameter(name = "boardId", description = "게시판 ID", required = true, in = ParameterIn.PATH, schema = @Schema(type = "string", format = "uuid")),
