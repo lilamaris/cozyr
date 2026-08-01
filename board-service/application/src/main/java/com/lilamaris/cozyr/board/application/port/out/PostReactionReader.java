@@ -1,5 +1,6 @@
 package com.lilamaris.cozyr.board.application.port.out;
 
+import com.lilamaris.cozyr.board.application.model.reaction.PostReactionFilter;
 import com.lilamaris.cozyr.board.application.model.reaction.PostReactionSummary;
 import com.lilamaris.cozyr.board.domain.PostReaction;
 import com.lilamaris.cozyr.board.domain.ReactionType;
@@ -12,5 +13,5 @@ public interface PostReactionReader {
 
     Optional<PostReaction> findById(UUID id);
 
-    Optional<PostReactionSummary> findSummaries(long postId);
+    Optional<PostReactionSummary> findSummaries(PostReactionFilter filter);
 }

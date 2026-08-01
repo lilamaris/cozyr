@@ -10,14 +10,14 @@ import java.util.Map;
 
 public record PostReactionSummary(
         long postId,
-        Map<ReactionType, List<UserProjection>> reactionByUsers
+        Map<ReactionType, List<UserProjection>> reactions
 ) {
     public PostReactionSummary {
         NumberPrecondition.requireNonNegative(postId, "postId");
-        reactionByUsers = Map.copyOf(ObjectPrecondition.requireNonNull(reactionByUsers, "reactionByUsers"));
+        reactions = Map.copyOf(ObjectPrecondition.requireNonNull(reactions, "reactions"));
     }
 
-    public static PostReactionSummary of(long postId, Map<ReactionType, List<UserProjection>> reactionByUsers) {
-        return new PostReactionSummary(postId, reactionByUsers);
+    public static PostReactionSummary of(long postId, Map<ReactionType, List<UserProjection>> reactions) {
+        return new PostReactionSummary(postId, reactions);
     }
 }

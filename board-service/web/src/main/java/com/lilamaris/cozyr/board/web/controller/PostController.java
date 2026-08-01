@@ -262,9 +262,10 @@ public class PostController {
     })
     @GetMapping("/{postId}/reactions")
     public ResponseEntity<PostReactionSummary> findReactionSummaries(
-            @PathVariable("postId") Long postId
+            @PathVariable("postId") Long postId,
+            @RequestParam(name = "uid", required = false) UUID userId
     ) {
-        var query = FindPostReactionSummaryQuery.of(postId);
+        var query = FindPostReactionSummaryQuery.of(postId, userId);
         var result = findPostReactionSummaryUseCase.find(query);
         return ResponseEntity.ok(result);
     }

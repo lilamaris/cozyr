@@ -1,6 +1,8 @@
 package com.lilamaris.cozyr.board.persistence.jpa;
 
+import com.lilamaris.cozyr.board.application.model.reaction.PostReactionFilter;
 import com.lilamaris.cozyr.board.application.model.reaction.PostReactionSummary;
+import com.lilamaris.cozyr.board.application.model.user.UserProjection;
 import com.lilamaris.cozyr.board.application.port.out.PostReactionReader;
 import com.lilamaris.cozyr.board.application.port.out.PostReactionStore;
 import com.lilamaris.cozyr.board.domain.PostReaction;
@@ -9,12 +11,11 @@ import com.lilamaris.cozyr.board.persistence.jpa.repository.PostReactionReposito
 import com.lilamaris.cozyr.board.persistence.jpa.row.PostReactionRow;
 import com.lilamaris.cozyr.board.persistence.jpa.sql.PostReactionSql;
 import lombok.RequiredArgsConstructor;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
 
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
@@ -28,12 +29,8 @@ public class PostReactionJpaAdapter implements PostReactionReader, PostReactionS
         return repository.findById(id);
     }
 
-    @Override
-    public Optional<PostReactionSummary> findSummaries(long postId) {
-        var rows = jdbcClient.sql(PostReactionSql.FIND_SUMMARIES)
-                .param("postId", postId)
-                .query(PostReactionRow.Summary.class)
-                .list();
+    public Optional<PostReactionSummary> findSummaries(PostReactionFilter filter) {
+        var rows = findRows(filter);
 
         if (rows.isEmpty()) return Optional.empty();
 
@@ -43,14 +40,16 @@ public class PostReactionJpaAdapter implements PostReactionReader, PostReactionS
         var reactionByUsers = rows.stream()
                 .filter(Objects::nonNull)
                 .collect(Collectors.groupingBy(
-                        PostReactionRow.Summary::reactionType,
-                        Collectors.flatMapping(
-                                summary -> summary.toUserProjection().stream(),
+                        PostReactionRow::reactionType,
+                        Collectors.mapping(
+                                r -> UserProjection.of(r.userId(), r.displayName()),
                                 Collectors.toList()
                         )
                 ));
 
-        return Optional.of(first.toSummary(reactionByUsers));
+        return Optional.of(
+                PostReactionSummary.of(first.postId(), reactionByUsers)
+        );
     }
 
     @Override
@@ -66,5 +65,39 @@ public class PostReactionJpaAdapter implements PostReactionReader, PostReactionS
     @Override
     public void delete(PostReaction postReaction) {
         repository.delete(postReaction);
+    }
+
+    private List<PostReactionRow> findRows(PostReactionFilter filter) {
+        var conditions = new ArrayList<String>();
+        var params = new MapSqlParameterSource();
+        appendFilter(conditions, params, filter);
+
+        var dynamicWhere = conditions.isEmpty()
+                ? ""
+                : "AND " + String.join(" AND ", conditions);
+
+        var sql = PostReactionSql.FIND_SUMMARIES.formatted(dynamicWhere);
+
+        return jdbcClient.sql(sql)
+                .paramSource(params)
+                .query(PostReactionRow.class)
+                .list();
+    }
+
+    private void appendFilter(List<String> conditions, MapSqlParameterSource params, PostReactionFilter filter) {
+        Optional.ofNullable(filter.postId()).ifPresent(postId -> {
+            conditions.add("r.post_id = :postId");
+            params.addValue("postId", postId);
+        });
+
+        Optional.ofNullable(filter.userId()).ifPresent(userId -> {
+            conditions.add("r.user_id = :userId");
+            params.addValue("userId", userId);
+        });
+
+        Optional.ofNullable(filter.reactionType()).ifPresent(reactionType -> {
+            conditions.add("r.reaction_type = :reactionType");
+            params.addValue("reactionType", reactionType);
+        });
     }
 }
