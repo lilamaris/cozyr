@@ -12,12 +12,15 @@ public final class PostSql {
                 c.id AS categoryId,
                 c.name AS categoryName,
                 u.user_id AS authorUserId,
-                u.display_name AS displayName
+                u.display_name AS displayName,
+                v.count AS viewCount
             FROM post p
             JOIN user_snapshot u
                 ON u.user_id = p.author_user_id
             JOIN category c
                 ON c.id = p.category_id
+            JOIN post_view v
+                ON v.post_id = p.id
             WHERE p.id = :id
                 AND p.deleted = false
             """;
@@ -45,12 +48,15 @@ public final class PostSql {
                 c.id AS categoryId,
                 c.name AS categoryName,
                 u.user_id AS authorUserId,
-                u.display_name AS displayName
+                u.display_name AS displayName,
+                v.count AS viewCount
             FROM paged_post p
             JOIN user_snapshot u
                 ON u.user_id = p.author_user_id
             JOIN category c
                 ON c.id = p.category_id
+            JOIN post_view v
+                ON v.post_id = p.id
             ORDER BY p.created_at DESC, p.id DESC
             """;
 }

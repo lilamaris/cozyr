@@ -18,7 +18,8 @@ public record PostDetail(
         Instant createdAt,
         @Nullable Instant updatedAt,
         CategorySummary category,
-        UserProjection author
+        UserProjection author,
+        long viewCount
 ) {
     public PostDetail {
         NumberPrecondition.requireNonNegative(postId, "postId");
@@ -28,9 +29,10 @@ public record PostDetail(
         ObjectPrecondition.requireNonNull(createdAt, "createdAt");
         ObjectPrecondition.requireNonNull(category, "category");
         ObjectPrecondition.requireNonNull(author, "author");
+        NumberPrecondition.requireNonNegative(viewCount, "viewCount");
     }
 
-    public static PostDetail of(long postId, UUID boardId, String title, String content, Instant createdAt, Instant updatedAt, CategorySummary category, UserProjection author) {
-        return new PostDetail(postId, boardId, title, content, createdAt, updatedAt, category, author);
+    public static PostDetail of(long postId, UUID boardId, String title, String content, Instant createdAt, Instant updatedAt, CategorySummary category, UserProjection author, long viewCount) {
+        return new PostDetail(postId, boardId, title, content, createdAt, updatedAt, category, author, viewCount);
     }
 }

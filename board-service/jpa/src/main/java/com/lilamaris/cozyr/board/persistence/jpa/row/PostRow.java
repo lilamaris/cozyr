@@ -19,12 +19,13 @@ public class PostRow {
             UUID categoryId,
             String categoryName,
             UUID authorUserId,
-            String displayName
+            String displayName,
+            long viewCount
     ) {
         public PostDetail toDetail() {
             var userProjection = UserProjection.of(authorUserId, displayName);
             var category = CategorySummary.of(categoryId, categoryName);
-            return PostDetail.of(postId, boardId, title, content, createdAt, updatedAt, category, userProjection);
+            return PostDetail.of(postId, boardId, title, content, createdAt, updatedAt, category, userProjection, viewCount);
         }
     }
 
@@ -36,12 +37,13 @@ public class PostRow {
             UUID categoryId,
             String categoryName,
             UUID authorUserId,
-            String displayName
+            String displayName,
+            long viewCount
     ) {
         public PostSummary toSummary() {
             var userProjection = UserProjection.of(authorUserId, displayName);
             var category = CategorySummary.of(categoryId, categoryName);
-            return PostSummary.of(postId, title, content, createdAt, category, userProjection);
+            return PostSummary.of(postId, title, content, createdAt, category, userProjection, viewCount);
         }
     }
 }
