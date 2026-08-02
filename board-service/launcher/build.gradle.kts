@@ -1,3 +1,5 @@
+import org.springframework.boot.gradle.tasks.bundling.BootJar
+
 plugins {
     id("cozyr.spring.module")
     id("cozyr.spring.observability")
@@ -12,4 +14,8 @@ dependencies {
     implementation(project(":board-service:web"))
     implementation(project(":board-service:security"))
     implementation(project(":board-service:kafka"))
+}
+
+tasks.named<BootJar>("bootJar") {
+    archiveFileName.set("app.jar")
 }

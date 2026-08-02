@@ -1,3 +1,5 @@
+import org.springframework.boot.gradle.tasks.bundling.BootJar
+
 plugins {
     id("cozyr.spring.module")
     id("cozyr.spring.observability")
@@ -16,4 +18,8 @@ dependencies {
     implementation(project(":identity-service:security"))
     implementation(project(":identity-service:web"))
     implementation(project(":identity-service:kafka"))
+}
+
+tasks.named<BootJar>("bootJar") {
+    archiveFileName.set("app.jar")
 }
