@@ -8,6 +8,7 @@ public enum StandardErrorDescriptor implements ErrorDescriptor {
     BAD_REQUEST(ProcessReason.REJECTED, "bad-request", "Bad Request"),
     NOT_FOUND(ProcessReason.REJECTED, "not-found", "Not Found"),
     ACCESS_DENIED(ProcessReason.REJECTED, "access-denied", "Access Denied"),
+    UNAUTHORIZED(ProcessReason.FAILURE, "unauthorized", "Unauthorized"),
     INTERNAL_SERVER_ERROR(ProcessReason.FAILURE, "internal-server-error", "Internal server error"),
     UNEXPECTED_ERROR(ProcessReason.FAILURE, "unexpected-error", "Internal server error");
 

@@ -11,6 +11,7 @@ public class DefaultErrorStatusResolver implements ErrorStatusResolver {
             case "not-found" -> HttpStatus.NOT_FOUND;
             case "duplicated" -> HttpStatus.CONFLICT;
             case "access-denied", "forbidden" -> HttpStatus.FORBIDDEN;
+            case "unauthorized" -> HttpStatus.UNAUTHORIZED;
             case "internal-server-error", "internal_server_error", "unexpected-error", "unexpected_error" ->
                     HttpStatus.INTERNAL_SERVER_ERROR;
             default -> HttpStatus.BAD_REQUEST;

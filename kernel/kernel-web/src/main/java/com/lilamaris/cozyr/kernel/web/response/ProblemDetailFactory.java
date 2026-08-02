@@ -59,6 +59,10 @@ public class ProblemDetailFactory {
         return from(StandardErrorDescriptor.ACCESS_DENIED);
     }
 
+    public ProblemDetail unauthorized() {
+        return from(StandardErrorDescriptor.UNAUTHORIZED);
+    }
+
     public ProblemDetail internalServerError() {
         return from(StandardErrorDescriptor.INTERNAL_SERVER_ERROR);
     }
