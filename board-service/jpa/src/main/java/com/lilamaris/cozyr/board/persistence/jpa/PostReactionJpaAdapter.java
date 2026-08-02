@@ -1,5 +1,7 @@
 package com.lilamaris.cozyr.board.persistence.jpa;
 
+import com.lilamaris.cozyr.board.application.model.reaction.PostReactionActivity;
+import com.lilamaris.cozyr.board.application.model.reaction.PostReactionCursor;
 import com.lilamaris.cozyr.board.application.model.reaction.PostReactionFilter;
 import com.lilamaris.cozyr.board.application.model.reaction.PostReactionSummary;
 import com.lilamaris.cozyr.board.application.model.user.UserProjection;
@@ -10,11 +12,15 @@ import com.lilamaris.cozyr.board.domain.ReactionType;
 import com.lilamaris.cozyr.board.persistence.jpa.repository.PostReactionRepository;
 import com.lilamaris.cozyr.board.persistence.jpa.row.PostReactionRow;
 import com.lilamaris.cozyr.board.persistence.jpa.sql.PostReactionSql;
+import com.lilamaris.shrturl.kernel.application.model.cursor.CursorRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
 
+import java.sql.Types;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -30,7 +36,20 @@ public class PostReactionJpaAdapter implements PostReactionReader, PostReactionS
     }
 
     public Optional<PostReactionSummary> findSummaries(PostReactionFilter filter) {
-        var rows = findRows(filter);
+        var conditions = new ArrayList<String>();
+        var params = new MapSqlParameterSource();
+        appendFilter(conditions, params, filter);
+
+        var dynamicWhere = conditions.isEmpty()
+                ? ""
+                : "AND " + String.join(" AND ", conditions);
+
+        var sql = PostReactionSql.FIND_SUMMARIES.formatted(dynamicWhere);
+
+        var rows = jdbcClient.sql(sql)
+                .paramSource(params)
+                .query(PostReactionRow.Single.class)
+                .list();
 
         if (rows.isEmpty()) return Optional.empty();
 
@@ -40,7 +59,7 @@ public class PostReactionJpaAdapter implements PostReactionReader, PostReactionS
         var reactionByUsers = rows.stream()
                 .filter(Objects::nonNull)
                 .collect(Collectors.groupingBy(
-                        PostReactionRow::reactionType,
+                        PostReactionRow.Single::reactionType,
                         Collectors.mapping(
                                 r -> UserProjection.of(r.userId(), r.displayName()),
                                 Collectors.toList()
@@ -50,6 +69,19 @@ public class PostReactionJpaAdapter implements PostReactionReader, PostReactionS
         return Optional.of(
                 PostReactionSummary.of(first.postId(), reactionByUsers)
         );
+    }
+
+    @Override
+    public List<PostReactionActivity> findActivities(UUID userId, CursorRequest<PostReactionCursor> request) {
+        var rows = jdbcClient.sql(PostReactionSql.LIST_ACTIVITIES)
+                .param("userId", userId)
+                .param("cursorReactedAt", request.cursor() == null ? null : request.cursor().lastReactedAt().atOffset(ZoneOffset.UTC), Types.TIMESTAMP_WITH_TIMEZONE)
+                .param("cursorPostId", request.cursor() == null ? null : request.cursor().postId())
+                .param("limit", request.size())
+                .query(PostReactionRow.Activity.class)
+                .list();
+
+        return toActivities(rows);
     }
 
     @Override
@@ -67,21 +99,25 @@ public class PostReactionJpaAdapter implements PostReactionReader, PostReactionS
         repository.delete(postReaction);
     }
 
-    private List<PostReactionRow> findRows(PostReactionFilter filter) {
-        var conditions = new ArrayList<String>();
-        var params = new MapSqlParameterSource();
-        appendFilter(conditions, params, filter);
+    private List<PostReactionActivity> toActivities(List<PostReactionRow.Activity> rows) {
+        return rows.stream()
+                .filter(Objects::nonNull)
+                .collect(Collectors.groupingBy(
+                        row -> new ActivityKey(row.postId(), row.title(), row.lastReactedAt()),
+                        LinkedHashMap::new,
+                        Collectors.mapping(this::toActivityItem, Collectors.toList())
+                ))
+                .entrySet()
+                .stream()
+                .map(entry -> {
+                    var key = entry.getKey();
+                    return PostReactionActivity.of(key.postId(), key.title(), key.lastReactedAt(), entry.getValue());
+                })
+                .toList();
+    }
 
-        var dynamicWhere = conditions.isEmpty()
-                ? ""
-                : "AND " + String.join(" AND ", conditions);
-
-        var sql = PostReactionSql.FIND_SUMMARIES.formatted(dynamicWhere);
-
-        return jdbcClient.sql(sql)
-                .paramSource(params)
-                .query(PostReactionRow.class)
-                .list();
+    private PostReactionActivity.Item toActivityItem(PostReactionRow.Activity row) {
+        return PostReactionActivity.Item.of(row.reactionId(), row.reactionType(), row.reactedAt());
     }
 
     private void appendFilter(List<String> conditions, MapSqlParameterSource params, PostReactionFilter filter) {
@@ -99,5 +135,12 @@ public class PostReactionJpaAdapter implements PostReactionReader, PostReactionS
             conditions.add("r.reaction_type = :reactionType");
             params.addValue("reactionType", reactionType);
         });
+    }
+
+    private record ActivityKey(
+            long postId,
+            String title,
+            Instant lastReactedAt
+    ) {
     }
 }
