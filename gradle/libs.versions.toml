@@ -56,6 +56,7 @@ spring-boot-configuration-processor = { module = "org.springframework.boot:sprin
 
 ## Spring Boot - Web
 jakarta-servlet-api = { module = "jakarta.servlet:jakarta.servlet-api" }
+spring-web = { module = "org.springframework:spring-web" }
 spring-boot-starter-webmvc = { module = "org.springframework.boot:spring-boot-starter-webmvc" }
 spring-boot-starter-webmvc-test = { module = "org.springframework.boot:spring-boot-starter-webmvc-test" }
 
