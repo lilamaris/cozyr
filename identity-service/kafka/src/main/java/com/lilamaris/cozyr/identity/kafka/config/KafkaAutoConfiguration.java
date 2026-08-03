@@ -1,6 +1,5 @@
 package com.lilamaris.cozyr.identity.kafka.config;
 
-import com.lilamaris.cozyr.identity.kafka.TopicResolver;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -29,11 +28,5 @@ public class KafkaAutoConfiguration {
         factory.getContainerProperties().setObservationEnabled(true);
 
         return factory;
-    }
-
-    @Bean
-    @ConditionalOnMissingBean
-    public TopicResolver topicManager() {
-        return new TopicResolver();
     }
 }

@@ -1,12 +1,13 @@
 plugins {
     id("cozyr.java.module")
+    `java-library`
 }
 
 group = "com.lilamaris.cozyr"
 version = "0.0.1-SNAPSHOT"
 
 dependencies {
-    implementation(project(":kernel:kernel-core"))
+    api(project(":kernel:kernel-message"))
 
     testImplementation(project(":kernel:kernel-test"))
 }
