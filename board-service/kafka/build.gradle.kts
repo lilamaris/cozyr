@@ -11,6 +11,7 @@ dependencies {
     implementation(project(":kernel:kernel-core"))
     implementation(project(":board-service:application"))
     implementation(project(":identity-service:identity-contract"))
+    implementation(libs.tools.jackson.databind)
 
     testImplementation(project(":kernel:kernel-test"))
 }
