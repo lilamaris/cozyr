@@ -1,14 +1,13 @@
 package com.lilamaris.cozyr.identity.security.credential.provider;
 
-import com.lilamaris.cozyr.identity.application.exception.IdentityServiceProgressCode;
 import com.lilamaris.cozyr.identity.application.port.in.RegisterCredentialUseCase;
 import com.lilamaris.cozyr.identity.security.credential.token.CredentialRegisterToken;
+import com.lilamaris.cozyr.kernel.security.exception.ApplicationAuthenticationException;
 import com.lilamaris.shrturl.kernel.application.exception.ApplicationException;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 
@@ -25,11 +24,7 @@ public class CredentialSignUpProvider implements AuthenticationProvider {
             var auth = registerCredentialUseCase.register(command);
             return CredentialRegisterToken.of(auth);
         } catch (ApplicationException e) {
-            var errorCode = (IdentityServiceProgressCode) e.getApplicationCode();
-            throw switch (errorCode) {
-                case AUTHENTICATE_FAILED, EMAIL_DUPLICATED -> new AuthenticationServiceException(e.getMessage());
-                default -> new AuthenticationServiceException("Credential sign up failed", e);
-            };
+            throw new ApplicationAuthenticationException(e.getApplicationCode(), e);
         }
     }
 

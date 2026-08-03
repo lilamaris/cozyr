@@ -9,6 +9,7 @@ group = "com.lilamaris.cozyr"
 version = "0.0.1-SNAPSHOT"
 
 dependencies {
+    implementation(project(":kernel:kernel-security"))
     implementation(project(":identity-service:domain"))
     implementation(project(":identity-service:application"))
     implementation(project(":identity-service:identity-resource-server"))

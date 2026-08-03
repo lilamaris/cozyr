@@ -6,7 +6,10 @@ import com.lilamaris.cozyr.identity.security.credential.filter.JsonCredentialSig
 import com.lilamaris.cozyr.identity.security.credential.filter.JsonCredentialSignUpProcessingFilter;
 import com.lilamaris.cozyr.identity.security.credential.provider.CredentialSignInProvider;
 import com.lilamaris.cozyr.identity.security.credential.provider.CredentialSignUpProvider;
-import com.lilamaris.cozyr.identity.security.response.ResponseWriter;
+import com.lilamaris.cozyr.kernel.security.handler.ProblemDetailAccessDeniedHandler;
+import com.lilamaris.cozyr.kernel.security.handler.ProblemDetailAuthenticationEntryPoint;
+import com.lilamaris.cozyr.kernel.web.response.ProblemDetailFactory;
+import com.lilamaris.cozyr.kernel.web.response.ServletJsonResponseWriter;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -23,7 +26,9 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -54,6 +59,8 @@ public class SecurityAutoConfiguration {
             ObjectProvider<CorsConfigurationSource> corsSourceProvider,
             JsonCredentialSignInProcessingFilter signInProcessingFilter,
             JsonCredentialSignUpProcessingFilter signUpProcessingFilter,
+            AuthenticationEntryPoint authenticationEntryPoint,
+            AccessDeniedHandler accessDeniedHandler,
             SecurityProperties properties
     ) {
         configureCsrf(http, properties);
@@ -75,12 +82,15 @@ public class SecurityAutoConfiguration {
 
         http
                 .oauth2ResourceServer(
-                        oauth2 -> oauth2.jwt(
-                                jwt -> jwt
-                                        .decoder(jwtDecoder)
-                                        .jwtAuthenticationConverter(authenticationConverter)
-                        )
+                        oauth2 -> oauth2
+                                .jwt(
+                                        jwt -> jwt
+                                                .decoder(jwtDecoder)
+                                                .jwtAuthenticationConverter(authenticationConverter)
+                                )
+                                .authenticationEntryPoint(authenticationEntryPoint)
                 )
+                .exceptionHandling(exception -> exception.accessDeniedHandler(accessDeniedHandler))
                 .addFilterAfter(contextBindingFilter, BearerTokenAuthenticationFilter.class);
 
         return http.build();
@@ -132,8 +142,26 @@ public class SecurityAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    ResponseWriter responseWriter(ObjectMapper objectMapper) {
-        return new ResponseWriter(objectMapper);
+    ServletJsonResponseWriter servletJsonResponseWriter(ObjectMapper objectMapper) {
+        return new ServletJsonResponseWriter(objectMapper);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    ProblemDetailAuthenticationEntryPoint problemDetailAuthenticationEntryPoint(
+            ProblemDetailFactory problemDetailFactory,
+            ServletJsonResponseWriter responseWriter
+    ) {
+        return new ProblemDetailAuthenticationEntryPoint(problemDetailFactory, responseWriter);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    ProblemDetailAccessDeniedHandler problemDetailAccessDeniedHandler(
+            ProblemDetailFactory problemDetailFactory,
+            ServletJsonResponseWriter responseWriter
+    ) {
+        return new ProblemDetailAccessDeniedHandler(problemDetailFactory, responseWriter);
     }
 
     private void configureCsrf(HttpSecurity http, SecurityProperties properties) {
