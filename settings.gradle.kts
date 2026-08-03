@@ -25,6 +25,7 @@ include("kernel:kernel-message")
 
 include("gateway")
 
+include("board-service:board-contract")
 include("board-service:domain")
 include("board-service:application")
 include("board-service:security")

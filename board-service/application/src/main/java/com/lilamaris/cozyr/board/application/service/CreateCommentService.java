@@ -6,24 +6,23 @@ import com.lilamaris.cozyr.board.application.port.in.command.CreateCommentComman
 import com.lilamaris.cozyr.board.application.port.in.result.CreatedCommentResult;
 import com.lilamaris.cozyr.board.application.port.out.CommentStore;
 import com.lilamaris.cozyr.board.application.port.out.PostReader;
+import com.lilamaris.cozyr.board.contract.event.CommentCreatedEvent;
 import com.lilamaris.cozyr.board.domain.Comment;
+import com.lilamaris.cozyr.kernel.message.MessagePublisher;
 import com.lilamaris.shrturl.kernel.application.exception.ApplicationException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Clock;
 
 @Service
+@RequiredArgsConstructor
 public class CreateCommentService implements CreateCommentUseCase {
     private final PostReader postReader;
     private final CommentStore store;
+    private final MessagePublisher messagePublisher;
     private final Clock clock;
-
-    public CreateCommentService(PostReader postReader, CommentStore store, Clock clock) {
-        this.postReader = postReader;
-        this.store = store;
-        this.clock = clock;
-    }
 
     @Override
     @Transactional
@@ -38,6 +37,9 @@ public class CreateCommentService implements CreateCommentUseCase {
 
         var comment = Comment.root(postId, content, now, authorUserId);
         var saved = store.save(comment);
+
+        var event = CommentCreatedEvent.of(saved.getId(), saved.getPostId(), saved.getParentId(), now);
+        messagePublisher.publish(event.toMessage(now));
 
         return CreatedCommentResult.of(saved);
     }

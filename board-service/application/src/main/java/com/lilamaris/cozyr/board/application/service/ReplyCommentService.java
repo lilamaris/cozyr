@@ -6,24 +6,23 @@ import com.lilamaris.cozyr.board.application.port.in.command.ReplyCommentCommand
 import com.lilamaris.cozyr.board.application.port.in.result.RepliedCommentResult;
 import com.lilamaris.cozyr.board.application.port.out.CommentReader;
 import com.lilamaris.cozyr.board.application.port.out.CommentStore;
+import com.lilamaris.cozyr.board.contract.event.CommentCreatedEvent;
 import com.lilamaris.cozyr.board.domain.Comment;
+import com.lilamaris.cozyr.kernel.message.MessagePublisher;
 import com.lilamaris.shrturl.kernel.application.exception.ApplicationException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Clock;
 
 @Service
+@RequiredArgsConstructor
 public class ReplyCommentService implements ReplyCommentUseCase {
     private final CommentReader reader;
     private final CommentStore store;
+    private final MessagePublisher messagePublisher;
     private final Clock clock;
-
-    public ReplyCommentService(CommentReader reader, CommentStore store, Clock clock) {
-        this.reader = reader;
-        this.store = store;
-        this.clock = clock;
-    }
 
     @Override
     @Transactional
@@ -37,6 +36,9 @@ public class ReplyCommentService implements ReplyCommentUseCase {
         var authorUserId = command.authorUserId();
         var comment = Comment.reply(parent, content, now, authorUserId);
         var saved = store.save(comment);
+
+        var event = CommentCreatedEvent.of(saved.getId(), saved.getPostId(), saved.getParentId(), now);
+        messagePublisher.publish(event.toMessage(now));
 
         return RepliedCommentResult.of(saved);
     }
