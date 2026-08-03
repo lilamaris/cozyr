@@ -7,4 +7,6 @@ import java.io.IOException;
 
 public interface ServletResponseWriter {
     void write(HttpServletResponse response, HttpStatus status, Object body) throws IOException;
+
+    void noContent(HttpServletResponse response);
 }

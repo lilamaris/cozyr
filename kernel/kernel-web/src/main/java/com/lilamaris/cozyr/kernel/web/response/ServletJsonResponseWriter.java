@@ -27,4 +27,11 @@ public class ServletJsonResponseWriter implements ServletResponseWriter {
         response.setCharacterEncoding("UTF-8");
         response.getWriter().write(objectMapper.writeValueAsString(body));
     }
+
+    @Override
+    public void noContent(HttpServletResponse response) {
+        ObjectPrecondition.requireNonNull(response, "response");
+
+        response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+    }
 }

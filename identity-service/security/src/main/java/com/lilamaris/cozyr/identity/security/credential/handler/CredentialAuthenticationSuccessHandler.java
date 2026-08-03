@@ -1,5 +1,6 @@
 package com.lilamaris.cozyr.identity.security.credential.handler;
 
+import com.lilamaris.cozyr.identity.application.model.token.TokenItem;
 import com.lilamaris.cozyr.identity.application.port.in.IssueTokenUseCase;
 import com.lilamaris.cozyr.identity.application.port.in.result.AuthenticatedResult;
 import com.lilamaris.cozyr.kernel.web.response.ServletResponseWriter;
@@ -7,7 +8,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 
@@ -24,11 +26,30 @@ public class CredentialAuthenticationSuccessHandler implements AuthenticationSuc
             @Nullable HttpServletResponse response,
             @Nullable Authentication authentication
     ) throws IOException {
+        if (response == null) return;
         if (authentication == null) return;
         if (!(authentication.getPrincipal() instanceof AuthenticatedResult result)) return;
 
         var token = issueTokenUseCase.issue(result);
 
-        responseWriter.write(response, HttpStatus.OK, token);
+        var accessTokenCookie = buildTokenCookie("access_token", token.accessToken());
+        var refreshTokenCookie = buildTokenCookie("refresh_token", token.refreshToken());
+
+        response.addHeader(HttpHeaders.SET_COOKIE, accessTokenCookie.toString());
+        response.addHeader(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString());
+
+        responseWriter.noContent(response);
+    }
+
+    private ResponseCookie buildTokenCookie(String name, TokenItem tokenItem) {
+        var value = tokenItem.value();
+        var expiresIn = tokenItem.expiresIn();
+        return ResponseCookie.from(name, value)
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(expiresIn)
+                .sameSite("Lax")
+                .build();
     }
 }

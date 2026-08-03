@@ -1,5 +1,6 @@
 package com.lilamaris.cozyr.identity.application.config;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -23,8 +24,27 @@ public record ApplicationProperties(
         @NotBlank
         String issuer,
 
-        @DefaultValue("PT15M")
+        @Valid
+        @DefaultValue
         @NotNull
-        Duration expiration
+        AccessTokenProperties accessToken,
+
+        @Valid
+        @DefaultValue
+        @NotNull
+        RefreshTokenProperties refreshToken
 ) {
+        public record AccessTokenProperties(
+                @DefaultValue("PT15M")
+                @NotNull
+                Duration expiration
+        ) {
+        }
+
+        public record RefreshTokenProperties(
+                @DefaultValue("P7D")
+                @NotNull
+                Duration expiration
+        ) {
+        }
 }
