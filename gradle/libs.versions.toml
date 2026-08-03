@@ -61,6 +61,8 @@ spring-boot-starter-webmvc = { module = "org.springframework.boot:spring-boot-st
 spring-boot-starter-webmvc-test = { module = "org.springframework.boot:spring-boot-starter-webmvc-test" }
 
 ## Spring Boot - Security
+spring-security-core = { module = "org.springframework.security:spring-security-core" }
+spring-security-web = { module = "org.springframework.security:spring-security-web" }
 spring-security-jose = { module = "org.springframework.security:spring-security-oauth2-jose" }
 spring-security-crypto = { module = "org.springframework.security:spring-security-crypto" }
 spring-boot-starter-security = { module = "org.springframework.boot:spring-boot-starter-security" }

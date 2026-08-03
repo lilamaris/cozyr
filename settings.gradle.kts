@@ -20,6 +20,7 @@ include("kernel:kernel-core")
 include("kernel:kernel-test")
 include("kernel:kernel-application")
 include("kernel:kernel-web")
+include("kernel:kernel-security")
 
 include("gateway")
 
