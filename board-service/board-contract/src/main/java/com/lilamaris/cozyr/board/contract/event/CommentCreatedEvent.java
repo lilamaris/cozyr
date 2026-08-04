@@ -8,25 +8,28 @@ import com.lilamaris.cozyr.kernel.message.MessagePayload;
 import org.jspecify.annotations.Nullable;
 
 import java.time.Instant;
+import java.util.UUID;
 
 public record CommentCreatedEvent(
         Long commentId,
         long postId,
         @Nullable Long parentId,
+        UUID authorUserId,
         Instant createdAt
 ) implements MessagePayload {
     public CommentCreatedEvent {
         NumberPrecondition.requireNonNegative(commentId, "commentId");
         NumberPrecondition.requireNonNegative(postId, "postId");
         ObjectPrecondition.requireNonNull(createdAt, "createdAt");
+        ObjectPrecondition.requireNonNull(authorUserId, "authorUserId");
 
         if (parentId != null) {
             NumberPrecondition.requireNonNegative(parentId, "parentId");
         }
     }
 
-    public static CommentCreatedEvent of(Long commentId, long postId, @Nullable Long parentId, Instant createdAt) {
-        return new CommentCreatedEvent(commentId, postId, parentId, createdAt);
+    public static CommentCreatedEvent of(Long commentId, long postId, @Nullable Long parentId, UUID authorUserId, Instant createdAt) {
+        return new CommentCreatedEvent(commentId, postId, parentId, authorUserId, createdAt);
     }
 
     @Override

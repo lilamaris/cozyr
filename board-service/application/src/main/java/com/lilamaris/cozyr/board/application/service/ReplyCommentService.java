@@ -37,7 +37,7 @@ public class ReplyCommentService implements ReplyCommentUseCase {
         var comment = Comment.reply(parent, content, now, authorUserId);
         var saved = store.save(comment);
 
-        var event = CommentCreatedEvent.of(saved.getId(), saved.getPostId(), saved.getParentId(), now);
+        var event = CommentCreatedEvent.of(saved.getId(), saved.getPostId(), saved.getParentId(), authorUserId, now);
         messagePublisher.publish(event.toMessage(now));
 
         return RepliedCommentResult.of(saved);
