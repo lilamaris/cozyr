@@ -7,26 +7,24 @@ import com.lilamaris.cozyr.board.application.port.in.result.CreatedPostResult;
 import com.lilamaris.cozyr.board.application.port.out.BoardReader;
 import com.lilamaris.cozyr.board.application.port.out.CategoryReader;
 import com.lilamaris.cozyr.board.application.port.out.PostStore;
+import com.lilamaris.cozyr.board.contract.event.PostCreatedEvent;
 import com.lilamaris.cozyr.board.domain.Post;
+import com.lilamaris.cozyr.kernel.message.MessagePublisher;
 import com.lilamaris.shrturl.kernel.application.exception.ApplicationException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Clock;
 
 @Service
+@RequiredArgsConstructor
 public class CreatePostService implements CreatePostUseCase {
     private final BoardReader boardReader;
     private final CategoryReader categoryReader;
     private final PostStore store;
+    private final MessagePublisher messagePublisher;
     private final Clock clock;
-
-    public CreatePostService(BoardReader boardReader, CategoryReader categoryReader, PostStore store, Clock clock) {
-        this.boardReader = boardReader;
-        this.categoryReader = categoryReader;
-        this.store = store;
-        this.clock = clock;
-    }
 
     @Override
     @Transactional
@@ -46,6 +44,9 @@ public class CreatePostService implements CreatePostUseCase {
 
         var post = Post.of(boardId, categoryId, title, content, now, authorUserId);
         var saved = store.save(post);
+
+        var event = PostCreatedEvent.of(saved.getId(), saved.getBoardId(), saved.getTitle(), saved.getAuthorUserId(), saved.getCreatedAt());
+        messagePublisher.publish(event.toMessage(now));
 
         return CreatedPostResult.from(saved);
     }
