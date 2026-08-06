@@ -73,8 +73,17 @@ public class SecurityAutoConfiguration {
 
         http
                 .authorizeHttpRequests(request -> request
-                        .requestMatchers("/.well-known/jwks.json", "/api/v1/auth/**").permitAll()
-                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                        .requestMatchers(
+                                "/.well-known/jwks.json",
+                                "/api/v1/auth/**",
+                                "/error",
+                                "/actuator/prometheus",
+                                "/actuator/health",
+                                "/actuator/health/**",
+                                "/v3/api-docs/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html"
+                        ).permitAll()
                         .requestMatchers("/api/v1/user/**").authenticated()
                         .anyRequest().denyAll()
                 )
