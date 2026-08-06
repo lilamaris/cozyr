@@ -1,6 +1,7 @@
 import org.springframework.boot.gradle.tasks.bundling.BootJar
 
 plugins {
+    id("cozyr.spring.observability")
     id("cozyr.spring.gateway")
     alias(libs.plugins.spring.boot)
 }
