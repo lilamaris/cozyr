@@ -7,7 +7,7 @@ cozyr:
       jwksUri: ${JWKS_URL:http://localhost:8080/.well-known/jwks.json}
 
 server:
-  port: ${PORT:8081}
+  port: ${PORT:8082}
 
 logging:
   file:
@@ -15,7 +15,7 @@ logging:
 
 spring:
   application:
-    name: board-service
+    name: ${APPLICATION_NAME:board-service}
 
   datasource:
     url: ${DB_URL:jdbc:h2:mem:${spring.application.name};DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE}

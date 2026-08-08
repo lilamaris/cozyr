@@ -1,5 +1,5 @@
 server:
-  port: 8080
+  port: ${PORT:8080}
 
 spring:
   application:
@@ -12,12 +12,12 @@ spring:
       server:
         webflux:
           routes:
-            - id: board-service
-              uri: http://localhost:8081
-              predicates:
-                - Path=/api/v1/boards/**
-
             - id: identity-service
-              uri: http://localhost:8082
+              uri: ${IDENTITY_SERVICE_URI:http://identity-service:8081}
               predicates:
                 - Path=/api/v1/auth/**, /api/v1/user/**, /.well-known/jwks.json
+
+            - id: board-service
+              uri: ${BOARD_SERVICE_URI:http://board-service:8082}
+              predicates:
+                - Path=/api/v1/boards/**

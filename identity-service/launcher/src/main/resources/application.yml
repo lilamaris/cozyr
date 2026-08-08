@@ -10,7 +10,7 @@ cozyr:
           - "key-20260715-005317"
 
 server:
-  port: 8082
+  port: ${PORT:8081}
 
 logging:
   file:
@@ -18,7 +18,7 @@ logging:
 
 spring:
   application:
-    name: identity-service
+    name: ${APPLICATION_NAME:identity-service}
 
   datasource:
     url: ${DB_URL:jdbc:h2:mem:${spring.application.name};DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE}
