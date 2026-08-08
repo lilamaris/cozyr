@@ -1,0 +1,244 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+  workflow_dispatch:
+    inputs:
+      push-images:
+        description: Push images to registry
+        required: false
+        default: false
+        type: boolean
+      deploy:
+        description: Deploy application
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  test:
+    name: Test application
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: gradle
+
+      - name: Validation Gradle wrapper
+        uses: gradle/actions/wrapper-validation@v6
+
+  build-jars:
+    name: Build application JARs
+    needs: test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: gradle
+
+      - name: Build all application JARs
+        run: |
+          ./gradlew \
+            :gateway:bootJar \
+            :board-service:launcher:bootJar \
+            :identity-service:launcher:bootJar \
+            --no-daemon
+
+      - name: Upload gateway JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: gateway-jar
+          path: gateway/build/libs/app.jar
+          if-no-files-found: error
+          retention-days: 1
+
+      - name: Upload board-service JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: board-service-jar
+          path: board-service/launcher/build/libs/app.jar
+          if-no-files-found: error
+          retention-days: 1
+
+      - name: Upload identity-service JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: identity-service-jar
+          path: identity-service/launcher/build/libs/app.jar
+          if-no-file-found: error
+          retention-days: 1
+
+  prepare-publish:
+    name: Prepare publish
+    runs-on: ubuntu-latest
+
+    outputs:
+      image-tag: ${{ steps.version.outputs.tag }}
+
+    steps:
+      - name: Generate deployment image tag
+        id: version
+        shell: bash
+        run: echo "tag=sha-${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
+
+  publish-images:
+    name: Publish ${{ matrix.service }} image
+    needs:
+      - build-jars
+      - prepare-publish
+    runs-on: ubuntu-latest
+
+    if: github.event_name != 'pull_request'
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - service: gateway
+            dockerfile: gateway/Dockerfile
+
+          - service: board-service
+            dockerfile: board-service/launcher/Dockerfile
+
+          - service: identity-service
+            dockerfile: identity-service/launcher/Dockerfile
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Download application JAR
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ matrix.service }}-jar
+          path: downloaded-jar
+
+      - name: Connect to Tailnet
+        if: ${{ !env.ACT }}
+        uses: tailscale/github-action@v4
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:github-actions
+
+      - name: Verify registry connectivity
+        env:
+          REGISTRY_HOST: ${{ vars.REGISTRY_HOST }}
+        run: |
+          getent hosts "${REGISTRY_HOST}"
+          curl --fail --silent --show-error \
+            https://"${REGISTRY_HOST}"/v2/
+
+      - name: Prepare Docker build context
+        id: prepare-docker-build
+        run: |
+          mkdir -p image-context
+          cp downloaded-jar/app.jar image-context/app.jar
+          cp ${{ matrix.dockerfile }} image-context/Dockerfile
+          test -f image-context/app.jar
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          driver-opts: |
+            network=host
+
+      - name: Generate image metadata
+        id: metadata
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ vars.REGISTRY_HOST }}/cozyr/${{ matrix.service }}
+          tags: |
+            type=raw,value=${{ needs.prepare-publish.outputs.image-tag }}
+            type=ref,event=branch
+            type=ref,event=tag
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build image and push
+        uses: docker/build-push-action@v6
+        with:
+          context: image-context
+          file: image-context/Dockerfile
+          push: ${{ github.event_name == 'workflow_dispatch' && inputs.push-images }}
+          tags: ${{ steps.metadata.outputs.tags }}
+          labels: ${{ steps.metadata.outputs.labels }}
+          cache-from: type=gha,scope=${{ matrix.service }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.service }}
+          build-args: |
+            JAR_FILE=app.jar
+
+  deploy:
+    name: Deploy to server
+    needs:
+      - prepare-publish
+      - publish-images
+    runs-on: ubuntu-latest
+
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.deploy }}
+
+    environment:
+      name: production
+
+    concurrency:
+      group: production-deployment
+      cancel-in-progress: false
+
+    steps:
+      - name: Connect to Tailnet
+        if: ${{ !env.ACT }}
+        uses: tailscale/github-action@v4
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:github-actions
+
+      - name: Configure SSH
+        shell: bash
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_HOST_KEY: ${{ secrets.DEPLOY_HOST_KEY }}
+        run: |
+          set -euo pipefail
+          
+          install -m 700 -d ~/.ssh
+          
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          
+          printf '%s\n' "$DEPLOY_HOST_KEY" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+
+      - name: Deploy application
+        shell: bash
+        env:
+          REGISTRY_HOST: ${{ vars.REGISTRY_HOST }}
+          DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ vars.DEPLOY_USER }}
+          IMAGE_TAG: ${{ needs.prepare-publish.outputs.image-tag }}
+        run: |
+          set -euo pipefail
+          
+          ssh \
+            -i ~/.ssh/deploy_key \
+            -o BatchMode=yes \
+            "${DEPLOY_USER}@${DEPLOY_HOST}" \
+            /opt/cozyr/script/deploy.sh --registry "${REGISTRY_HOST}" --tag "${IMAGE_TAG}" /opt/cozyr
