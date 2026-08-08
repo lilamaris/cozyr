@@ -195,9 +195,6 @@ jobs:
 
     if: ${{ github.event_name == 'workflow_dispatch' && inputs.deploy }}
 
-    environment:
-      name: production
-
     concurrency:
       group: production-deployment
       cancel-in-progress: false
