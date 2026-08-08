@@ -21,7 +21,7 @@ log_warn() {
 usage() {
   cat >&2 <<EOF
 Usage:
-  ${0##*/} [options] -t|--tag <tag> deploy context>
+  ${0##*/} [options] -t|--tag <tag> <deploy context>
 
 Options:
   -t, --tag <tag>                       Image tag                   (required)
