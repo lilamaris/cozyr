@@ -2,16 +2,18 @@ package com.lilamaris.cozyr.identity.io;
 
 import com.lilamaris.cozyr.identity.application.model.RSAKeyPair;
 import com.lilamaris.cozyr.identity.application.port.out.JwksReader;
-import com.lilamaris.cozyr.identity.io.config.FileIOJwksProperties;
 import com.lilamaris.cozyr.kernel.core.condition.ObjectPrecondition;
 import com.lilamaris.cozyr.kernel.core.condition.StringPrecondition;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.ResourceLoader;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.KeyFactory;
+import java.security.NoSuchAlgorithmException;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
+import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
@@ -22,30 +24,40 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class JwksReaderIOAdapter implements JwksReader {
-    private static final String PUBLIC_KEY_FILENAME = "public.pem";
-    private static final String PRIVATE_KEY_FILENAME = "private.pem";
-
     private final String activeSignableKid;
-    private final String keyBaseLocation;
+    private final Path keyBasePath;
     private final Map<String, RSAKeyPair> keyMap;
 
-    public JwksReaderIOAdapter(FileIOJwksProperties properties, ResourceLoader loader) {
-        ObjectPrecondition.requireNonNull(properties, "properties");
-        this.activeSignableKid = StringPrecondition.requireNonBlank(properties.activeSignableKid(), "activeSignableKid");
-        this.keyBaseLocation = StringPrecondition.requireNonBlank(properties.keyBaseLocation(), "keyBaseLocation");
+    public JwksReaderIOAdapter(Path keyBasePath, String activeSignableKid, String publicKeyPrefix, String privateKeyPrefix) {
+        this.keyBasePath = ObjectPrecondition.requireNonNull(keyBasePath, "keyBasePath");
+        this.activeSignableKid = StringPrecondition.requireNonBlank(activeSignableKid, "activeSignableKid");
+        publicKeyPrefix = StringPrecondition.requireNonBlank(publicKeyPrefix, "publicKeyPrefix");
+        privateKeyPrefix = StringPrecondition.requireNonBlank(privateKeyPrefix, "privateKeyPrefix");
 
-        this.keyMap = properties.keys().stream()
-                .map(kid -> loadKey(kid, loader))
-                .collect(Collectors.toUnmodifiableMap(
+        this.keyMap = loadKeys(keyBasePath, publicKeyPrefix, privateKeyPrefix).stream().collect(
+                Collectors.toUnmodifiableMap(
                         RSAKeyPair::kid,
                         Function.identity()
-                ));
+                )
+        );
+
+        if (!keyMap.containsKey(activeSignableKid)) {
+            throw new IllegalStateException(
+                    "No active signable key exists. activeSignableKid=%s, availableKids=%s, keyBasePath=%s"
+                            .formatted(activeSignableKid, availableKids(), this.keyBasePath)
+            );
+        }
     }
 
     @Override
     public RSAKeyPair findSignableKey() {
         var key = keyMap.get(activeSignableKid);
-        if (key == null) throw new NoSuchElementException("No active signable key exists. kid=" + activeSignableKid);
+        if (key == null) {
+            throw new NoSuchElementException(
+                    "No active signable key exists. activeSignableKid=%s, availableKids=%s, keyBasePath=%s"
+                            .formatted(activeSignableKid, availableKids(), keyBasePath)
+            );
+        }
         return key;
     }
 
@@ -54,48 +66,93 @@ public class JwksReaderIOAdapter implements JwksReader {
         return keyMap.values().stream().toList();
     }
 
-    private RSAKeyPair loadKey(String kid, ResourceLoader resourceLoader) {
-        RSAPublicKey publicKey;
-        RSAPrivateKey privateKey = null;
-        var publicKeyLocation = keyLocation(kid, PUBLIC_KEY_FILENAME);
-        var privateKeyLocation = keyLocation(kid, PRIVATE_KEY_FILENAME);
-
-        try {
-            var publicKeyResource = resourceLoader.getResource(publicKeyLocation);
-            publicKey = readPublicKey(publicKeyResource);
-
-            var privateKeyResource = resourceLoader.getResource(privateKeyLocation);
-            if (privateKeyResource.exists()) {
-                privateKey = readPrivateKey(privateKeyResource);
-            }
-        } catch (Exception e) {
-            throw new IllegalStateException("Failed to load key. kid=%s, publicKey location=%s, privateKey location=%s".formatted(kid, publicKeyLocation, privateKeyLocation), e);
+    private List<RSAKeyPair> loadKeys(Path keyBasePath, String publicKeyPrefix, String privateKeyPrefix) {
+        if (!Files.exists(keyBasePath)) {
+            throw new IllegalStateException(
+                    "JWKS key base directory does not exist. keyBasePath=%s"
+                            .formatted(keyBasePath)
+            );
+        }
+        if (!Files.isDirectory(keyBasePath)) {
+            throw new IllegalStateException(
+                    "JWKS key base path is not a directory. keyBasePath=%s"
+                            .formatted(keyBasePath)
+            );
         }
 
-        return RSAKeyPair.signable(kid, publicKey, privateKey);
+        try (var directories = Files.list(keyBasePath)) {
+            var keyPairs = directories
+                    .filter(Files::isDirectory)
+                    .map(keyEntryPath -> loadKeyPair(keyEntryPath, publicKeyPrefix, privateKeyPrefix))
+                    .toList();
+            if (keyPairs.isEmpty()) {
+                throw new IllegalStateException(
+                        "No JWKS key directories found. keyBasePath=%s"
+                                .formatted(keyBasePath)
+                );
+            }
+            return keyPairs;
+        } catch (IOException e) {
+            throw new IllegalStateException(
+                    "Failed to list JWKS key directories. keyBasePath=%s"
+                            .formatted(keyBasePath),
+                    e
+            );
+        }
     }
 
-    private String keyLocation(String kid, String filename) {
-        return keyBaseLocation + kid + "/" + filename;
+    private List<String> availableKids() {
+        return keyMap.keySet().stream().sorted().toList();
     }
 
-    private RSAPrivateKey readPrivateKey(Resource resource) throws Exception {
-        String key = new String(resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
-        key = key
+    private RSAKeyPair loadKeyPair(Path keyEntryPath, String publicKeyPrefix, String privateKeyPrefix) {
+        var publicKeyPath = keyEntryPath.resolve(publicKeyPrefix);
+        var privateKeyPath = keyEntryPath.resolve(privateKeyPrefix);
+        var kid = keyEntryPath.getFileName().toString();
+
+        try {
+            var publicKey = readPublicKeyByte(publicKeyPath);
+            var privateKey = readPrivateKeyByte(privateKeyPath);
+
+            return RSAKeyPair.signable(kid, publicKey, privateKey);
+        } catch (IOException e) {
+            throw new IllegalStateException(
+                    "Failed to read JWKS key files. kid=%s, publicKeyPath=%s, privateKeyPath=%s"
+                            .formatted(kid, publicKeyPath, privateKeyPath),
+                    e
+            );
+        } catch (InvalidKeySpecException | IllegalArgumentException e) {
+            throw new IllegalStateException(
+                    "Failed to parse JWKS key files. kid=%s, publicKeyPath=%s, privateKeyPath=%s, expectedPublicKeyFormat=%s, expectedPrivateKeyFormat=%s"
+                            .formatted(kid, publicKeyPath, privateKeyPath, "X.509 PEM", "PKCS#8 PEM"),
+                    e
+            );
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException("RSA algorithm is not available while loading JWKS key. kid=" + kid, e);
+        } catch (IllegalStateException e) {
+            throw new IllegalStateException(
+                    "Failed to validate JWKS key pair. kid=%s, publicKeyPath=%s, privateKeyPath=%s"
+                            .formatted(kid, publicKeyPath, privateKeyPath),
+                    e
+            );
+        }
+    }
+
+    private RSAPrivateKey readPrivateKeyByte(Path path) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
+        var raw = Files.readString(path, StandardCharsets.UTF_8)
                 .replace("-----BEGIN PRIVATE KEY-----", "")
                 .replace("-----END PRIVATE KEY-----", "")
                 .replaceAll("\\s", "");
-        byte[] decoded = Base64.getDecoder().decode(key);
-        return (RSAPrivateKey) KeyFactory.getInstance("RSA").generatePrivate(new PKCS8EncodedKeySpec(decoded));
+        var keyByte = Base64.getDecoder().decode(raw);
+        return (RSAPrivateKey) KeyFactory.getInstance("RSA").generatePrivate(new PKCS8EncodedKeySpec(keyByte));
     }
 
-    private RSAPublicKey readPublicKey(Resource resource) throws Exception {
-        String key = new String(resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
-        key = key
+    private RSAPublicKey readPublicKeyByte(Path path) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
+        var raw = Files.readString(path, StandardCharsets.UTF_8)
                 .replace("-----BEGIN PUBLIC KEY-----", "")
                 .replace("-----END PUBLIC KEY-----", "")
                 .replaceAll("\\s", "");
-        byte[] decoded = Base64.getDecoder().decode(key);
-        return (RSAPublicKey) KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(decoded));
+        var keyByte = Base64.getDecoder().decode(raw);
+        return (RSAPublicKey) KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(keyByte));
     }
 }

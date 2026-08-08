@@ -4,10 +4,8 @@ cozyr:
       baseUrl: ${BASE_URL:http://cozyr}
     jwks:
       io:
-        activeSignableKid: "key-20260715-005317"
-        keys:
-          - "key-20260715-005313"
-          - "key-20260715-005317"
+        activeSignableKid: ${ACTIVE_KID:?ACTIVE_KID must be provided}
+        keyBasePath: ${KEY_BASE_PATH:-/run/cozyr/secrets}
 
 server:
   port: ${PORT:8081}

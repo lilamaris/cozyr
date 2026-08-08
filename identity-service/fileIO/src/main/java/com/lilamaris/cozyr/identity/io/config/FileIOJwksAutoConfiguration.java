@@ -6,7 +6,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
-import org.springframework.core.io.ResourceLoader;
 
 @AutoConfiguration
 @ConditionalOnProperty(
@@ -20,9 +19,13 @@ public class FileIOJwksAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     JwksReaderIOAdapter jwksReaderIOAdapter(
-            FileIOJwksProperties properties,
-            ResourceLoader loader
+            FileIOJwksProperties properties
     ) {
-        return new JwksReaderIOAdapter(properties, loader);
+        return new JwksReaderIOAdapter(
+                properties.keyBasePath(),
+                properties.activeSignableKid(),
+                properties.publicKeyPrefix(),
+                properties.privateKeyPrefix()
+        );
     }
 }

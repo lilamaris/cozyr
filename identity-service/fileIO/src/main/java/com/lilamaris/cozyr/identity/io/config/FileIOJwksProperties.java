@@ -1,12 +1,12 @@
 package com.lilamaris.cozyr.identity.io.config;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.bind.DefaultValue;
 import org.springframework.validation.annotation.Validated;
 
-import java.util.Set;
+import java.nio.file.Path;
 
 @Validated
 @ConfigurationProperties(prefix = "cozyr.identity-service.jwks.io")
@@ -17,11 +17,15 @@ public record FileIOJwksProperties(
         @NotBlank
         String activeSignableKid,
 
-        @NotBlank
-        @DefaultValue("classpath:keys/")
-        String keyBaseLocation,
+        @NotNull
+        Path keyBasePath,
 
-        @NotEmpty
-        Set<@NotBlank String> keys
+        @NotBlank
+        @DefaultValue("public.pem")
+        String publicKeyPrefix,
+
+        @NotBlank
+        @DefaultValue("private.pem")
+        String privateKeyPrefix
 ) {
 }
