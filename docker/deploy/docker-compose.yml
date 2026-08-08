@@ -35,12 +35,16 @@ services:
       - "${IDENTITY_SERVICE_PORT:?IDENTITY_SERVICE_PORT must be provided}"
     env_file:
       - .env.app
+    volumes:
+      - "/run/cozyr/secrets/:${IDENTITY_SERVICE_KEY_BASE_PATH:?IDENTITY_SERVICE_KEY_BASE_PATH must be provided}"
     environment:
       SPRING_APPLICATION_NAME: "${IDENTITY_SERVICE_NAME:-identity-service}"
       SERVER_PORT: "${IDENTITY_SERVICE_PORT:?IDENTITY_SERVICE_PORT must be provided}"
       DB_URL: "${DB_BASE_URL:?DB_BASE_URL must be provided}?currentSchema=${IDENTITY_SERVICE_DB_SCHEMA:?IDENTITY_SERVICE_DB_SCHEMA must be provided}"
       DB_USERNAME: "${IDENTITY_SERVICE_DB_USERNAME:?IDENTITY_SERVICE_DB_USERNAME must be provided}"
       DB_PASSWORD: "${IDENTITY_SERVICE_DB_PASSWORD:?IDENTITY_SERVICE_DB_PASSWORD must be provided}"
+      ACTIVE_KID: "${IDENTITY_SERVICE_ACTIVE_KID:?IDENTITY_SERVICE_ACTIVE_KID must be provided}"
+      KEY_BASE_PATH: "${IDENTITY_SERVICE_KEY_BASE_PATH:?IDENTITY_SERVICE_KEY_BASE_PATH must be provided}"
     healthcheck:
       <<: *app-healthcheck-defaults
 
