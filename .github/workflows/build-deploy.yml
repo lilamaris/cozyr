@@ -59,9 +59,10 @@ jobs:
         run: |
           ./gradlew \
             :gateway:bootJar \
-            :board-service:launcher:bootJar \
             :identity-service:launcher:bootJar \
-            --no-daemon
+            :board-service:launcher:bootJar \
+            :statistics-service:launcher:bootJar \
+          --no-daemon
 
       - name: Upload gateway JAR
         uses: actions/upload-artifact@v4
@@ -69,6 +70,14 @@ jobs:
           name: gateway-jar
           path: gateway/build/libs/app.jar
           if-no-files-found: error
+          retention-days: 1
+
+      - name: Upload identity-service JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: identity-service-jar
+          path: identity-service/launcher/build/libs/app.jar
+          if-no-file-found: error
           retention-days: 1
 
       - name: Upload board-service JAR
@@ -79,12 +88,12 @@ jobs:
           if-no-files-found: error
           retention-days: 1
 
-      - name: Upload identity-service JAR
+      - name: Upload statistics-service JAR
         uses: actions/upload-artifact@v4
         with:
-          name: identity-service-jar
-          path: identity-service/launcher/build/libs/app.jar
-          if-no-file-found: error
+          name: statistics-service-jar
+          path: statistics-service/launcher/build/libs/app.jar
+          if-no-files-fonud: error
           retention-days: 1
 
   prepare-publish:
@@ -116,11 +125,14 @@ jobs:
           - service: gateway
             dockerfile: gateway/Dockerfile
 
+          - service: identity-service
+            dockerfile: identity-service/launcher/Dockerfile
+
           - service: board-service
             dockerfile: board-service/launcher/Dockerfile
 
-          - service: identity-service
-            dockerfile: identity-service/launcher/Dockerfile
+          - service: statistics-service
+            dockerfile: statistics-service/launcher/Dockerfile
 
     steps:
       - name: Check out repository
