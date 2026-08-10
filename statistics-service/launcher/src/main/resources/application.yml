@@ -1,3 +1,11 @@
+cozyr:
+  statistics-service:
+    web:
+      baseUrl: ${BASE_URL:http://cozyr}
+  identity-service:
+    resource-server:
+      jwksUri: ${JWKS_URL:http://localhost:8080/.well-known/jwks.json}
+
 server:
   port: ${PORT:8083}
 

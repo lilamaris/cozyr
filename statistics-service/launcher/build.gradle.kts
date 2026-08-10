@@ -11,6 +11,7 @@ dependencies {
     implementation(project(":statistics-service:application"))
     implementation(project(":statistics-service:domain"))
     implementation(project(":statistics-service:jpa"))
+    implementation(project(":statistics-service:web"))
     implementation(project(":statistics-service:kafka"))
 }
 
