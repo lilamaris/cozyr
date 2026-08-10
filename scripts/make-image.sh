@@ -27,6 +27,17 @@ log_command() {
   printf '\n'
 }
 
+require_option_value() {
+  local option="$1"
+  local value="${2:-}"
+
+  [[ -n "$value" ]] || {
+    log_error "Option requires a value: ${option}"
+    usage
+    exit 2
+  }
+}
+
 require_cmd() {
   command -v "$1" >/dev/null 2>&1 || {
     log_error "Missing required command: $1"
@@ -35,7 +46,29 @@ require_cmd() {
 }
 
 usage() {
-  printf 'Usage: %s [-t|--tag <tag>] [--namespace <namespace>] [--platform <platform>] [--output-dir <artifact output path>] [--artifact-name <artifact name>] [docker-file <docker-file>] [--push-image] [--dry-run] -r|--registry <registry-url> <build-targets>...' "$0" >&2
+  cat >&2 <<EOF
+Usage:
+  ${0##*/} [options] <build target>...
+
+Options:
+  -r, --registry <registry host>        Docker image registry address               (required)
+  -t, --tag <tag>                       Docker image tag                            (optional, default: git commit short hash)
+  -n, --namespace <namespace>           Docker image namespace                      (optional, default: cozyr)  
+  -p, --platform <platform>             Docker image build platform                 (optional, default: linux/amd64)
+  --artifact-output <path>              Build JAR output path                       (optional, default: build/libs/app.jar)
+  --docker-file <path>                  Dockerfile path relative to build target    (optional, default: Dockerfile)
+  --push-image                          Push image to <registry host>               (optional, default: false)
+  --dry-run                             Evaluates a command without any changes     (optional, default: false)   
+  
+Examples:
+  #{0##*/} \\
+    --registry registry.example.com
+    --tag latest
+    --namespace cozyr
+    --platform linux/amd64
+    --artifact-output build/libs/app.jar
+    --push-image
+EOF
 }
 
 require_cmd git
@@ -45,50 +78,51 @@ PROJECT_ROOT="$(cd -- "${SCRIPT_DIR}/.." && pwd)"
 
 cd "${PROJECT_ROOT}"
 
-tag=""
-namespace=""
-platform=""
-output_dir=""
-artifact_name=""
-docker_file=""
-push_image=""
-dry_run=false
 registry=""
+tag="$(git rev-parse --short HEAD)"
+namespace="cozyr"
+platform="linux/amd64"
+artifact_output="build/libs/app.jar"
+docker_file="Dockerfile"
+push_image=false
+dry_run=false
 build_targets=()
 
 while (( $# > 0 )); do
   case "$1" in
+    -r|--registry)
+      require_option_value "$1" "${2:-}"
+      registry="$2"
+      shift 2
+      ;;
     -t|--tag)
-      tag="${2:-}"
+      require_option_value "$1" "${2:-}"
+      tag="$2"
       shift 2
       ;;
-    --namespace)
-      namespace="${2:-}"
+    -n|--namespace)
+      require_option_value "$1" "${2:-}"
+      namespace="$2"
       shift 2
       ;;
-    --platform)
-      platform="${2:-}"
+    -p|--platform)
+      require_option_value "$1" "${2:-}"
+      platform="$2"
       shift 2
       ;;
-    --output-dir)
-      output_dir="${2:-}"
-      shift 2
-      ;;
-    --artifact-name)
-      artifact_name="${2:-}"
+    --artifact-output)
+      require_option_value "$1" "${2:-}"
+      artifact_output="$2"
       shift 2
       ;;
     --docker-file)
-      docker_file="${2:-}"
+      require_option_value "$1" "${2:-}"
+      docker_file="$2"
       shift 2
       ;;
     --push-image)
       push_image=true
       shift
-      ;;
-    -r|--registry)
-      registry="${2:-}"
-      shift 2
       ;;
     --dry-run)
       dry_run=true
@@ -127,46 +161,31 @@ done
   exit 1
 }
 
-[[ -n "$namespace" ]] || {
-  namespace="cozyr"
-  log_warn "Set the namespace to the default value: 'cozyr'"
+[[ -n "$tag" ]] || {
+  log_error "tag must not be empty"
+  exit 2
 }
 
-[[ -n "$tag" ]] || {
-  tag="$(git rev-parse --short HEAD)"
-  log_warn "Set the tag to the default value(commit head hash of the current branch): $tag"
+[[ -n "$namespace" ]] || {
+  log_error "namespace must not be empty"
+  exit 2
 }
 
 [[ -n "$platform" ]] || {
-  platform="linux/amd64"
-  log_warn "Set the platform to the default value: ${platform}"
-}
-
-[[ -n "$output_dir" ]] || {
-  output_dir="build/libs"
-  log_warn "Set the output dir to the default value: ${output_dir}"
-}
-
-[[ -n "$artifact_name" ]] || {
-  artifact_name="app.jar"
-  log_warn "Set the artifact name to the default value: ${artifact_name}"
+  log_error "platform must not be empty"
+  exit 2
 }
 
 [[ -n "$docker_file" ]] || {
-  docker_file="Dockerfile"
-  log_warn "Set the docker file to the default value: ${docker_file}"
-}
-
-[[ -n "$push_image" ]] || {
-  push_image=false
-  log_warn "Set the push image to the default value: ${push_image}"
+  log_error "dockerfile must not be empty"
+  exit 2
 }
 
 log_info "Running Context Summary"
 printf '  Namespace: %s\n' "$namespace"
 printf '  Tag: %s\n' "$tag"
 printf '  Platform: %s\n' "$platform"
-printf '  Build output: %s\n' "$output_dir"
+printf '  Build output: %s\n' "$artifact_output"
 printf '  Dry run: %s\n' "$dry_run"
 printf '  Registry: %s\n' "$registry"
 printf '  Build targets:\n'
@@ -215,11 +234,19 @@ build_gradle_project() {
 build_docker_image() {
   local target="$1"
 
-  local artifact_path="${PROJECT_ROOT}/$(gradle_project_path_to_dir "$target")/${output_dir}/${artifact_name}"
+  local target_dir="$(gradle_project_path_to_dir "$target")"
+  local artifact_path="${PROJECT_ROOT}/${target_dir}/${artifact_output}"
+  local docker_file_path="${PROJECT_ROOT}/${target_dir}/${docker_file}"
+  local staged_artifact_name="app.jar"
   local image_name="$(gradle_project_path_to_image_name "$target")"
 
   [[ -f "${artifact_path}" || "$dry_run" == "true" ]] || {
     log_error "Missing artifact in $artifact_path. Are the Gradle project path and file system path does not matched?"
+    exit 1
+  }
+
+  [[ -f "${docker_file_path}" || "$dry_run" == "true" ]] || {
+    log_error "Missing Dockerfile in ${docker_file_path}. Are the Gradle project path and Dockerfile path matched?"
     exit 1
   }
 
@@ -229,22 +256,32 @@ build_docker_image() {
   if [[ "${dry_run}" == "true" ]]; then
     docker_context="${TMPDIR:-/tmp}/cozyr-docker-context/${image_name}"
   else
+    log_info "Creating tmp directory: ${docker_context}..."
     mkdir -p "${docker_context}" || {
       log_error "Failed to create Docker context: ${docker_context}"
       return 1
     }
 
-    cp "${artifact_path}" "${docker_context}/${artifact_name}" || {
-      log_error "Failed to copy artifact: ${artifact_path} -> ${docker_context}/${artifact_name}"
+    log_info "Copying artifact: ${artifact_path} -> ${docker_context}/${staged_artifact_name}"
+    cp "${artifact_path}" "${docker_context}/${staged_artifact_name}" || {
+      log_error "Failed to copy artifact: ${artifact_path} -> ${docker_context}/${staged_artifact_name}"
+      return 1
+    }
+
+    log_info "Copying dockerfile: ${docker_file_path} -> ${docker_context}/Dockerfile"
+    cp "${docker_file_path}" "${docker_context}/Dockerfile" || {
+      log_error "Failed to copy docker image: ${docker_file_path} -> ${docker_context}/Dockerfile"
       return 1
     }
   fi
 
+  local staged_dockerfile="${docker_context}/Dockerfile"
+
   local args=(
     buildx build
     --platform "${platform}"
-    -f "${docker_file}"
-    --build-arg JAR_FILE="${artifact_name}"
+    -f "${staged_dockerfile}"
+    --build-arg JAR_FILE="${staged_artifact_name}"
     -t "${image}"
   )
 
