@@ -50,6 +50,7 @@ include("identity-service:kafka")
 
 include("statistics-service:domain")
 include("statistics-service:application")
+include("statistics-service:security")
 include("statistics-service:jpa")
 include("statistics-service:launcher")
 include("statistics-service:web")
