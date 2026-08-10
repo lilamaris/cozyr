@@ -66,3 +66,22 @@ services:
       DB_PASSWORD: "${BOARD_SERVICE_DB_PASSWORD:?BOARD_SERVICE_DB_PASSWORD must be provided}"
     healthcheck:
       <<: *app-healthcheck-defaults
+
+  statistics-service:
+    image: "${REGISTRY_HOST}/${NAMESPACE}/statistics-service:${IMAGE_TAG}"
+    restart: unless-stopped
+    container_name: cozyr-statistics
+    cpus: 1.0
+    mem_limit: 1g
+    expose:
+      - "${STATISTICS_SERVICE_PORT:?STATISTICS_SERVICE_PORT must be provided}"
+    env_file:
+      - .env.app
+    environment:
+      SPRING_APPLICATION_NAME: "${STATISTICS_SERVICE_NAME:-statistics-service}"
+      SERVER_PORT: "${STATISTICS_SERVICE_PORT:?STATISTICS_SERVICE_PORT must be provided}"
+      DB_URL: "${DB_BASE_URL:?DB_BASE_URL must be provided}?currentSchema=${STATISTICS_SERVICE_DB_SCHEMA:?STATISTICS_SERVICE_DB_SCHEMA must be provided}"
+      DB_USERNAME: "${STATISTICS_SERVICE_DB_USERNAME:?STATISTICS_SERVICE_DB_USERNAME must be provided}"
+      DB_PASSWORD: "${STATISTICS_SERVICE_DB_PASSWORD:?STATISTICS_SERVICE_DB_PASSWORD must be provided}"
+    healthcheck:
+      <<: *app-healthcheck-defaults
