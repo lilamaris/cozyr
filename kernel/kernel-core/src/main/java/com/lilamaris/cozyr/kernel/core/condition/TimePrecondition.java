@@ -2,6 +2,7 @@ package com.lilamaris.cozyr.kernel.core.condition;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDate;
 
 public class TimePrecondition {
     public static Instant requireBefore(Instant subject, Instant upperBound, String subjectName, String upperBoundName) {
@@ -36,6 +37,42 @@ public class TimePrecondition {
         ObjectPrecondition.requireNonNull(lowerBound, lowerBoundName);
         if (subject.isBefore(lowerBound)) {
             throw new IllegalArgumentException(subjectName + " must be before or equal " + lowerBoundName);
+        }
+        return subject;
+    }
+
+    public static LocalDate requireBefore(LocalDate subject, LocalDate upperBound, String subjectName, String upperBoundName) {
+        ObjectPrecondition.requireNonNull(subject, subjectName);
+        ObjectPrecondition.requireNonNull(upperBound, upperBoundName);
+        if (!subject.isBefore(upperBound)) {
+            throw new IllegalArgumentException(subjectName + " must be before " + upperBoundName);
+        }
+        return subject;
+    }
+
+    public static LocalDate requireBeforeOrEqual(LocalDate subject, LocalDate upperBound, String subjectName, String upperBoundName) {
+        ObjectPrecondition.requireNonNull(subject, subjectName);
+        ObjectPrecondition.requireNonNull(upperBound, upperBoundName);
+        if (subject.isAfter(upperBound)) {
+            throw new IllegalArgumentException(subjectName + " must be before or equal " + upperBoundName);
+        }
+        return subject;
+    }
+
+    public static LocalDate requireAfter(LocalDate subject, LocalDate lowerBound, String subjectName, String lowerBoundName) {
+        ObjectPrecondition.requireNonNull(subject, subjectName);
+        ObjectPrecondition.requireNonNull(lowerBound, lowerBoundName);
+        if (!subject.isAfter(lowerBound)) {
+            throw new IllegalArgumentException(subjectName + " must be after " + lowerBoundName);
+        }
+        return subject;
+    }
+
+    public static LocalDate requireAfterOrEqual(LocalDate subject, LocalDate lowerBound, String subjectName, String lowerBoundName) {
+        ObjectPrecondition.requireNonNull(subject, subjectName);
+        ObjectPrecondition.requireNonNull(lowerBound, lowerBoundName);
+        if (subject.isBefore(lowerBound)) {
+            throw new IllegalArgumentException(subjectName + " must be after or equal " + lowerBoundName);
         }
         return subject;
     }
