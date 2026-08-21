@@ -55,3 +55,5 @@ include("statistics-service:jpa")
 include("statistics-service:launcher")
 include("statistics-service:web")
 include("statistics-service:kafka")
+
+include("reservation-service:domain")
