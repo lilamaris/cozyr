@@ -36,6 +36,8 @@ public class BoardServiceMessageListener {
 
         var command = AggregateDailyPostCreatedCommand.of(event.boardId(), createdDate, 1L);
         aggregateDailyPostCreationUseCase.aggregate(command);
+
+        ack.acknowledge();
     }
 
     @KafkaListener(
@@ -50,5 +52,7 @@ public class BoardServiceMessageListener {
 
         var command = AggregateDailyCommentCreatedCommand.of(event.postId(), createdDate, 1L);
         aggregateDailyCommentCreationUseCase.aggregate(command);
+
+        ack.acknowledge();
     }
 }
