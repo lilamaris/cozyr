@@ -57,3 +57,4 @@ include("statistics-service:web")
 include("statistics-service:kafka")
 
 include("reservation-service:domain")
+include("reservation-service:application")
