@@ -13,6 +13,7 @@ dependencies {
     implementation(project(":reservation-service:jpa"))
     implementation(project(":reservation-service:web"))
     implementation(project(":reservation-service:security"))
+    implementation(project(":reservation-service:kafka"))
 }
 
 tasks.named<BootJar>("bootJar") {
