@@ -21,8 +21,13 @@ public class RoomSql {
                 r.name AS name,
                 r.description AS description,
                 r.created_at AS createdAt,
-                r.updated_at AS updatedAt
+                r.updated_at AS updatedAt,
+                rss.id AS slotId,
+                rss.start_at AS startAt,
+                rss.end_at AS endAt
             FROM room r
+            LEFT JOIN room_schedule_slot rss
+                ON rss.room_id = r.id
             WHERE r.id = :roomId
             """;
 }
