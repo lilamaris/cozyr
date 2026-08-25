@@ -3,7 +3,6 @@ package com.lilamaris.cozyr.reservation.application.model.room;
 import com.lilamaris.cozyr.kernel.core.condition.NumberPrecondition;
 import com.lilamaris.cozyr.kernel.core.condition.ObjectPrecondition;
 import com.lilamaris.cozyr.kernel.core.condition.StringPrecondition;
-import com.lilamaris.cozyr.reservation.application.model.schedule.LocalTimeSchedule;
 
 import java.time.Instant;
 import java.util.List;
@@ -14,7 +13,7 @@ public record RoomDetail(
         String description,
         Instant createdAt,
         Instant updatedAt,
-        List<LocalTimeSchedule> schedules
+        List<RoomSchedule> schedules
 ) {
     public RoomDetail {
         NumberPrecondition.requireNonNegative(roomId, "roomId");
@@ -25,7 +24,7 @@ public record RoomDetail(
         ObjectPrecondition.requireNonNull(schedules, "schedules");
     }
 
-    public static RoomDetail of(long roomId, String name, String description, Instant createdAt, Instant updatedAt, List<LocalTimeSchedule> schedules) {
+    public static RoomDetail of(long roomId, String name, String description, Instant createdAt, Instant updatedAt, List<RoomSchedule> schedules) {
         return new RoomDetail(roomId, name, description, createdAt, updatedAt, schedules);
     }
 }
