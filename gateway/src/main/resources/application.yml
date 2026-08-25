@@ -30,4 +30,4 @@ spring:
             - id: reservation-service
               uri: ${RESERVATION_SERVICE_URI:http://reservation-service:8084}
               predicates:
-                - Path=/api/v1/rooms/**
+                - Path=/api/v1/rooms/**, /api/v1/reservation/**
