@@ -1,8 +1,8 @@
 package com.lilamaris.cozyr.reservation.jpa.row;
 
 import com.lilamaris.cozyr.reservation.application.model.room.RoomDetail;
+import com.lilamaris.cozyr.reservation.application.model.room.RoomSchedule;
 import com.lilamaris.cozyr.reservation.application.model.room.RoomSummary;
-import com.lilamaris.cozyr.reservation.application.model.schedule.LocalTimeSchedule;
 
 import java.time.Instant;
 import java.time.LocalTime;
@@ -32,12 +32,12 @@ public class RoomRow {
             LocalTime startAt,
             LocalTime endAt
     ) {
-        public RoomDetail toDetail(List<LocalTimeSchedule> schedules) {
+        public RoomDetail toDetail(List<RoomSchedule> schedules) {
             return RoomDetail.of(roomId, name, description, createdAt, updatedAt, schedules);
         }
 
-        public LocalTimeSchedule toSchedule() {
-            return LocalTimeSchedule.of(startAt, endAt);
+        public RoomSchedule toSchedule() {
+            return RoomSchedule.of(slotId, startAt, endAt);
         }
     }
 }
