@@ -31,4 +31,9 @@ public class SeatOccupancySql {
                     )
             )
             """;
+
+    public static final String DELETE_BY_RESERVATION_ID = """
+            DELETE FROM seat_occupancy
+            WHERE reservation_id = :reservationId
+            """;
 }

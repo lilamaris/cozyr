@@ -37,4 +37,18 @@ public class SeatOccupancyStoreJpaAdapter implements SeatOccupancyStore {
 
         return rowCount == scheduleSlotIds.size();
     }
+
+    @Override
+    public boolean tryRelease(UUID reservationId) {
+        var sql = SeatOccupancySql.DELETE_BY_RESERVATION_ID;
+
+        try {
+            int rowCount = jdbcClient.sql(sql)
+                    .param("reservationId", reservationId)
+                    .update();
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
 }
