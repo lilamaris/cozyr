@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 public enum ReservationServiceProgressCode implements ApplicationProgressCode {
     ROOM_NOT_FOUND(ProcessReason.REJECTED, "room", "not-found", "방을 찾을 수 없습니다."),
     SEAT_NOT_FOUND(ProcessReason.REJECTED, "seat", "not-found", "좌석을 찾을 수 없습니다."),
+    RESERVATION_NOT_FOUND(ProcessReason.REJECTED, "reservation", "not-found", "예약을 찾을 수 없습니다."),
     SCHEDULE_NOT_FOUND(ProcessReason.REJECTED, "schedule", "not-found", "예약 가능한 시간을 찾을 수 없습니다."),
 
     SEAT_ID_DUPLICATED(ProcessReason.REJECTED, "seat", "duplicated", "동일한 좌석이 이미 존재합니다."),

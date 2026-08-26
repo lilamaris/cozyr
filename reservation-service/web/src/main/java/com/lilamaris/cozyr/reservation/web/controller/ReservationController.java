@@ -1,10 +1,13 @@
 package com.lilamaris.cozyr.reservation.web.controller;
 
 import com.lilamaris.cozyr.identity.contract.context.IdentityContextHolder;
+import com.lilamaris.cozyr.reservation.application.model.reservation.ReservationDetail;
 import com.lilamaris.cozyr.reservation.application.model.seat.ReservableSeatSchedule;
 import com.lilamaris.cozyr.reservation.application.port.in.FindReservableSeatScheduleUseCase;
+import com.lilamaris.cozyr.reservation.application.port.in.FindReservationDetailUseCase;
 import com.lilamaris.cozyr.reservation.application.port.in.ReserveSeatUseCase;
 import com.lilamaris.cozyr.reservation.application.port.in.query.FindReservableSeatScheduleQuery;
+import com.lilamaris.cozyr.reservation.application.port.in.query.FindReservationDetailQuery;
 import com.lilamaris.cozyr.reservation.application.port.in.result.ReserveSeatResult;
 import com.lilamaris.cozyr.reservation.domain.SeatId;
 import com.lilamaris.cozyr.reservation.web.request.ReserveSeatRequest;
@@ -23,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.Clock;
 import java.time.LocalDate;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/reservation")
@@ -31,6 +35,7 @@ import java.time.LocalDate;
 public class ReservationController {
     private final ReserveSeatUseCase reserveSeatUseCase;
     private final FindReservableSeatScheduleUseCase findReservableSeatScheduleUseCase;
+    private final FindReservationDetailUseCase findReservationDetailUseCase;
 
     private final IdentityContextHolder identityContextHolder;
     private final Clock clock;
@@ -71,6 +76,39 @@ public class ReservationController {
         var targetDateOrDefault = targetDate != null ? targetDate : LocalDate.now(clock);
         var query = FindReservableSeatScheduleQuery.of(targetDateOrDefault, SeatId.of(roomId, seatId));
         var result = findReservableSeatScheduleUseCase.find(query);
+
+        return ResponseEntity.ok(result);
+    }
+
+    @Operation(summary = "예약 상세 조회", description = "예약 상세 정보를 조회합니다.")
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "예약 상세 조회 성공",
+                    content = @Content(schema = @Schema(implementation = ReservationDetail.class))
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "잘못된 요청",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "예약을 찾을 수 없음",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))
+            )
+    })
+    @GetMapping("/{reservationId}")
+    public ResponseEntity<ReservationDetail> findReservationDetail(
+            @Parameter(
+                    description = "예약 ID",
+                    required = true,
+                    schema = @Schema(type = "string", example = "9f1c8a4e-9d61-4e10-a629-bf68068073b7")
+            )
+            @PathVariable("reservationId") UUID reservationId
+    ) {
+        var query = FindReservationDetailQuery.of(reservationId);
+        var result = findReservationDetailUseCase.find(query);
 
         return ResponseEntity.ok(result);
     }
