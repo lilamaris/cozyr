@@ -23,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.time.Clock;
 import java.time.LocalDate;
@@ -116,8 +117,8 @@ public class ReservationController {
     @Operation(summary = "좌석 예약", description = "좌석을 예약합니다.")
     @ApiResponses({
             @ApiResponse(
-                    responseCode = "200",
-                    description = "좌석 예약 성공",
+                    responseCode = "201",
+                    description = "좌석 예약 생성 성공",
                     content = @Content(schema = @Schema(implementation = ReserveSeatResult.class))
             ),
             @ApiResponse(
@@ -156,6 +157,11 @@ public class ReservationController {
         var command = body.toCommand(identity.id(), SeatId.of(roomId, seatId));
         var result = reserveSeatUseCase.reserve(command);
 
-        return ResponseEntity.ok(result);
+        var location = ServletUriComponentsBuilder.fromCurrentContextPath()
+                .path("/api/v1/reservation/{reservationId}")
+                .buildAndExpand(result.reservationId())
+                .toUri();
+
+        return ResponseEntity.created(location).body(result);
     }
 }
