@@ -3,11 +3,14 @@ package com.lilamaris.cozyr.reservation.web.controller;
 import com.lilamaris.cozyr.identity.contract.context.IdentityContextHolder;
 import com.lilamaris.cozyr.reservation.application.model.reservation.ReservationDetail;
 import com.lilamaris.cozyr.reservation.application.model.seat.ReservableSeatSchedule;
+import com.lilamaris.cozyr.reservation.application.port.in.CancelReserveUseCase;
 import com.lilamaris.cozyr.reservation.application.port.in.FindReservableSeatScheduleUseCase;
 import com.lilamaris.cozyr.reservation.application.port.in.FindReservationDetailUseCase;
 import com.lilamaris.cozyr.reservation.application.port.in.ReserveSeatUseCase;
+import com.lilamaris.cozyr.reservation.application.port.in.command.CancelReserveCommand;
 import com.lilamaris.cozyr.reservation.application.port.in.query.FindReservableSeatScheduleQuery;
 import com.lilamaris.cozyr.reservation.application.port.in.query.FindReservationDetailQuery;
+import com.lilamaris.cozyr.reservation.application.port.in.result.CancelReserveResult;
 import com.lilamaris.cozyr.reservation.application.port.in.result.ReserveSeatResult;
 import com.lilamaris.cozyr.reservation.domain.SeatId;
 import com.lilamaris.cozyr.reservation.web.request.ReserveSeatRequest;
@@ -35,6 +38,7 @@ import java.util.UUID;
 @Tag(name = "Reservations", description = "예약 API")
 public class ReservationController {
     private final ReserveSeatUseCase reserveSeatUseCase;
+    private final CancelReserveUseCase cancelReserveUseCase;
     private final FindReservableSeatScheduleUseCase findReservableSeatScheduleUseCase;
     private final FindReservationDetailUseCase findReservationDetailUseCase;
 
@@ -110,6 +114,39 @@ public class ReservationController {
     ) {
         var query = FindReservationDetailQuery.of(reservationId);
         var result = findReservationDetailUseCase.find(query);
+
+        return ResponseEntity.ok(result);
+    }
+
+    @Operation(summary = "예약 취소", description = "예약을 취소합니다.")
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "예약 취소 성공",
+                    content = @Content(schema = @Schema(implementation = CancelReserveResult.class))
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "잘못된 요청",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "예약을 찾을 수 없음",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))
+            )
+    })
+    @PostMapping("/{reservationId}/cancel")
+    public ResponseEntity<CancelReserveResult> cancelReservation(
+            @Parameter(
+                    description = "예약 ID",
+                    required = true,
+                    schema = @Schema(type = "string", example = "9f1c8a4e-9d61-4e10-a629-bf68068073b7")
+            )
+            @PathVariable("reservationId") UUID reservationId
+    ) {
+        var command = CancelReserveCommand.of(reservationId);
+        var result = cancelReserveUseCase.cancel(command);
 
         return ResponseEntity.ok(result);
     }
