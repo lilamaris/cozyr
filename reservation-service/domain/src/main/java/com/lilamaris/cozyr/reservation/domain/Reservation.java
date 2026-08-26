@@ -22,14 +22,19 @@ public class Reservation {
     @Column(name = "reserved_user_id", nullable = false)
     private UUID reservedUserId;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    private ReservationStatus status;
+
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
     @Column(name = "updated_at")
     private Instant updatedAt;
 
-    private Reservation(UUID reservedUserId, Instant createdAt, Instant updatedAt) {
+    private Reservation(UUID reservedUserId, ReservationStatus status, Instant createdAt, Instant updatedAt) {
         this.reservedUserId = ObjectPrecondition.requireNonNull(reservedUserId, "reservedUserId");
+        this.status = ObjectPrecondition.requireNonNull(status, "status");
         this.createdAt = ObjectPrecondition.requireNonNull(createdAt, "createdAt");
 
         if (updatedAt != null) {
@@ -38,6 +43,12 @@ public class Reservation {
     }
 
     public static Reservation of(UUID reservedUserId, Instant createdAt) {
-        return new Reservation(reservedUserId, createdAt, createdAt);
+        return new Reservation(reservedUserId, ReservationStatus.RESERVED, createdAt, createdAt);
+    }
+
+    public void cancel(Instant canceledAt) {
+        if (this.status != ReservationStatus.RESERVED) throw new IllegalArgumentException("");
+        this.status = ReservationStatus.CANCELED;
+        this.updatedAt = TimePrecondition.requireAfterOrEqual(canceledAt, this.createdAt, "canceledAt", "createdAt");
     }
 }
