@@ -8,4 +8,6 @@ import java.util.UUID;
 
 public interface SeatOccupancyStore {
     boolean tryOccupy(UUID reservationId, LocalDate occupancyDate, SeatId seatId, Set<UUID> scheduleSlotIds);
+
+    boolean tryRelease(UUID reservationId);
 }
