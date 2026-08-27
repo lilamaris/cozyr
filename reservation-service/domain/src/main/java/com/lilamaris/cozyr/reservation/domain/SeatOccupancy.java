@@ -6,6 +6,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.UUID;
 
@@ -30,14 +31,18 @@ public class SeatOccupancy {
     @Column(name = "schedule_slot_id", nullable = false)
     private UUID scheduleSlotId;
 
-    private SeatOccupancy(UUID reservationId, SeatId seatId, LocalDate occupancyDate, UUID scheduleSlotId) {
+    @Column(name = "released_at")
+    private Instant releasedAt;
+
+    private SeatOccupancy(UUID reservationId, SeatId seatId, LocalDate occupancyDate, UUID scheduleSlotId, Instant releasedAt) {
         this.reservationId = ObjectPrecondition.requireNonNull(reservationId, "reservationId");
         this.seatId = ObjectPrecondition.requireNonNull(seatId, "seatId");
         this.occupancyDate = ObjectPrecondition.requireNonNull(occupancyDate, "occupancyDate");
         this.scheduleSlotId = ObjectPrecondition.requireNonNull(scheduleSlotId, "scheduleSlotId");
+        this.releasedAt = releasedAt;
     }
 
     public static SeatOccupancy of(UUID reservationId, SeatId seatId, LocalDate occupancyDate, UUID scheduleSlotId) {
-        return new SeatOccupancy(reservationId, seatId, occupancyDate, scheduleSlotId);
+        return new SeatOccupancy(reservationId, seatId, occupancyDate, scheduleSlotId, null);
     }
 }
