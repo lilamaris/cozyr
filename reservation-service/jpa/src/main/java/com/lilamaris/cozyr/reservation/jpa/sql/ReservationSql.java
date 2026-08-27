@@ -4,6 +4,7 @@ public class ReservationSql {
     public static final String FIND_DETAIL_BY_ID = """
             SELECT
                 r.id AS reservationId,
+                r.status AS status,
                 r.created_at AS createdAt,
                 r.updated_at AS updatedAt,
                 o.room_id AS roomId,

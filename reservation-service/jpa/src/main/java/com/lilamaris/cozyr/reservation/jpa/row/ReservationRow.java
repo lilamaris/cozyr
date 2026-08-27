@@ -2,6 +2,7 @@ package com.lilamaris.cozyr.reservation.jpa.row;
 
 import com.lilamaris.cozyr.reservation.application.model.room.RoomSchedule;
 import com.lilamaris.cozyr.reservation.application.model.user.UserProjection;
+import com.lilamaris.cozyr.reservation.domain.ReservationStatus;
 import com.lilamaris.cozyr.reservation.domain.SeatId;
 
 import java.time.Instant;
@@ -11,6 +12,7 @@ import java.util.UUID;
 public class ReservationRow {
     public record Detail(
             UUID reservationId,
+            ReservationStatus status,
             Instant createdAt,
             Instant updatedAt,
             long roomId,
