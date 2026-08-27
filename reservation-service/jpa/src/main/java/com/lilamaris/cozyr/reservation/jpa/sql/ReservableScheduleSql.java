@@ -16,6 +16,7 @@ public class ReservableScheduleSql {
                         AND o.seat_id = :seatId
                         AND o.occupancy_date = :occupancyDate
                         AND o.schedule_slot_id = s.id
+                        AND o.released_at IS NULL
                 )
             """;
 }
