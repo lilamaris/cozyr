@@ -13,7 +13,8 @@ public enum ReservationServiceProgressCode implements ApplicationProgressCode {
 
     SEAT_ID_DUPLICATED(ProcessReason.REJECTED, "seat", "duplicated", "동일한 좌석이 이미 존재합니다."),
 
-    SCHEDULE_ALREADY_OCCUPIED(ProcessReason.REJECTED, "reservation", "duplicated", "해당 시간의 좌석은 이미 예약되었습니다.");
+    SCHEDULE_ALREADY_OCCUPIED(ProcessReason.REJECTED, "reservation", "duplicated", "해당 시간의 좌석은 이미 예약되었습니다."),
+    RESERVATION_ALREADY_CANCELED(ProcessReason.REJECTED, "reservation", "duplicated", "해당 예약은 이미 취소되었습니다.");
 
     private final ProcessReason reason;
     private final String resourceName;

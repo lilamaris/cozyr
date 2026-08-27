@@ -6,6 +6,7 @@ import com.lilamaris.cozyr.reservation.application.port.in.command.CancelReserve
 import com.lilamaris.cozyr.reservation.application.port.in.result.CancelReserveResult;
 import com.lilamaris.cozyr.reservation.application.port.out.ReservationStore;
 import com.lilamaris.cozyr.reservation.application.port.out.SeatOccupancyStore;
+import com.lilamaris.cozyr.reservation.domain.ReservationStatus;
 import com.lilamaris.shrturl.kernel.application.exception.ApplicationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -27,10 +28,13 @@ public class CancelReserveService implements CancelReserveUseCase {
         var reservation = store.findById(reservationId)
                 .orElseThrow(() -> new ApplicationException(ReservationServiceProgressCode.RESERVATION_NOT_FOUND));
 
-        var released = seatOccupancyStore.tryRelease(reservationId);
-        if (!released) throw new ApplicationException(ReservationServiceProgressCode.RESERVATION_NOT_FOUND);
+        if (reservation.getStatus() == ReservationStatus.CANCELED)
+            throw new ApplicationException(ReservationServiceProgressCode.RESERVATION_ALREADY_CANCELED);
 
         var now = clock.instant();
+        var isReleased = seatOccupancyStore.tryRelease(reservationId, now);
+        if (!isReleased) throw new ApplicationException(ReservationServiceProgressCode.RESERVATION_ALREADY_CANCELED);
+
         reservation.cancel(now);
 
         return CancelReserveResult.of(reservationId, now);
