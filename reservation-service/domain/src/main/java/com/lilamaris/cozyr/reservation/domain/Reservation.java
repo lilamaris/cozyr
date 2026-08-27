@@ -45,10 +45,4 @@ public class Reservation {
     public static Reservation of(UUID reservedUserId, Instant createdAt) {
         return new Reservation(reservedUserId, ReservationStatus.RESERVED, createdAt, createdAt);
     }
-
-    public void cancel(Instant canceledAt) {
-        if (this.status != ReservationStatus.RESERVED) throw new IllegalArgumentException("");
-        this.status = ReservationStatus.CANCELED;
-        this.updatedAt = TimePrecondition.requireAfterOrEqual(canceledAt, this.createdAt, "canceledAt", "createdAt");
-    }
 }

@@ -23,4 +23,12 @@ public class ReservationSql {
                 ON u.user_id = r.reserved_user_id
             WHERE r.id = :reservationId
             """;
+
+    public static final String CANCEL_BY_ID = """
+            UPDATE reservation
+            SET status = 'CANCELED',
+                updated_at = :canceledAt
+            WHERE id = :reservationId
+                AND status = 'RESERVED'
+            """;
 }
