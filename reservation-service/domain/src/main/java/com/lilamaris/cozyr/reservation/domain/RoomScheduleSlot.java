@@ -11,13 +11,7 @@ import java.time.LocalTime;
 import java.util.UUID;
 
 @Entity
-@Table(
-        name = "room_schedule_slot",
-        uniqueConstraints = @UniqueConstraint(
-                name = "uk_room_schedule_slot_room_id_start_at_end_at",
-                columnNames = {"room_id", "start_at", "end_at"}
-        )
-)
+@Table(name = "room_schedule_slot")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class RoomScheduleSlot {

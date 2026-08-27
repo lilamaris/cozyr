@@ -10,13 +10,7 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 @Entity
-@Table(
-        name = "seat_occupancy",
-        uniqueConstraints = @UniqueConstraint(
-                name = "uk_seat_occupancy_room_id_seat_id_occupancy_date_schedule_slot_id",
-                columnNames = {"room_id", "seat_id", "occupancy_date", "schedule_slot_id"}
-        )
-)
+@Table(name = "seat_occupancy")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class SeatOccupancy {
