@@ -1,19 +1,22 @@
 package com.lilamaris.cozyr.reservation.web.controller;
 
 import com.lilamaris.cozyr.identity.contract.context.IdentityContextHolder;
+import com.lilamaris.cozyr.reservation.application.model.reservation.ReservationCursor;
 import com.lilamaris.cozyr.reservation.application.model.reservation.ReservationDetail;
+import com.lilamaris.cozyr.reservation.application.model.reservation.ReservationFilter;
+import com.lilamaris.cozyr.reservation.application.model.reservation.ReservationSummary;
 import com.lilamaris.cozyr.reservation.application.model.seat.ReservableSeatSchedule;
-import com.lilamaris.cozyr.reservation.application.port.in.CancelReserveUseCase;
-import com.lilamaris.cozyr.reservation.application.port.in.FindReservableSeatScheduleUseCase;
-import com.lilamaris.cozyr.reservation.application.port.in.FindReservationDetailUseCase;
-import com.lilamaris.cozyr.reservation.application.port.in.ReserveSeatUseCase;
+import com.lilamaris.cozyr.reservation.application.port.in.*;
 import com.lilamaris.cozyr.reservation.application.port.in.command.CancelReserveCommand;
 import com.lilamaris.cozyr.reservation.application.port.in.query.FindReservableSeatScheduleQuery;
 import com.lilamaris.cozyr.reservation.application.port.in.query.FindReservationDetailQuery;
+import com.lilamaris.cozyr.reservation.application.port.in.query.ListReservationSummaryQuery;
 import com.lilamaris.cozyr.reservation.application.port.in.result.CancelReserveResult;
 import com.lilamaris.cozyr.reservation.application.port.in.result.ReserveSeatResult;
+import com.lilamaris.cozyr.reservation.domain.ReservationStatus;
 import com.lilamaris.cozyr.reservation.domain.SeatId;
 import com.lilamaris.cozyr.reservation.web.request.ReserveSeatRequest;
+import com.lilamaris.shrturl.kernel.application.model.cursor.CursorResult;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -29,7 +32,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.util.Set;
 import java.util.UUID;
 
 @RestController
@@ -40,10 +45,58 @@ public class ReservationController {
     private final ReserveSeatUseCase reserveSeatUseCase;
     private final CancelReserveUseCase cancelReserveUseCase;
     private final FindReservableSeatScheduleUseCase findReservableSeatScheduleUseCase;
+    private final ListReservationSummaryUseCase listReservationSummaryUseCase;
     private final FindReservationDetailUseCase findReservationDetailUseCase;
 
     private final IdentityContextHolder identityContextHolder;
     private final Clock clock;
+
+    @Operation(summary = "예약 요약 목록 조회", description = "예약 요약을 커서 기반으로 조회합니다. 필터 조건을 제공하지 않으면 전체 예약을 조회합니다.")
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "예약 요약 목록 조회 성공",
+                    content = @Content(schema = @Schema(implementation = CursorResult.class))
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "잘못된 요청",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))
+            )
+    })
+    @GetMapping
+    public ResponseEntity<CursorResult<ReservationSummary, ReservationCursor>> listReservation(
+            @Parameter(description = "예약한 사용자 ID", schema = @Schema(type = "string", format = "uuid"))
+            @RequestParam(name = "uid", required = false) UUID userId,
+            @Parameter(description = "예약 상태 목록", schema = @Schema(type = "string", example = "RESERVED,CANCELED"))
+            @RequestParam(name = "statuses", required = false) Set<ReservationStatus> statuses,
+            @Parameter(description = "방 ID", schema = @Schema(type = "integer", format = "int64"))
+            @RequestParam(name = "roomId", required = false) Long roomId,
+            @Parameter(description = "좌석 식별자", schema = @Schema(type = "string", example = "A1"))
+            @RequestParam(name = "seatId", required = false) String seatId,
+            @Parameter(description = "커서 생성 시각", schema = @Schema(type = "string", format = "date-time"))
+            @RequestParam(name = "ca", required = false) Instant createdAt,
+            @Parameter(description = "커서 예약 ID", schema = @Schema(type = "string", format = "uuid"))
+            @RequestParam(name = "rid", required = false) UUID reservationId,
+            @Parameter(description = "조회 개수", required = true, example = "20", schema = @Schema(type = "integer", minimum = "1"))
+            @RequestParam(name = "size") int size
+    ) {
+        ReservationCursor cursor = null;
+        if (createdAt != null && reservationId != null) {
+            cursor = ReservationCursor.of(createdAt, reservationId);
+        }
+
+        var filter = ReservationFilter.empty()
+                .withReservedUserId(userId)
+                .withStatuses(statuses)
+                .withRoomId(roomId)
+                .withSeatId(seatId);
+
+        var query = ListReservationSummaryQuery.of(filter, cursor, size);
+        var result = listReservationSummaryUseCase.list(query);
+
+        return ResponseEntity.ok(result);
+    }
 
     @Operation(summary = "좌석 예약 가능 시간 조회", description = "좌석의 예약 가능 시간 구역을 조회합니다. targetDate를 제공하지 않으면 현재 날짜 기준 조회합니다.")
     @ApiResponses({

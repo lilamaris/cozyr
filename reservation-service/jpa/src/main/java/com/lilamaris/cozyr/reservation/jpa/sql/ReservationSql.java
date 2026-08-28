@@ -24,6 +24,49 @@ public class ReservationSql {
             WHERE r.id = :reservationId
             """;
 
+    public static final String LIST_SUMMARIES = """
+            WITH filtered AS (
+                SELECT
+                    r.id,
+                    r.reserved_user_id,
+                    r.status,
+                    r.created_at,
+                    r.updated_at
+                FROM reservation r
+                WHERE 1 = 1
+                    %s
+                ORDER BY r.created_at DESC, r.id DESC
+                LIMIT :limit
+            ),
+            occupancy_summary AS (
+                SELECT
+                    o.reservation_id,
+                    o.room_id,
+                    o.seat_id,
+                    COUNT(*) AS occupied_slot_count
+                FROM seat_occupancy o
+                JOIN filtered f
+                    ON f.id = o.reservation_id
+                GROUP BY o.reservation_id, o.room_id, o.seat_id
+            )
+            SELECT
+                f.id AS reservationId,
+                f.status AS status,
+                f.created_at AS createdAt,
+                f.updated_at AS updatedAt,
+                os.room_id AS roomId,
+                os.seat_id AS seatId,
+                COALESCE(os.occupied_slot_count, 0) AS occupiedSlotCount,
+                u.user_id AS userId,
+                u.display_name AS displayName
+            FROM filtered f
+            LEFT JOIN occupancy_summary os
+                ON os.reservation_id = f.id
+            JOIN user_snapshot u
+                ON u.user_id = f.reserved_user_id
+            ORDER BY f.created_at DESC, f.id DESC
+            """;
+
     public static final String CANCEL_BY_ID = """
             UPDATE reservation
             SET status = 'CANCELED',
