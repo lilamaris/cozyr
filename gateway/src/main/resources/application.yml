@@ -26,3 +26,8 @@ spring:
               uri: ${STATISTICS_SERVICE_URI:http://statistics-service:8083}
               predicates:
                 - Path=/api/v1/statistics/**
+
+            - id: reservation-service
+              uri: ${RESERVATION_SERVICE_URI:http://reservation-service:8084}
+              predicates:
+                - Path=/api/v1/rooms/**

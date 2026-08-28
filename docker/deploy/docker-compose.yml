@@ -22,6 +22,8 @@ services:
       SERVER_PORT: "${GATEWAY_SERVICE_PORT:?GATEWAY_SERVICE_PORT must be provided}"
       IDENTITY_SERVICE_URI: "http://${IDENTITY_SERVICE_NAME:-identity-service}:${IDENTITY_SERVICE_PORT:-8081}"
       BOARD_SERVICE_URI: "http://${BOARD_SERVICE_NAME:-board-service}:${BOARD_SERVICE_PORT:-8082}"
+      STATISTICS_SERVICE_URI: "http://${STATISTICS_SERVICE_NAME:-statistics-service}:${STATISTICS_SERVICE_PORT:-8083}"
+      RESERVATION_SERVICE_URI: "http://${RESERVATION_SERVICE_NAME:-reservation-service}:${RESERVATION_SERVICE_PORT:-8084}"
     healthcheck:
       <<: *app-healthcheck-defaults
 
@@ -83,5 +85,24 @@ services:
       DB_URL: "${DB_BASE_URL:?DB_BASE_URL must be provided}?currentSchema=${STATISTICS_SERVICE_DB_SCHEMA:?STATISTICS_SERVICE_DB_SCHEMA must be provided}"
       DB_USERNAME: "${STATISTICS_SERVICE_DB_USERNAME:?STATISTICS_SERVICE_DB_USERNAME must be provided}"
       DB_PASSWORD: "${STATISTICS_SERVICE_DB_PASSWORD:?STATISTICS_SERVICE_DB_PASSWORD must be provided}"
+    healthcheck:
+      <<: *app-healthcheck-defaults
+
+  reservation-service:
+    image: "${REGISTRY_HOST}/${NAMESPACE}/reservation-service:${IMAGE_TAG}"
+    restart: unless-stopped
+    container_name: cozyr-reservation
+    cpus: 1.0
+    mem_limit: 1g
+    expose:
+      - "${RESERVATION_SERVICE_PORT:?RESERVATION_SERVICE_PORT must be provided}"
+    env_file:
+      - .env.app
+    environment:
+      SPRING_APPLICATION_NAME: "${RESERVATION_SERVICE_NAME:-reservation-service}"
+      SERVER_PORT: "${RESERVATION_SERVICE_PORT:?RESERVATION_SERVICE_PORT must be provided}"
+      DB_URL: "${DB_BASE_URL:?DB_BASE_URL must be provided}?currentSchema=${RESERVATION_SERVICE_DB_SCHEMA:?RESERVATION_SERVICE_DB_SCHEMA must be provided}"
+      DB_USERNAME: "${RESERVATION_SERVICE_DB_USERNAME:?RESERVATION_SERVICE_DB_USERNAME must be provided}"
+      DB_PASSWORD: "${RESERVATION_SERVICE_DB_PASSWORD:?RESERVATION_SERVICE_DB_PASSWORD must be provided}"
     healthcheck:
       <<: *app-healthcheck-defaults

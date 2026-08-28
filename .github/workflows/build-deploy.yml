@@ -62,6 +62,7 @@ jobs:
             :identity-service:launcher:bootJar \
             :board-service:launcher:bootJar \
             :statistics-service:launcher:bootJar \
+            :reservation-service:launcher:bootJar \
           --no-daemon
 
       - name: Upload gateway JAR
@@ -77,7 +78,7 @@ jobs:
         with:
           name: identity-service-jar
           path: identity-service/launcher/build/libs/app.jar
-          if-no-file-found: error
+          if-no-files-found: error
           retention-days: 1
 
       - name: Upload board-service JAR
@@ -93,7 +94,15 @@ jobs:
         with:
           name: statistics-service-jar
           path: statistics-service/launcher/build/libs/app.jar
-          if-no-files-fonud: error
+          if-no-files-found: error
+          retention-days: 1
+
+      - name: Upload reservation-service JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: reservation-service-jar
+          path: reservation-service/launcher/build/libs/app.jar
+          if-no-files-found: error
           retention-days: 1
 
   prepare-publish:
@@ -133,6 +142,9 @@ jobs:
 
           - service: statistics-service
             dockerfile: statistics-service/launcher/Dockerfile
+
+          - service: reservation-service
+            dockerfile: reservation-service/launcher/Dockerfile
 
     steps:
       - name: Check out repository
