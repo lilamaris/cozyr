@@ -1,4 +1,4 @@
-package com.lilamaris.cozyr.reservation.jpa.row;
+package com.lilamaris.cozyr.reservation.jdbc.row;
 
 import com.lilamaris.cozyr.reservation.application.model.room.RoomDetail;
 import com.lilamaris.cozyr.reservation.application.model.room.RoomSchedule;

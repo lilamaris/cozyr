@@ -1,14 +1,13 @@
-package com.lilamaris.cozyr.reservation.jpa;
+package com.lilamaris.cozyr.reservation.jdbc;
 
 import com.lilamaris.cozyr.reservation.application.model.room.RoomCursor;
 import com.lilamaris.cozyr.reservation.application.model.room.RoomDetail;
 import com.lilamaris.cozyr.reservation.application.model.room.RoomFilter;
 import com.lilamaris.cozyr.reservation.application.model.room.RoomSummary;
-import com.lilamaris.cozyr.reservation.application.port.out.RoomReader;
-import com.lilamaris.cozyr.reservation.domain.Room;
-import com.lilamaris.cozyr.reservation.jpa.repository.RoomRepository;
-import com.lilamaris.cozyr.reservation.jpa.row.RoomRow;
-import com.lilamaris.cozyr.reservation.jpa.sql.RoomSql;
+import com.lilamaris.cozyr.reservation.application.port.out.RoomDetailReader;
+import com.lilamaris.cozyr.reservation.application.port.out.RoomSummaryReader;
+import com.lilamaris.cozyr.reservation.jdbc.row.RoomRow;
+import com.lilamaris.cozyr.reservation.jdbc.sql.RoomSql;
 import com.lilamaris.shrturl.kernel.application.model.cursor.CursorRequest;
 import com.lilamaris.shrturl.kernel.application.model.cursor.CursorResult;
 import jakarta.annotation.Nullable;
@@ -24,22 +23,11 @@ import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
-public class RoomReaderJpaAdapter implements RoomReader {
-    private final RoomRepository repository;
+public class RoomJdbcAdapter implements RoomSummaryReader, RoomDetailReader {
     private final JdbcClient jdbcClient;
 
     @Override
-    public boolean existsById(long id) {
-        return repository.existsById(id);
-    }
-
-    @Override
-    public Optional<Room> findById(long id) {
-        return repository.findById(id);
-    }
-
-    @Override
-    public CursorResult<RoomSummary, RoomCursor> findSummaries(RoomFilter filter, CursorRequest<RoomCursor> request) {
+    public CursorResult<RoomSummary, RoomCursor> find(RoomFilter filter, CursorRequest<RoomCursor> request) {
         var conditions = new ArrayList<String>();
         var params = new MapSqlParameterSource()
                 .addValue("limit", request.size() + 1);
@@ -77,7 +65,7 @@ public class RoomReaderJpaAdapter implements RoomReader {
     }
 
     @Override
-    public Optional<RoomDetail> findDetailById(long id) {
+    public Optional<RoomDetail> findById(long id) {
         var sql = RoomSql.FIND_DETAIL_BY_ID;
 
         var rows = jdbcClient.sql(sql)

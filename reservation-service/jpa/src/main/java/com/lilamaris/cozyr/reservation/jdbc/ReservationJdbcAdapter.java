@@ -1,4 +1,4 @@
-package com.lilamaris.cozyr.reservation.jpa;
+package com.lilamaris.cozyr.reservation.jdbc;
 
 import com.lilamaris.cozyr.reservation.application.model.reservation.ReservationCursor;
 import com.lilamaris.cozyr.reservation.application.model.reservation.ReservationDetail;
@@ -7,8 +7,8 @@ import com.lilamaris.cozyr.reservation.application.model.reservation.Reservation
 import com.lilamaris.cozyr.reservation.application.port.out.ReservationDetailReader;
 import com.lilamaris.cozyr.reservation.application.port.out.ReservationStatusStore;
 import com.lilamaris.cozyr.reservation.application.port.out.ReservationSummaryReader;
-import com.lilamaris.cozyr.reservation.jpa.row.ReservationRow;
-import com.lilamaris.cozyr.reservation.jpa.sql.ReservationSql;
+import com.lilamaris.cozyr.reservation.jdbc.row.ReservationRow;
+import com.lilamaris.cozyr.reservation.jdbc.sql.ReservationSql;
 import com.lilamaris.shrturl.kernel.application.model.cursor.CursorRequest;
 import com.lilamaris.shrturl.kernel.application.model.cursor.CursorResult;
 import jakarta.annotation.Nullable;

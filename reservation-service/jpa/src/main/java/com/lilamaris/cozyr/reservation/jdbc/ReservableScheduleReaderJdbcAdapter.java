@@ -1,10 +1,10 @@
-package com.lilamaris.cozyr.reservation.jpa;
+package com.lilamaris.cozyr.reservation.jdbc;
 
 import com.lilamaris.cozyr.reservation.application.model.seat.ReservableSeatSchedule;
 import com.lilamaris.cozyr.reservation.application.port.out.ReservableScheduleReader;
 import com.lilamaris.cozyr.reservation.domain.SeatId;
-import com.lilamaris.cozyr.reservation.jpa.row.RoomScheduleRow;
-import com.lilamaris.cozyr.reservation.jpa.sql.ReservableScheduleSql;
+import com.lilamaris.cozyr.reservation.jdbc.row.RoomScheduleRow;
+import com.lilamaris.cozyr.reservation.jdbc.sql.ReservableScheduleSql;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
@@ -16,7 +16,7 @@ import java.util.Objects;
 
 @Component
 @RequiredArgsConstructor
-public class ReservableScheduleReaderJpaAdapter implements ReservableScheduleReader {
+public class ReservableScheduleReaderJdbcAdapter implements ReservableScheduleReader {
     private final JdbcClient jdbcClient;
     private final Clock clock;
 

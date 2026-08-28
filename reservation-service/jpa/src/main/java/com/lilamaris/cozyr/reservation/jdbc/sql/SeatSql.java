@@ -1,4 +1,4 @@
-package com.lilamaris.cozyr.reservation.jpa.sql;
+package com.lilamaris.cozyr.reservation.jdbc.sql;
 
 public class SeatSql {
     public static final String FIND_DETAIL_BY_ID = """

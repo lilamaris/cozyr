@@ -1,4 +1,4 @@
-package com.lilamaris.cozyr.reservation.jpa.sql;
+package com.lilamaris.cozyr.reservation.jdbc.sql;
 
 public class RoomSql {
     public static String LIST_SUMMARIES = """
