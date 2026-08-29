@@ -7,7 +7,7 @@ import com.lilamaris.cozyr.reservation.application.model.room.RoomSummary;
 import com.lilamaris.cozyr.reservation.application.port.out.RoomReader;
 import com.lilamaris.cozyr.reservation.domain.Room;
 import com.lilamaris.cozyr.reservation.jpa.repository.RoomRepository;
-import com.lilamaris.cozyr.reservation.jpa.row.RoomSummaryRow;
+import com.lilamaris.cozyr.reservation.jpa.row.RoomRow;
 import com.lilamaris.cozyr.reservation.jpa.sql.RoomSql;
 import com.lilamaris.shrturl.kernel.application.model.cursor.CursorRequest;
 import com.lilamaris.shrturl.kernel.application.model.cursor.CursorResult;
@@ -55,7 +55,7 @@ public class RoomReaderJpaAdapter implements RoomReader {
 
         var rows = jdbcClient.sql(sql)
                 .paramSource(params)
-                .query(RoomSummaryRow.class)
+                .query(RoomRow.Summary.class)
                 .list();
 
         boolean hasNext = rows.size() > request.size();
@@ -63,7 +63,7 @@ public class RoomReaderJpaAdapter implements RoomReader {
         var content = rows.stream()
                 .limit(request.size())
                 .filter(Objects::nonNull)
-                .map(RoomSummaryRow::toSummary)
+                .map(RoomRow.Summary::toSummary)
                 .toList();
 
         RoomCursor nextCursor = null;
@@ -80,10 +80,24 @@ public class RoomReaderJpaAdapter implements RoomReader {
     public Optional<RoomDetail> findDetailById(long id) {
         var sql = RoomSql.FIND_DETAIL_BY_ID;
 
-        return jdbcClient.sql(sql)
+        var rows = jdbcClient.sql(sql)
                 .param("roomId", id)
-                .query(RoomDetail.class)
-                .optional();
+                .query(RoomRow.Detail.class)
+                .list();
+
+        var first = rows.getFirst();
+
+        if (first == null) return Optional.empty();
+
+        var schedules = rows.stream()
+                .filter(Objects::nonNull)
+                .filter(row -> row.slotId() != null)
+                .map(RoomRow.Detail::toSchedule)
+                .toList();
+
+        return Optional.of(
+                first.toDetail(schedules)
+        );
     }
 
     private void appendFilterCondition(
