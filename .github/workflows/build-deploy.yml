@@ -261,4 +261,4 @@ jobs:
             -i ~/.ssh/deploy_key \
             -o BatchMode=yes \
             "${DEPLOY_USER}@${DEPLOY_HOST}" \
-            /opt/cozyr/script/deploy.sh --registry "${REGISTRY_HOST}" --tag "${IMAGE_TAG}" /opt/cozyr
+            sudo /opt/cozyr/script/deploy.sh --registry "${REGISTRY_HOST}" --tag "${IMAGE_TAG}" /opt/cozyr
