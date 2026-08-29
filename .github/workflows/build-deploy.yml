@@ -171,7 +171,7 @@ jobs:
         run: |
           getent hosts "${REGISTRY_HOST}"
           curl --fail --silent --show-error \
-            "${REGISTRY_HOST}"
+            "${REGISTRY_URI}"
 
       - name: Prepare Docker build context
         id: prepare-docker-build
