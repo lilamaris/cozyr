@@ -167,10 +167,11 @@ jobs:
       - name: Verify registry connectivity
         env:
           REGISTRY_HOST: ${{ vars.REGISTRY_HOST }}
+          REGISTRY_URI: ${{ vars.REGISTRY_URI }}
         run: |
           getent hosts "${REGISTRY_HOST}"
           curl --fail --silent --show-error \
-            https://"${REGISTRY_HOST}"/v2/
+            "${REGISTRY_HOST}"
 
       - name: Prepare Docker build context
         id: prepare-docker-build
