@@ -167,11 +167,9 @@ jobs:
       - name: Verify registry connectivity
         env:
           REGISTRY_HOST: ${{ vars.REGISTRY_HOST }}
-          REGISTRY_URI: ${{ vars.REGISTRY_URI }}
         run: |
-          getent hosts "${REGISTRY_HOST}"
           curl --fail --silent --show-error \
-            "${REGISTRY_URI}"
+            https://"${REGISTRY_HOST}"/v2
 
       - name: Prepare Docker build context
         id: prepare-docker-build
@@ -191,7 +189,7 @@ jobs:
         id: metadata
         uses: docker/metadata-action@v5
         with:
-          images: ${{ vars.REGISTRY_URI }}/cozyr/${{ matrix.service }}
+          images: ${{ vars.REGISTRY_HOST }}/cozyr/${{ matrix.service }}
           tags: |
             type=raw,value=${{ needs.prepare-publish.outputs.image-tag }}
             type=ref,event=branch
