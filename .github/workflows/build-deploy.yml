@@ -191,7 +191,7 @@ jobs:
         id: metadata
         uses: docker/metadata-action@v5
         with:
-          images: ${{ vars.REGISTRY_HOST }}/cozyr/${{ matrix.service }}
+          images: ${{ vars.REGISTRY_URI }}/cozyr/${{ matrix.service }}
           tags: |
             type=raw,value=${{ needs.prepare-publish.outputs.image-tag }}
             type=ref,event=branch
