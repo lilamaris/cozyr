@@ -4,9 +4,7 @@ import com.lilamaris.cozyr.identity.application.exception.IdentityServiceProgres
 import com.lilamaris.cozyr.identity.application.port.in.RegisterCredentialUseCase;
 import com.lilamaris.cozyr.identity.application.port.in.command.RegisterCredentialCommand;
 import com.lilamaris.cozyr.identity.application.port.in.result.AuthenticatedResult;
-import com.lilamaris.cozyr.identity.application.port.out.CredentialReader;
-import com.lilamaris.cozyr.identity.application.port.out.CredentialStore;
-import com.lilamaris.cozyr.identity.application.port.out.UserStore;
+import com.lilamaris.cozyr.identity.application.port.out.*;
 import com.lilamaris.cozyr.identity.contract.event.UserCreatedEvent;
 import com.lilamaris.cozyr.identity.domain.Credential;
 import com.lilamaris.cozyr.identity.domain.User;
@@ -24,6 +22,9 @@ import java.time.Clock;
 public class RegisterCredentialService implements RegisterCredentialUseCase {
     private final CredentialStore credentialStore;
     private final UserStore userStore;
+    private final UserScopeStore userScopeStore;
+
+    private final ServiceScopeReader serviceScopeReader;
     private final CredentialReader credentialReader;
     private final MessagePublisher messagePublisher;
     private final PasswordEncoder passwordEncoder;
@@ -46,6 +47,10 @@ public class RegisterCredentialService implements RegisterCredentialUseCase {
         var passwordHash = passwordEncoder.encode(password);
         var credential = Credential.of(userId, email, passwordHash, now);
         credentialStore.save(credential);
+
+        var candidateScopes = serviceScopeReader.getAllScopes();
+        var isScopeCreated = userScopeStore.tryCreate(userId, candidateScopes, now);
+        if (!isScopeCreated) throw new ApplicationException(IdentityServiceProgressCode.SCOPE_DUPLICATED);
 
         var payload = UserCreatedEvent.of(userId, savedUser.displayName(), now);
         messagePublisher.publish(payload.toMessage(now));
