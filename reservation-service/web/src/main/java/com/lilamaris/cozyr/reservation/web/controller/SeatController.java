@@ -1,14 +1,18 @@
 package com.lilamaris.cozyr.reservation.web.controller;
 
 import com.lilamaris.cozyr.reservation.application.model.seat.SeatDetail;
+import com.lilamaris.cozyr.reservation.application.model.seat.SeatSummary;
 import com.lilamaris.cozyr.reservation.application.port.in.CreateSeatUseCase;
 import com.lilamaris.cozyr.reservation.application.port.in.FindSeatDetailUseCase;
+import com.lilamaris.cozyr.reservation.application.port.in.ListSeatSummaryUseCase;
 import com.lilamaris.cozyr.reservation.application.port.in.query.FindSeatDetailQuery;
+import com.lilamaris.cozyr.reservation.application.port.in.query.ListSeatSummaryQuery;
 import com.lilamaris.cozyr.reservation.application.port.in.result.SeatCreatedResult;
 import com.lilamaris.cozyr.reservation.domain.SeatId;
 import com.lilamaris.cozyr.reservation.web.request.CreateSeatRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -21,13 +25,44 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/rooms/{roomId}/seats")
 @RequiredArgsConstructor
 @Tag(name = "Seats", description = "좌석 API")
 public class SeatController {
     private final CreateSeatUseCase createSeatUseCase;
+    private final ListSeatSummaryUseCase listSeatSummaryUseCase;
     private final FindSeatDetailUseCase findSeatDetailUseCase;
+
+    @Operation(summary = "좌석 요약 목록 조회", description = "방의 좌석 요약 목록을 조회합니다.")
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "좌석 요약 목록 조회 성공",
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = SeatSummary.class)))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "방을 찾을 수 없음",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))
+            )
+    })
+    @GetMapping
+    public ResponseEntity<List<SeatSummary>> listSummary(
+            @Parameter(
+                    description = "방 ID",
+                    required = true,
+                    schema = @Schema(type = "integer", format = "int64")
+            )
+            @PathVariable("roomId") long roomId
+    ) {
+        var query = ListSeatSummaryQuery.of(roomId);
+        var result = listSeatSummaryUseCase.list(query);
+
+        return ResponseEntity.ok(result);
+    }
 
     @Operation(summary = "좌석 생성", description = "방에 새 좌석을 생성합니다.")
     @ApiResponses({
