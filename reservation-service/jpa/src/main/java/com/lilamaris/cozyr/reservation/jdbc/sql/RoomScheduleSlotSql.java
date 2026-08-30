@@ -1,4 +1,4 @@
-package com.lilamaris.cozyr.reservation.jpa.sql;
+package com.lilamaris.cozyr.reservation.jdbc.sql;
 
 public class RoomScheduleSlotSql {
     public static final String EXISTS_BY_SLOT_IDS = """

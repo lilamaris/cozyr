@@ -1,4 +1,4 @@
-package com.lilamaris.cozyr.reservation.jpa.sql;
+package com.lilamaris.cozyr.reservation.jdbc.sql;
 
 public class ReservableScheduleSql {
     public static final String FIND_BY_SEAT = """

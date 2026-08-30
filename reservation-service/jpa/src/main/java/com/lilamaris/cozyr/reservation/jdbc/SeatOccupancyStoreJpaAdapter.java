@@ -1,8 +1,8 @@
-package com.lilamaris.cozyr.reservation.jpa;
+package com.lilamaris.cozyr.reservation.jdbc;
 
 import com.lilamaris.cozyr.reservation.application.port.out.SeatOccupancyStore;
 import com.lilamaris.cozyr.reservation.domain.SeatId;
-import com.lilamaris.cozyr.reservation.jpa.sql.SeatOccupancySql;
+import com.lilamaris.cozyr.reservation.jdbc.sql.SeatOccupancySql;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.simple.JdbcClient;

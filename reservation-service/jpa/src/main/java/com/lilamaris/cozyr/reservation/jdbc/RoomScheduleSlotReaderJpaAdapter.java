@@ -1,7 +1,7 @@
-package com.lilamaris.cozyr.reservation.jpa;
+package com.lilamaris.cozyr.reservation.jdbc;
 
 import com.lilamaris.cozyr.reservation.application.port.out.RoomScheduleSlotReader;
-import com.lilamaris.cozyr.reservation.jpa.sql.RoomScheduleSlotSql;
+import com.lilamaris.cozyr.reservation.jdbc.sql.RoomScheduleSlotSql;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;

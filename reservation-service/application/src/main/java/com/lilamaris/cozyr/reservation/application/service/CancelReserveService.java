@@ -4,8 +4,8 @@ import com.lilamaris.cozyr.reservation.application.exception.ReservationServiceP
 import com.lilamaris.cozyr.reservation.application.port.in.CancelReserveUseCase;
 import com.lilamaris.cozyr.reservation.application.port.in.command.CancelReserveCommand;
 import com.lilamaris.cozyr.reservation.application.port.in.result.CancelReserveResult;
+import com.lilamaris.cozyr.reservation.application.port.out.ReservationReader;
 import com.lilamaris.cozyr.reservation.application.port.out.ReservationStatusStore;
-import com.lilamaris.cozyr.reservation.application.port.out.ReservationStore;
 import com.lilamaris.cozyr.reservation.application.port.out.SeatOccupancyStore;
 import com.lilamaris.shrturl.kernel.application.exception.ApplicationException;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +17,7 @@ import java.time.Clock;
 @Service
 @RequiredArgsConstructor
 public class CancelReserveService implements CancelReserveUseCase {
-    private final ReservationStore store;
+    private final ReservationReader reader;
     private final ReservationStatusStore reservationStatusStore;
     private final SeatOccupancyStore seatOccupancyStore;
     private final Clock clock;
@@ -26,7 +26,7 @@ public class CancelReserveService implements CancelReserveUseCase {
     @Transactional
     public CancelReserveResult cancel(CancelReserveCommand command) {
         var reservationId = command.reservationId();
-        var exists = store.existsById(reservationId);
+        var exists = reader.existsById(reservationId);
         if (!exists) throw new ApplicationException(ReservationServiceProgressCode.RESERVATION_NOT_FOUND);
 
         var now = clock.instant();

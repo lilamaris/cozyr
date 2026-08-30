@@ -1,8 +1,8 @@
-package com.lilamaris.cozyr.reservation.jpa;
+package com.lilamaris.cozyr.reservation.jdbc;
 
 import com.lilamaris.cozyr.reservation.application.port.out.UserSnapshotStore;
 import com.lilamaris.cozyr.reservation.domain.UserSnapshot;
-import com.lilamaris.cozyr.reservation.jpa.sql.UserSnapshotSql;
+import com.lilamaris.cozyr.reservation.jdbc.sql.UserSnapshotSql;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;

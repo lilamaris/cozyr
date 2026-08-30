@@ -10,7 +10,7 @@ import java.util.List;
 
 @Component
 @RequiredArgsConstructor
-public class RoomScheduleSlotStoreJpaAdapter implements RoomScheduleSlotStore {
+public class RoomScheduleSlotJpaAdapter implements RoomScheduleSlotStore {
     private final RoomScheduleSlotRepository repository;
 
     @Override

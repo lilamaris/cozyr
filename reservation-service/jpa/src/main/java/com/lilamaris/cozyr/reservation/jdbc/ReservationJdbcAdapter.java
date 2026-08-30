@@ -1,11 +1,14 @@
-package com.lilamaris.cozyr.reservation.jpa;
+package com.lilamaris.cozyr.reservation.jdbc;
 
 import com.lilamaris.cozyr.reservation.application.model.reservation.ReservationCursor;
+import com.lilamaris.cozyr.reservation.application.model.reservation.ReservationDetail;
 import com.lilamaris.cozyr.reservation.application.model.reservation.ReservationFilter;
 import com.lilamaris.cozyr.reservation.application.model.reservation.ReservationSummary;
+import com.lilamaris.cozyr.reservation.application.port.out.ReservationDetailReader;
+import com.lilamaris.cozyr.reservation.application.port.out.ReservationStatusStore;
 import com.lilamaris.cozyr.reservation.application.port.out.ReservationSummaryReader;
-import com.lilamaris.cozyr.reservation.jpa.row.ReservationRow;
-import com.lilamaris.cozyr.reservation.jpa.sql.ReservationSql;
+import com.lilamaris.cozyr.reservation.jdbc.row.ReservationRow;
+import com.lilamaris.cozyr.reservation.jdbc.sql.ReservationSql;
 import com.lilamaris.shrturl.kernel.application.model.cursor.CursorRequest;
 import com.lilamaris.shrturl.kernel.application.model.cursor.CursorResult;
 import jakarta.annotation.Nullable;
@@ -14,12 +17,17 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
 
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.*;
 import java.util.function.Predicate;
 
 @Component
 @RequiredArgsConstructor
-public class ReservationSummaryReaderJdbcAdapter implements ReservationSummaryReader {
+public class ReservationJdbcAdapter implements
+        ReservationDetailReader,
+        ReservationSummaryReader,
+        ReservationStatusStore {
     private final JdbcClient jdbcClient;
 
     @Override
@@ -58,6 +66,51 @@ public class ReservationSummaryReaderJdbcAdapter implements ReservationSummaryRe
         }
 
         return CursorResult.of(content, nextCursor, hasNext);
+    }
+
+    @Override
+    public Optional<ReservationDetail> find(UUID reservationId) {
+        var sql = ReservationSql.FIND_DETAIL_BY_ID;
+
+        var rows = jdbcClient.sql(sql)
+                .param("reservationId", reservationId)
+                .query(ReservationRow.Detail.class)
+                .list();
+
+        if (rows.isEmpty()) return Optional.empty();
+
+        var first = rows.getFirst();
+
+        if (first == null) return Optional.empty();
+
+        var schedules = rows.stream()
+                .filter(Objects::nonNull)
+                .map(ReservationRow.Detail::toRoomSchedule)
+                .toList();
+
+        return Optional.of(
+                ReservationDetail.of(
+                        first.reservationId(),
+                        first.toSeatId(),
+                        first.status(),
+                        schedules,
+                        first.createdAt(),
+                        first.updatedAt(),
+                        first.toUserProjection()
+                )
+        );
+    }
+
+    @Override
+    public boolean cancel(UUID reservationId, Instant canceledAt) {
+        var sql = ReservationSql.CANCEL_BY_ID;
+
+        int rowCount = jdbcClient.sql(sql)
+                .param("reservationId", reservationId)
+                .param("canceledAt", Timestamp.from(canceledAt))
+                .update();
+
+        return rowCount > 0;
     }
 
     private void appendFilter(List<String> conditions, MapSqlParameterSource params, ReservationFilter filter) {

@@ -1,4 +1,4 @@
-package com.lilamaris.cozyr.reservation.jpa.sql;
+package com.lilamaris.cozyr.reservation.jdbc.sql;
 
 public class SeatOccupancySql {
     public static final String INSERT_BY_SCHEDULE_SLOT_IDS = """
