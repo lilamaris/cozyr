@@ -13,13 +13,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Entity
-@Table(
-        name = "user_scope",
-        uniqueConstraints = @UniqueConstraint(
-                name = "uk_scope_user_id_service_role",
-                columnNames = {"user_id", "service", "role"}
-        )
-)
+@Table(name = "user_scope")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class UserScope {

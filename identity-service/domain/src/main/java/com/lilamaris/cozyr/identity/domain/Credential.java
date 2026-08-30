@@ -12,13 +12,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Entity
-@Table(
-        name = "credential",
-        uniqueConstraints = @UniqueConstraint(
-                name = "uk_credential_user_id_email",
-                columnNames = {"user_id", "email"}
-        )
-)
+@Table(name = "credential")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Credential {
