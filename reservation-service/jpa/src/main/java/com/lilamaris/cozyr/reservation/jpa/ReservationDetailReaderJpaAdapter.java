@@ -41,6 +41,7 @@ public class ReservationDetailReaderJpaAdapter implements ReservationDetailReade
                 ReservationDetail.of(
                         first.reservationId(),
                         first.toSeatId(),
+                        first.status(),
                         schedules,
                         first.createdAt(),
                         first.updatedAt(),

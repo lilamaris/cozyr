@@ -4,9 +4,12 @@ import com.lilamaris.cozyr.reservation.application.port.out.SeatOccupancyStore;
 import com.lilamaris.cozyr.reservation.domain.SeatId;
 import com.lilamaris.cozyr.reservation.jpa.sql.SeatOccupancySql;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
 
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Set;
 import java.util.UUID;
@@ -22,33 +25,30 @@ public class SeatOccupancyStoreJpaAdapter implements SeatOccupancyStore {
 
         UUID[] slotIds = scheduleSlotIds.toArray(UUID[]::new);
 
-        int rowCount;
         try {
-            rowCount = jdbcClient.sql(sql)
+            int rowCount = jdbcClient.sql(sql)
                     .param("reservationId", reservationId)
                     .param("occupancyDate", occupancyDate)
                     .param("roomId", seatId.getRoomId())
                     .param("seatId", seatId.getSeatId())
                     .param("scheduleSlotIds", slotIds)
                     .update();
-        } catch (Exception e) {
+
+            return rowCount == scheduleSlotIds.size();
+        } catch (DuplicateKeyException e) {
             return false;
         }
-
-        return rowCount == scheduleSlotIds.size();
     }
 
     @Override
-    public boolean tryRelease(UUID reservationId) {
-        var sql = SeatOccupancySql.DELETE_BY_RESERVATION_ID;
+    public boolean tryRelease(UUID reservationId, Instant releasedAt) {
+        var sql = SeatOccupancySql.RELEASE_BY_RESERVATION_ID;
 
-        try {
-            int rowCount = jdbcClient.sql(sql)
+        int rowCount = jdbcClient.sql(sql)
                     .param("reservationId", reservationId)
+                .param("releasedAt", Timestamp.from(releasedAt))
                     .update();
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
+
+        return rowCount > 0;
     }
 }
