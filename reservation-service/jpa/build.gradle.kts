@@ -12,6 +12,8 @@ dependencies {
     implementation(project(":reservation-service:domain"))
     implementation(project(":reservation-service:application"))
     implementation(libs.spring.boot.starter.data.jpa)
+    implementation(libs.spring.boot.starter.flyway)
+    implementation(libs.flyway.database.postgresql)
 
     testImplementation(libs.spring.boot.starter.data.jpa.test)
 }
