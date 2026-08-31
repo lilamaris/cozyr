@@ -24,6 +24,6 @@ public record UpdatedDisplayNameResult(
 
     public static UpdatedDisplayNameResult from(User user) {
         ObjectPrecondition.requireNonNull(user, "user");
-        return new UpdatedDisplayNameResult(user.getId(), user.displayName(), user.getUpdatedAt());
+        return new UpdatedDisplayNameResult(user.getId(), user.getDisplayName(), user.getUpdatedAt());
     }
 }

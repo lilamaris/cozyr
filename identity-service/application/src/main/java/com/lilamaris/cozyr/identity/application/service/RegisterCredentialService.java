@@ -3,7 +3,7 @@ package com.lilamaris.cozyr.identity.application.service;
 import com.lilamaris.cozyr.identity.application.exception.IdentityServiceProgressCode;
 import com.lilamaris.cozyr.identity.application.port.in.RegisterCredentialUseCase;
 import com.lilamaris.cozyr.identity.application.port.in.command.RegisterCredentialCommand;
-import com.lilamaris.cozyr.identity.application.port.in.result.AuthenticatedResult;
+import com.lilamaris.cozyr.identity.application.port.in.result.AuthenticateResult;
 import com.lilamaris.cozyr.identity.application.port.out.*;
 import com.lilamaris.cozyr.identity.contract.event.UserCreatedEvent;
 import com.lilamaris.cozyr.identity.domain.Credential;
@@ -32,7 +32,7 @@ public class RegisterCredentialService implements RegisterCredentialUseCase {
 
     @Override
     @Transactional
-    public AuthenticatedResult register(RegisterCredentialCommand command) {
+    public AuthenticateResult register(RegisterCredentialCommand command) {
         var email = command.email();
         var exists = credentialReader.existsByEmail(email);
         if (exists) throw new ApplicationException(IdentityServiceProgressCode.EMAIL_DUPLICATED);
@@ -52,9 +52,9 @@ public class RegisterCredentialService implements RegisterCredentialUseCase {
         var isScopeCreated = userScopeStore.tryCreate(userId, candidateScopes, now);
         if (!isScopeCreated) throw new ApplicationException(IdentityServiceProgressCode.SCOPE_DUPLICATED);
 
-        var payload = UserCreatedEvent.of(userId, savedUser.displayName(), now);
+        var payload = UserCreatedEvent.of(userId, savedUser.getDisplayName(), now);
         messagePublisher.publish(payload.toMessage(now));
 
-        return AuthenticatedResult.of(userId, displayName);
+        return AuthenticateResult.success(savedUser.getId());
     }
 }

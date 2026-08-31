@@ -27,7 +27,7 @@ public class ScopeCodec {
     public Scope decode(String encoded) {
         var value = StringPrecondition.requireNonBlank(encoded, "encoded");
 
-        var parts = value.split(",");
+        var parts = value.split("\\.");
         if (parts.length != 2 || parts[0].isBlank() || parts[1].isBlank())
             throw new IllegalArgumentException("Scope must have format '<service>.<role>': " + encoded);
         var service = parts[0];

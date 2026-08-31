@@ -1,7 +1,9 @@
 package com.lilamaris.cozyr.identity.resource.server.config;
 
+import com.lilamaris.cozyr.identity.contract.codec.ScopeCodec;
 import com.lilamaris.cozyr.identity.contract.context.IdentityContextHolder;
 import com.lilamaris.cozyr.identity.contract.context.ThreadLocalIdentityContextHolder;
+import com.lilamaris.cozyr.identity.contract.provider.ServiceScopeProvider;
 import com.lilamaris.cozyr.identity.resource.server.filter.IdentityAuthenticationConverter;
 import com.lilamaris.cozyr.identity.resource.server.filter.IdentityContextBindingFilter;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -41,7 +43,13 @@ public class ResourceServerAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    IdentityAuthenticationConverter identityAuthenticationConverter() {
-        return new IdentityAuthenticationConverter();
+    ScopeCodec scopeCodec() {
+        return new ScopeCodec();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    IdentityAuthenticationConverter identityAuthenticationConverter(ScopeCodec scopeCodec, ServiceScopeProvider serviceScopeProvider) {
+        return new IdentityAuthenticationConverter(scopeCodec, serviceScopeProvider);
     }
 }
