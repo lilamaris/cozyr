@@ -1,7 +1,7 @@
 package com.lilamaris.cozyr.identity.resource.server.filter;
 
 import com.lilamaris.cozyr.identity.contract.codec.ScopeCodec;
-import com.lilamaris.cozyr.identity.contract.provider.ServiceScopeProvider;
+import com.lilamaris.cozyr.identity.contract.provider.ServiceDescriptor;
 import com.lilamaris.cozyr.identity.contract.schema.Identity;
 import com.lilamaris.cozyr.identity.contract.schema.SimpleIdentity;
 import com.lilamaris.cozyr.kernel.core.condition.ObjectPrecondition;
@@ -21,7 +21,7 @@ public class IdentityAuthenticationConverter implements Converter<Jwt, IdentityA
     private static final String VERSION_CLAIM = "version";
     private static final String SCOPE_CLAIM = "scopes";
     private final ScopeCodec scopeCodec;
-    private final ServiceScopeProvider serviceScopeProvider;
+    private final ServiceDescriptor serviceDescriptor;
 
     @Override
     public IdentityAuthenticationToken convert(Jwt source) {
@@ -37,7 +37,7 @@ public class IdentityAuthenticationConverter implements Converter<Jwt, IdentityA
         var id = UUID.fromString(subject);
         var displayName = StringPrecondition.requireNonBlank(source.getClaim(DISPLAY_NAME_CLAIM), "displayName");
         var scopes = scopeCodec.decode(source.getClaimAsStringList(SCOPE_CLAIM).stream().collect(Collectors.toUnmodifiableSet())).stream()
-                .filter(serviceScopeProvider::isScopeMatched)
+                .filter(serviceDescriptor::owns)
                 .collect(Collectors.toUnmodifiableSet());
         var version = (Long) source.getClaim(VERSION_CLAIM);
         return SimpleIdentity.of(id, displayName, scopes, version);

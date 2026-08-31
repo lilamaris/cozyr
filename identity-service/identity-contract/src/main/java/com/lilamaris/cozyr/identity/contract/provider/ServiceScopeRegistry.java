@@ -9,11 +9,11 @@ import java.util.Map;
 public class ServiceScopeRegistry {
     private final Map<String, Scope> serviceScopeRegistry;
 
-    public ServiceScopeRegistry(List<ServiceScopeProvider> providers) {
+    public ServiceScopeRegistry(List<ServiceDescriptor> descriptors) {
         Map<String, Scope> registry = new HashMap<>();
 
-        providers.forEach(provider -> {
-            var scope = provider.provide();
+        descriptors.forEach(descriptor -> {
+            var scope = descriptor.defaultScope();
 
             var key = keyOf(scope);
             if (registry.putIfAbsent(key, scope) != null)
