@@ -9,7 +9,7 @@ version = "0.0.1-SNAPSHOT"
 
 dependencies {
     implementation(project(":kernel:kernel-core"))
-    compileOnlyApi(libs.jakarta.persistence.api)
+    compileOnlyApi(libs.hibernate.core)
 
     testImplementation(project(":kernel:kernel-test"))
 }
