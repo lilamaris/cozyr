@@ -14,6 +14,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 
+import java.util.ServiceLoader;
+
 @AutoConfiguration
 @ConditionalOnProperty(
         prefix = "cozyr.identity-service.resource-server",
@@ -49,7 +51,10 @@ public class ResourceServerAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    IdentityAuthenticationConverter identityAuthenticationConverter(ScopeCodec scopeCodec, ServiceScopeProvider serviceScopeProvider) {
+    IdentityAuthenticationConverter identityAuthenticationConverter(ScopeCodec scopeCodec) {
+        var serviceScopeProvider = ServiceLoader.load(ServiceScopeProvider.class)
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Service scope provider must be provided."));
         return new IdentityAuthenticationConverter(scopeCodec, serviceScopeProvider);
     }
 }

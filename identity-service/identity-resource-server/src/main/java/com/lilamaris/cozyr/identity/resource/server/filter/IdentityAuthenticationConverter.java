@@ -36,7 +36,9 @@ public class IdentityAuthenticationConverter implements Converter<Jwt, IdentityA
         var subject = ObjectPrecondition.requireNonNull(source.getSubject(), "subject");
         var id = UUID.fromString(subject);
         var displayName = StringPrecondition.requireNonBlank(source.getClaim(DISPLAY_NAME_CLAIM), "displayName");
-        var scopes = scopeCodec.decode(source.getClaimAsStringList(SCOPE_CLAIM).stream().collect(Collectors.toUnmodifiableSet()));
+        var scopes = scopeCodec.decode(source.getClaimAsStringList(SCOPE_CLAIM).stream().collect(Collectors.toUnmodifiableSet())).stream()
+                .filter(serviceScopeProvider::isScopeMatched)
+                .collect(Collectors.toUnmodifiableSet());
         var version = (Long) source.getClaim(VERSION_CLAIM);
         return SimpleIdentity.of(id, displayName, scopes, version);
     }
