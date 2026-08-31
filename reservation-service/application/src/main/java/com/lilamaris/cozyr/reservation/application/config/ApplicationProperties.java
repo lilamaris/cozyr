@@ -33,7 +33,15 @@ public record ApplicationProperties(
 
             @DefaultValue("60")
             @Positive
-            int slotMinute
+            int slotMinute,
+
+            @DefaultValue("3")
+            @Positive
+            int maxReservationPerUserPerDay,
+
+            @DefaultValue("5")
+            @Positive
+            int maxSchedulePerReservation
     ) {
     }
 }

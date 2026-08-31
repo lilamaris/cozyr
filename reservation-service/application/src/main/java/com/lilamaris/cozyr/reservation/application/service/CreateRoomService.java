@@ -1,9 +1,11 @@
 package com.lilamaris.cozyr.reservation.application.service;
 
+import com.lilamaris.cozyr.reservation.application.internal.RoomPolicyFactory;
 import com.lilamaris.cozyr.reservation.application.internal.RoomScheduleSlotFactory;
 import com.lilamaris.cozyr.reservation.application.port.in.CreateRoomUseCase;
 import com.lilamaris.cozyr.reservation.application.port.in.command.CreateRoomCommand;
 import com.lilamaris.cozyr.reservation.application.port.in.result.RoomCreatedResult;
+import com.lilamaris.cozyr.reservation.application.port.out.RoomPolicyStore;
 import com.lilamaris.cozyr.reservation.application.port.out.RoomScheduleSlotStore;
 import com.lilamaris.cozyr.reservation.application.port.out.RoomStore;
 import com.lilamaris.cozyr.reservation.domain.Room;
@@ -17,8 +19,13 @@ import java.time.Clock;
 @RequiredArgsConstructor
 public class CreateRoomService implements CreateRoomUseCase {
     private final RoomStore store;
+
     private final RoomScheduleSlotFactory roomScheduleSlotFactory;
     private final RoomScheduleSlotStore roomScheduleSlotStore;
+
+    private final RoomPolicyFactory roomPolicyFactory;
+    private final RoomPolicyStore roomPolicyStore;
+
     private final Clock clock;
 
     @Override
@@ -33,6 +40,10 @@ public class CreateRoomService implements CreateRoomUseCase {
 
         var roomScheduleSlots = roomScheduleSlotFactory.fromProperties(saved.getId());
         roomScheduleSlotStore.saveAll(roomScheduleSlots);
-        return RoomCreatedResult.from(saved);
+
+        var roomOpPolicy = roomPolicyFactory.fromProperties(saved.getId(), saved.getCreatedAt());
+        roomPolicyStore.saveOp(roomOpPolicy);
+
+        return RoomCreatedResult.from(room);
     }
 }
