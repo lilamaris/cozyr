@@ -131,27 +131,13 @@ public class ReservationJdbcAdapter implements
 
         Optional.ofNullable(filter.roomId())
                 .ifPresent(roomId -> {
-                    conditions.add("""
-                            EXISTS (
-                                SELECT 1
-                                FROM seat_occupancy o
-                                WHERE o.reservation_id = r.id
-                                    AND o.room_id = :roomId
-                            )
-                            """);
+                    conditions.add("r.room_id = :roomId");
                     params.addValue("roomId", roomId);
                 });
 
         Optional.ofNullable(filter.seatId())
                 .ifPresent(seatId -> {
-                    conditions.add("""
-                            EXISTS(
-                                SELECT 1
-                                FROM seat_occupancy o
-                                WHERE o.reservation_id = r.id
-                                    AND o.seat_id = :seatId
-                            )
-                            """);
+                    conditions.add("r.seat_id = :seatId");
                     params.addValue("seatId", seatId);
                 });
     }

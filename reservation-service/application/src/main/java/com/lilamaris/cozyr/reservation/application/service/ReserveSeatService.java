@@ -43,7 +43,7 @@ public class ReserveSeatService implements ReserveSeatUseCase {
         var now = clock.instant();
         var reserveUserId = command.reserveUserId();
         var reserveDate = command.reserveDate();
-        var reservation = Reservation.of(reserveUserId, now);
+        var reservation = Reservation.of(reserveUserId, reserveSeatId, reserveDate, now);
 
         var saved = reservationStore.save(reservation);
         var occupied = seatOccupancyStore.tryOccupy(saved.getId(), reserveDate, reserveSeatId, slotIds);

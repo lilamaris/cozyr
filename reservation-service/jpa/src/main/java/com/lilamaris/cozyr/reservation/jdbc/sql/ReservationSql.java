@@ -7,8 +7,8 @@ public class ReservationSql {
                 r.status AS status,
                 r.created_at AS createdAt,
                 r.updated_at AS updatedAt,
-                o.room_id AS roomId,
-                o.seat_id AS seatId,
+                r.room_id AS roomId,
+                r.seat_id AS seatId,
                 rs.id AS slotId,
                 rs.start_at AS startAt,
                 rs.end_at AS endAt,
@@ -30,6 +30,8 @@ public class ReservationSql {
                     r.id,
                     r.reserved_user_id,
                     r.status,
+                    r.room_id,
+                    r.seat_id,
                     r.created_at,
                     r.updated_at
                 FROM reservation r
@@ -41,21 +43,19 @@ public class ReservationSql {
             occupancy_summary AS (
                 SELECT
                     o.reservation_id,
-                    o.room_id,
-                    o.seat_id,
                     COUNT(*) AS occupied_slot_count
                 FROM seat_occupancy o
                 JOIN filtered f
                     ON f.id = o.reservation_id
-                GROUP BY o.reservation_id, o.room_id, o.seat_id
+                GROUP BY o.reservation_id
             )
             SELECT
                 f.id AS reservationId,
                 f.status AS status,
                 f.created_at AS createdAt,
                 f.updated_at AS updatedAt,
-                os.room_id AS roomId,
-                os.seat_id AS seatId,
+                f.room_id AS roomId,
+                f.seat_id AS seatId,
                 COALESCE(os.occupied_slot_count, 0) AS occupiedSlotCount,
                 u.user_id AS userId,
                 u.display_name AS displayName
