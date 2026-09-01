@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.UUID;
 
 @Entity
@@ -22,6 +23,12 @@ public class Reservation {
     @Column(name = "reserved_user_id", nullable = false)
     private UUID reservedUserId;
 
+    @Embedded
+    private SeatId seatId;
+
+    @Column(name = "occupancy_date", nullable = false)
+    private LocalDate occupancyDate;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     private ReservationStatus status;
@@ -32,8 +39,11 @@ public class Reservation {
     @Column(name = "updated_at")
     private Instant updatedAt;
 
-    private Reservation(UUID reservedUserId, ReservationStatus status, Instant createdAt, Instant updatedAt) {
+    private Reservation(UUID reservedUserId, SeatId seatId, LocalDate occupancyDate,
+                        ReservationStatus status, Instant createdAt, Instant updatedAt) {
         this.reservedUserId = ObjectPrecondition.requireNonNull(reservedUserId, "reservedUserId");
+        this.seatId = ObjectPrecondition.requireNonNull(seatId, "seatId");
+        this.occupancyDate = ObjectPrecondition.requireNonNull(occupancyDate, "occupancyDate");
         this.status = ObjectPrecondition.requireNonNull(status, "status");
         this.createdAt = ObjectPrecondition.requireNonNull(createdAt, "createdAt");
 
@@ -42,7 +52,7 @@ public class Reservation {
         }
     }
 
-    public static Reservation of(UUID reservedUserId, Instant createdAt) {
-        return new Reservation(reservedUserId, ReservationStatus.RESERVED, createdAt, createdAt);
+    public static Reservation of(UUID reservedUserId, SeatId seatId, LocalDate occupancyDate, Instant createdAt) {
+        return new Reservation(reservedUserId, seatId, occupancyDate, ReservationStatus.RESERVED, createdAt, createdAt);
     }
 }

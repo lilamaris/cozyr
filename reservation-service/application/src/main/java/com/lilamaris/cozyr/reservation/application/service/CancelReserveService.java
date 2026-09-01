@@ -4,6 +4,7 @@ import com.lilamaris.cozyr.reservation.application.exception.ReservationServiceP
 import com.lilamaris.cozyr.reservation.application.port.in.CancelReserveUseCase;
 import com.lilamaris.cozyr.reservation.application.port.in.command.CancelReserveCommand;
 import com.lilamaris.cozyr.reservation.application.port.in.result.CancelReserveResult;
+import com.lilamaris.cozyr.reservation.application.port.out.DailyUsageCounter;
 import com.lilamaris.cozyr.reservation.application.port.out.ReservationReader;
 import com.lilamaris.cozyr.reservation.application.port.out.ReservationStatusStore;
 import com.lilamaris.cozyr.reservation.application.port.out.SeatOccupancyStore;
@@ -20,21 +21,32 @@ public class CancelReserveService implements CancelReserveUseCase {
     private final ReservationReader reader;
     private final ReservationStatusStore reservationStatusStore;
     private final SeatOccupancyStore seatOccupancyStore;
+
+    private final DailyUsageCounter dailyUsageCounter;
     private final Clock clock;
 
     @Override
     @Transactional
     public CancelReserveResult cancel(CancelReserveCommand command) {
         var reservationId = command.reservationId();
-        var exists = reader.existsById(reservationId);
-        if (!exists) throw new ApplicationException(ReservationServiceProgressCode.RESERVATION_NOT_FOUND);
+        var reservation = reader.findById(reservationId)
+                .orElseThrow(() -> new ApplicationException(ReservationServiceProgressCode.RESERVATION_NOT_FOUND));
 
         var now = clock.instant();
         var isCanceled = reservationStatusStore.cancel(reservationId, now);
-        if (!isCanceled) throw new ApplicationException(ReservationServiceProgressCode.RESERVATION_ALREADY_CANCELED);
+        if (!isCanceled)
+            throw new ApplicationException(ReservationServiceProgressCode.RESERVATION_ALREADY_CANCELED);
 
         var isReleased = seatOccupancyStore.tryRelease(reservationId, now);
-        if (!isReleased) throw new ApplicationException(ReservationServiceProgressCode.RESERVATION_ALREADY_CANCELED);
+        if (!isReleased)
+            throw new ApplicationException(ReservationServiceProgressCode.RESERVATION_ALREADY_CANCELED);
+
+        var userId = reservation.getReservedUserId();
+        var roomId = reservation.getSeatId().getRoomId();
+        var reservationDate = reservation.getOccupancyDate();
+        var acquired = dailyUsageCounter.tryDecrease(userId, roomId, reservationDate);
+        if (!acquired)
+            throw new ApplicationException(ReservationServiceProgressCode.RESERVATION_ALREADY_CANCELED);
 
         return CancelReserveResult.of(reservationId, now);
     }
