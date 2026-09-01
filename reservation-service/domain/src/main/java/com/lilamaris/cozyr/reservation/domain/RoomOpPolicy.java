@@ -45,4 +45,9 @@ public class RoomOpPolicy {
     public static RoomOpPolicy of(Long roomId, int maxReservationPerUserPerDay, int maxSchedulePerReservation, Instant createdAt) {
         return new RoomOpPolicy(roomId, maxReservationPerUserPerDay, maxSchedulePerReservation, createdAt);
     }
+
+    public boolean allowsScheduleCount(int scheduleCount) {
+        NumberPrecondition.requirePositive(scheduleCount, "scheduleCount");
+        return scheduleCount <= maxSchedulePerReservation;
+    }
 }

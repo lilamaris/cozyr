@@ -1,6 +1,7 @@
 package com.lilamaris.cozyr.reservation.web.config;
 
 import com.lilamaris.cozyr.kernel.web.response.*;
+import com.lilamaris.cozyr.reservation.web.advice.ReservationErrorStatusResolver;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,7 +16,7 @@ public class WebConfiguration {
 
     @Bean
     public ErrorStatusResolver errorStatusResolver() {
-        return new DefaultErrorStatusResolver();
+        return new ReservationErrorStatusResolver();
     }
 
     @Bean
