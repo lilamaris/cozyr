@@ -7,6 +7,7 @@ import com.lilamaris.cozyr.reservation.jpa.repository.ReservationRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Component
@@ -17,6 +18,11 @@ public class ReservationJpaAdapter implements ReservationStore, ReservationReade
     @Override
     public boolean existsById(UUID reservationId) {
         return repository.existsById(reservationId);
+    }
+
+    @Override
+    public Optional<Reservation> findById(UUID reservationId) {
+        return repository.findById(reservationId);
     }
 
     @Override
