@@ -4,9 +4,10 @@ import com.lilamaris.cozyr.identity.contract.schema.Identity;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
 
-import java.util.Set;
+import java.util.stream.Collectors;
 
 public class IdentityAuthenticationToken extends AbstractAuthenticationToken {
     private final Identity identity;
@@ -16,7 +17,12 @@ public class IdentityAuthenticationToken extends AbstractAuthenticationToken {
             Identity identity,
             Jwt jwt
     ) {
-        super(Set.of());
+        super(
+                identity.scopes().stream()
+                        .map(scope -> "ROLE_" + scope.role().name())
+                        .map(SimpleGrantedAuthority::new)
+                        .collect(Collectors.toUnmodifiableSet())
+        );
         this.identity = identity;
         this.jwt = jwt;
         setAuthenticated(true);
