@@ -10,6 +10,8 @@ version = "0.0.1-SNAPSHOT"
 dependencies {
     api(project(":kernel:kernel-application"))
     implementation(project(":statistics-service:domain"))
+    implementation(project(":statistics-service:statistics-contract"))
+    implementation(project(":identity-service:identity-contract"))
 
     testImplementation(project(":kernel:kernel-test"))
 }

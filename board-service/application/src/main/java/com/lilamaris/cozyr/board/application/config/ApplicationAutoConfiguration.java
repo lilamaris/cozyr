@@ -1,5 +1,7 @@
 package com.lilamaris.cozyr.board.application.config;
 
+import com.lilamaris.cozyr.board.contract.provider.BoardServiceDescriptor;
+import com.lilamaris.cozyr.identity.contract.provider.ServiceDescriptor;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -19,5 +21,10 @@ public class ApplicationAutoConfiguration {
     @Bean
     Clock clock(ApplicationProperties properties) {
         return Clock.system(properties.timezone());
+    }
+
+    @Bean
+    ServiceDescriptor serviceDescriptor() {
+        return new BoardServiceDescriptor();
     }
 }

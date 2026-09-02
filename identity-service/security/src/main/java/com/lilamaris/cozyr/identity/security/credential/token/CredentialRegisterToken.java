@@ -1,9 +1,7 @@
 package com.lilamaris.cozyr.identity.security.credential.token;
 
-import com.lilamaris.cozyr.identity.application.model.AuthenticatedPrincipal;
 import com.lilamaris.cozyr.identity.application.port.in.command.RegisterCredentialCommand;
-import com.lilamaris.cozyr.identity.application.port.in.result.AuthenticatedResult;
-import com.lilamaris.cozyr.identity.application.port.in.result.RegisteredResult;
+import com.lilamaris.cozyr.identity.application.port.in.result.AuthenticateResult;
 import com.lilamaris.cozyr.kernel.core.condition.ObjectPrecondition;
 import lombok.Getter;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
@@ -13,7 +11,7 @@ import java.util.List;
 @Getter
 public class CredentialRegisterToken extends AbstractAuthenticationToken {
     private RegisterCredentialCommand command;
-    private AuthenticatedResult result;
+    private AuthenticateResult result;
 
     private CredentialRegisterToken(RegisterCredentialCommand command) {
         super(List.of());
@@ -22,7 +20,7 @@ public class CredentialRegisterToken extends AbstractAuthenticationToken {
         this.command = ObjectPrecondition.requireNonNull(command, "command");
     }
 
-    private CredentialRegisterToken(AuthenticatedResult result) {
+    private CredentialRegisterToken(AuthenticateResult result) {
         super(List.of());
         super.setAuthenticated(true);
 
@@ -33,7 +31,7 @@ public class CredentialRegisterToken extends AbstractAuthenticationToken {
         return new CredentialRegisterToken(command);
     }
 
-    public static CredentialRegisterToken of(AuthenticatedResult result) {
+    public static CredentialRegisterToken of(AuthenticateResult result) {
         return new CredentialRegisterToken(result);
     }
 

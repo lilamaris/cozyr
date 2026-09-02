@@ -2,7 +2,7 @@ package com.lilamaris.cozyr.identity.security.credential.handler;
 
 import com.lilamaris.cozyr.identity.application.model.token.TokenItem;
 import com.lilamaris.cozyr.identity.application.port.in.IssueTokenUseCase;
-import com.lilamaris.cozyr.identity.application.port.in.result.AuthenticatedResult;
+import com.lilamaris.cozyr.identity.application.port.in.result.AuthenticateResult;
 import com.lilamaris.cozyr.kernel.web.response.ServletResponseWriter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -28,9 +28,9 @@ public class CredentialAuthenticationSuccessHandler implements AuthenticationSuc
     ) throws IOException {
         if (response == null) return;
         if (authentication == null) return;
-        if (!(authentication.getPrincipal() instanceof AuthenticatedResult result)) return;
+        if (!(authentication.getPrincipal() instanceof AuthenticateResult result)) return;
 
-        var token = issueTokenUseCase.issue(result);
+        var token = issueTokenUseCase.issue(result.userId());
 
         var accessTokenCookie = buildTokenCookie("access_token", token.accessToken());
         var refreshTokenCookie = buildTokenCookie("refresh_token", token.refreshToken());

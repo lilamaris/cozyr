@@ -5,7 +5,6 @@ import com.lilamaris.cozyr.identity.application.exception.IdentityServiceProgres
 import com.lilamaris.cozyr.identity.application.generator.RefreshTokenGenerator;
 import com.lilamaris.cozyr.identity.application.model.token.TokenItem;
 import com.lilamaris.cozyr.identity.application.port.in.IssueTokenUseCase;
-import com.lilamaris.cozyr.identity.application.port.in.result.AuthenticatedResult;
 import com.lilamaris.cozyr.identity.application.port.in.result.TokenResult;
 import com.lilamaris.cozyr.identity.application.port.out.PrincipalReader;
 import com.lilamaris.cozyr.identity.contract.codec.ScopeCodec;
@@ -35,9 +34,7 @@ public class IssueTokenService implements IssueTokenUseCase {
 
     @Override
     @Transactional(readOnly = true)
-    public TokenResult issue(AuthenticatedResult result) {
-        var userId = result.userId();
-
+    public TokenResult issue(UUID userId) {
         var principal = principalReader.findByUserId(userId)
                 .orElseThrow(() -> new ApplicationException(IdentityServiceProgressCode.USER_NOT_FOUND));
 

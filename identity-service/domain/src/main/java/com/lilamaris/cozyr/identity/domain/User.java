@@ -1,6 +1,5 @@
 package com.lilamaris.cozyr.identity.domain;
 
-import com.lilamaris.cozyr.identity.contract.schema.Identity;
 import com.lilamaris.cozyr.kernel.core.condition.NumberPrecondition;
 import com.lilamaris.cozyr.kernel.core.condition.ObjectPrecondition;
 import com.lilamaris.cozyr.kernel.core.condition.StringPrecondition;
@@ -17,7 +16,7 @@ import java.util.UUID;
 @Table(name = "cozyr_user")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class User implements Identity {
+public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
@@ -46,21 +45,6 @@ public class User implements Identity {
 
     public static User of(String displayName, Instant createdAt) {
         return new User(displayName, createdAt, null, 0L);
-    }
-
-    @Override
-    public UUID id() {
-        return id;
-    }
-
-    @Override
-    public String displayName() {
-        return displayName;
-    }
-
-    @Override
-    public long version() {
-        return version;
     }
 
     public void updateDisplayName(String displayName, Instant updatedAt) {

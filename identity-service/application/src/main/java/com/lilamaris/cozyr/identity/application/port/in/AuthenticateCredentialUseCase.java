@@ -1,8 +1,8 @@
 package com.lilamaris.cozyr.identity.application.port.in;
 
 import com.lilamaris.cozyr.identity.application.port.in.command.AuthenticateCredentialCommand;
-import com.lilamaris.cozyr.identity.application.port.in.result.AuthenticatedResult;
+import com.lilamaris.cozyr.identity.application.port.in.result.AuthenticateResult;
 
 public interface AuthenticateCredentialUseCase {
-    AuthenticatedResult authenticate(AuthenticateCredentialCommand command);
+    AuthenticateResult authenticate(AuthenticateCredentialCommand command);
 }
