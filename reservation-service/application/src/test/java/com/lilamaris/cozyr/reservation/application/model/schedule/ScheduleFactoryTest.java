@@ -1,5 +1,6 @@
 package com.lilamaris.cozyr.reservation.application.model.schedule;
 
+import com.lilamaris.cozyr.reservation.contract.model.LocalTimeSchedule;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

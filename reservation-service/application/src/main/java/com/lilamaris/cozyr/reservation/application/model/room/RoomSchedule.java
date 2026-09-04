@@ -1,7 +1,7 @@
 package com.lilamaris.cozyr.reservation.application.model.room;
 
 import com.lilamaris.cozyr.kernel.core.condition.ObjectPrecondition;
-import com.lilamaris.cozyr.reservation.application.model.schedule.LocalTimeSchedule;
+import com.lilamaris.cozyr.reservation.contract.model.LocalTimeSchedule;
 
 import java.time.LocalTime;
 import java.util.UUID;
