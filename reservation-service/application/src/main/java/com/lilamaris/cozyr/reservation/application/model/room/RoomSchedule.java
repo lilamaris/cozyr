@@ -24,4 +24,8 @@ public record RoomSchedule(
     public static RoomSchedule from(UUID slotId, LocalTimeSchedule schedule) {
         return new RoomSchedule(slotId, schedule.from(), schedule.to());
     }
+
+    public LocalTimeSchedule toLocalTimeSchedule() {
+        return LocalTimeSchedule.of(startAt, endAt);
+    }
 }

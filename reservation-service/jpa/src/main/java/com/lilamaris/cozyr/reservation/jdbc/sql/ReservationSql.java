@@ -24,6 +24,31 @@ public class ReservationSql {
             WHERE r.id = :reservationId
             """;
 
+    public static final String FIND_CONTEXT_BY_ID = """
+            SELECT
+                r.id AS reservationId,
+                r.occupancy_date AS reservationDate,
+                r.status AS status,
+                r.created_at AS createdAt,
+                r.updated_at AS updatedAt,
+                r.room_id AS roomId,
+                r.seat_id AS seatId,
+                rs.id AS scheduleSlotId,
+                rs.start_at AS startAt,
+                rs.end_at AS endAt,
+                u.user_id AS reservedUserId,
+                u.display_name AS displayName
+            FROM reservation r
+            JOIN seat_occupancy o
+                ON o.reservation_id = r.id
+            JOIN room_schedule_slot rs
+                ON o.schedule_slot_id = rs.id
+            JOIN user_snapshot u
+                ON u.user_id = r.reserved_user_id
+            WHERE r.id = :reservationId
+            ORDER BY 
+            """;
+
     public static final String LIST_SUMMARIES = """
             WITH filtered AS (
                 SELECT
