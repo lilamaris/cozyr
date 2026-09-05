@@ -19,6 +19,7 @@ public record ReservationCreatedEvent(
         UUID requestedUserId
 ) implements MessagePayload {
     public ReservationCreatedEvent {
+        ObjectPrecondition.requireNonNull(reservationId, "reservationId");
         ObjectPrecondition.requireNonNull(reservationDate, "reservationDate");
         NumberPrecondition.requireNonNegative(roomId, "roomId");
         StringPrecondition.requireNonBlank(seatId, "seatId");
