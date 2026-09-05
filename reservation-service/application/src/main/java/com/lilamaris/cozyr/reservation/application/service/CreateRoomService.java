@@ -1,5 +1,6 @@
 package com.lilamaris.cozyr.reservation.application.service;
 
+import com.lilamaris.cozyr.kernel.message.MessagePublisher;
 import com.lilamaris.cozyr.reservation.application.internal.RoomPolicyFactory;
 import com.lilamaris.cozyr.reservation.application.internal.RoomScheduleSlotFactory;
 import com.lilamaris.cozyr.reservation.application.port.in.CreateRoomUseCase;
@@ -8,6 +9,7 @@ import com.lilamaris.cozyr.reservation.application.port.in.result.RoomCreatedRes
 import com.lilamaris.cozyr.reservation.application.port.out.RoomPolicyStore;
 import com.lilamaris.cozyr.reservation.application.port.out.RoomScheduleSlotStore;
 import com.lilamaris.cozyr.reservation.application.port.out.RoomStore;
+import com.lilamaris.cozyr.reservation.contract.event.RoomCreatedEvent;
 import com.lilamaris.cozyr.reservation.domain.Room;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -26,6 +28,7 @@ public class CreateRoomService implements CreateRoomUseCase {
     private final RoomPolicyFactory roomPolicyFactory;
     private final RoomPolicyStore roomPolicyStore;
 
+    private final MessagePublisher messagePublisher;
     private final Clock clock;
 
     @Override
@@ -43,6 +46,9 @@ public class CreateRoomService implements CreateRoomUseCase {
 
         var roomOpPolicy = roomPolicyFactory.fromProperties(saved.getId(), saved.getCreatedAt());
         roomPolicyStore.saveOp(roomOpPolicy);
+
+        var event = RoomCreatedEvent.of(saved.getId(), saved.getName(), saved.getDescription(), saved.getCreatedAt());
+        messagePublisher.publish(event.toMessage(now));
 
         return RoomCreatedResult.from(room);
     }
