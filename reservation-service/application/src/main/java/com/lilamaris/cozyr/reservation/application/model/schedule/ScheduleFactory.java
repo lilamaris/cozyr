@@ -2,6 +2,7 @@ package com.lilamaris.cozyr.reservation.application.model.schedule;
 
 import com.lilamaris.cozyr.kernel.core.condition.ObjectPrecondition;
 import com.lilamaris.cozyr.kernel.core.condition.TimePrecondition;
+import com.lilamaris.cozyr.reservation.contract.model.LocalTimeSchedule;
 
 import java.time.Duration;
 import java.time.LocalTime;

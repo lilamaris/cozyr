@@ -1,9 +1,7 @@
 package com.lilamaris.cozyr.reservation.jdbc;
 
-import com.lilamaris.cozyr.reservation.application.model.reservation.ReservationCursor;
-import com.lilamaris.cozyr.reservation.application.model.reservation.ReservationDetail;
-import com.lilamaris.cozyr.reservation.application.model.reservation.ReservationFilter;
-import com.lilamaris.cozyr.reservation.application.model.reservation.ReservationSummary;
+import com.lilamaris.cozyr.reservation.application.model.reservation.*;
+import com.lilamaris.cozyr.reservation.application.port.out.ReservationContextReader;
 import com.lilamaris.cozyr.reservation.application.port.out.ReservationDetailReader;
 import com.lilamaris.cozyr.reservation.application.port.out.ReservationStatusStore;
 import com.lilamaris.cozyr.reservation.application.port.out.ReservationSummaryReader;
@@ -27,6 +25,7 @@ import java.util.function.Predicate;
 public class ReservationJdbcAdapter implements
         ReservationDetailReader,
         ReservationSummaryReader,
+        ReservationContextReader,
         ReservationStatusStore {
     private final JdbcClient jdbcClient;
 
@@ -99,6 +98,31 @@ public class ReservationJdbcAdapter implements
                         first.toUserProjection()
                 )
         );
+    }
+
+    @Override
+    public Optional<ReservationContext> findById(UUID reservationId) {
+        var sql = ReservationSql.FIND_CONTEXT_BY_ID;
+
+        var rows = jdbcClient.sql(sql)
+                .param("reservationId", reservationId)
+                .query(ReservationRow.Context.class)
+                .list();
+
+        if (rows.isEmpty()) return Optional.empty();
+
+        var first = rows.getFirst();
+
+        if (first == null) return Optional.empty();
+
+        var seatId = first.toSeatId();
+        var reservedUser = first.toUserProjection();
+        var schedules = rows.stream()
+                .filter(Objects::nonNull)
+                .map(ReservationRow.Context::toRoomSchedule)
+                .toList();
+
+        return Optional.of(first.toModel(seatId, schedules, reservedUser));
     }
 
     @Override

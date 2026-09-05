@@ -1,10 +1,13 @@
 package com.lilamaris.cozyr.reservation.application.service;
 
+import com.lilamaris.cozyr.kernel.message.MessagePublisher;
 import com.lilamaris.cozyr.reservation.application.exception.ReservationServiceProgressCode;
+import com.lilamaris.cozyr.reservation.application.model.room.RoomSchedule;
 import com.lilamaris.cozyr.reservation.application.port.in.ReserveSeatUseCase;
 import com.lilamaris.cozyr.reservation.application.port.in.command.ReserveSeatCommand;
 import com.lilamaris.cozyr.reservation.application.port.in.result.ReserveSeatResult;
 import com.lilamaris.cozyr.reservation.application.port.out.*;
+import com.lilamaris.cozyr.reservation.contract.event.ReservationCreatedEvent;
 import com.lilamaris.cozyr.reservation.domain.Reservation;
 import com.lilamaris.shrturl.kernel.application.exception.ApplicationException;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +27,7 @@ public class ReserveSeatService implements ReserveSeatUseCase {
 
     private final RoomContextReader roomContextReader;
     private final DailyUsageCounter dailyUsageCounter;
+    private final MessagePublisher messagePublisher;
     private final Clock clock;
 
     @Override
@@ -39,8 +43,9 @@ public class ReserveSeatService implements ReserveSeatUseCase {
 
         if (slotIds.isEmpty()) throw new ApplicationException(ReservationServiceProgressCode.SCHEDULE_NOT_FOUND);
 
-        var slotIdsExistsInRoom = roomScheduleSlotReader.existsByRoom(roomId, slotIds);
-        if (!slotIdsExistsInRoom) throw new ApplicationException(ReservationServiceProgressCode.SCHEDULE_NOT_FOUND);
+        var targetSlots = roomScheduleSlotReader.findAllByRoomId(roomId, slotIds);
+        if (slotIds.size() != targetSlots.size())
+            throw new ApplicationException(ReservationServiceProgressCode.SCHEDULE_NOT_FOUND);
 
         var seatExists = seatReader.existsById(reserveSeatId);
         if (!seatExists) throw new ApplicationException(ReservationServiceProgressCode.SEAT_NOT_FOUND);
@@ -60,6 +65,12 @@ public class ReserveSeatService implements ReserveSeatUseCase {
         var saved = reservationStore.save(reservation);
         var occupied = seatOccupancyStore.tryOccupy(saved.getId(), reserveDate, reserveSeatId, slotIds);
         if (!occupied) throw new ApplicationException(ReservationServiceProgressCode.SCHEDULE_ALREADY_OCCUPIED);
+
+        var schedules = targetSlots.stream()
+                .map(RoomSchedule::toLocalTimeSchedule)
+                .toList();
+        var event = ReservationCreatedEvent.of(saved.getId(), reserveDate, roomId, reserveSeatId.getSeatId(), reserveUserId, schedules);
+        messagePublisher.publish(event.toMessage(now));
 
         return ReserveSeatResult.from(saved);
     }

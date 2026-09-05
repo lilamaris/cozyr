@@ -1,4 +1,4 @@
-package com.lilamaris.cozyr.reservation.application.model.schedule;
+package com.lilamaris.cozyr.reservation.contract.model;
 
 import com.lilamaris.cozyr.kernel.core.condition.ObjectPrecondition;
 import com.lilamaris.cozyr.kernel.core.condition.TimePrecondition;
