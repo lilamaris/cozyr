@@ -46,7 +46,7 @@ public class ReservationSql {
             JOIN user_snapshot u
                 ON u.user_id = r.reserved_user_id
             WHERE r.id = :reservationId
-            ORDER BY 
+            ORDER BY rs.start_at, rs.end_at, rs.id
             """;
 
     public static final String LIST_SUMMARIES = """
