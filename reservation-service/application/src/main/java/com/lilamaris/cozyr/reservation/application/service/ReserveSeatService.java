@@ -2,6 +2,8 @@ package com.lilamaris.cozyr.reservation.application.service;
 
 import com.lilamaris.cozyr.kernel.message.MessagePublisher;
 import com.lilamaris.cozyr.reservation.application.exception.ReservationServiceProgressCode;
+import com.lilamaris.cozyr.reservation.application.internal.id.IdGenerator;
+import com.lilamaris.cozyr.reservation.application.internal.id.UUIDv7Generator;
 import com.lilamaris.cozyr.reservation.application.model.room.RoomSchedule;
 import com.lilamaris.cozyr.reservation.application.port.in.ReserveSeatUseCase;
 import com.lilamaris.cozyr.reservation.application.port.in.command.ReserveSeatCommand;
@@ -9,12 +11,14 @@ import com.lilamaris.cozyr.reservation.application.port.in.result.ReserveSeatRes
 import com.lilamaris.cozyr.reservation.application.port.out.*;
 import com.lilamaris.cozyr.reservation.contract.event.ReservationCreatedEvent;
 import com.lilamaris.cozyr.reservation.domain.Reservation;
+import com.lilamaris.cozyr.reservation.domain.ReservationId;
 import com.lilamaris.shrturl.kernel.application.exception.ApplicationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Clock;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -27,6 +31,7 @@ public class ReserveSeatService implements ReserveSeatUseCase {
 
     private final RoomContextReader roomContextReader;
     private final DailyUsageCounter dailyUsageCounter;
+    private final IdGenerator<UUID> idGenerator;
     private final MessagePublisher messagePublisher;
     private final Clock clock;
 
@@ -51,9 +56,10 @@ public class ReserveSeatService implements ReserveSeatUseCase {
         if (!seatExists) throw new ApplicationException(ReservationServiceProgressCode.SEAT_NOT_FOUND);
 
         var now = clock.instant();
+        var reservationId = ReservationId.of(idGenerator.generate());
         var reserveUserId = command.reserveUserId();
         var reserveDate = command.reserveDate();
-        var reservation = Reservation.of(reserveUserId, reserveSeatId, reserveDate, now);
+        var reservation = Reservation.of(reservationId, reserveUserId, reserveSeatId, reserveDate, now);
 
         var opPolicy = roomContext.opPolicy();
         if (!opPolicy.allowsScheduleCount(slotIds.size()))
@@ -63,13 +69,13 @@ public class ReserveSeatService implements ReserveSeatUseCase {
             throw new ApplicationException(ReservationServiceProgressCode.MAX_RESERVABLE_COUNT_EXCEEDED);
 
         var saved = reservationStore.save(reservation);
-        var occupied = seatOccupancyStore.tryOccupy(saved.getId(), reserveDate, reserveSeatId, slotIds);
+        var occupied = seatOccupancyStore.tryOccupy(reservationId, reserveDate, reserveSeatId, slotIds);
         if (!occupied) throw new ApplicationException(ReservationServiceProgressCode.SCHEDULE_ALREADY_OCCUPIED);
 
         var schedules = targetSlots.stream()
                 .map(RoomSchedule::toLocalTimeSchedule)
                 .toList();
-        var event = ReservationCreatedEvent.of(saved.getId(), reserveDate, roomId, reserveSeatId.getSeatId(), reserveUserId, schedules);
+        var event = ReservationCreatedEvent.of(reservationId.getValue(), reserveDate, roomId, reserveSeatId.getSeatId(), reserveUserId, schedules);
         messagePublisher.publish(event.toMessage(now));
 
         return ReserveSeatResult.from(saved);

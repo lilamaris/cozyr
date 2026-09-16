@@ -1,6 +1,7 @@
 package com.lilamaris.cozyr.reservation.jdbc;
 
 import com.lilamaris.cozyr.reservation.application.port.out.SeatOccupancyStore;
+import com.lilamaris.cozyr.reservation.domain.ReservationId;
 import com.lilamaris.cozyr.reservation.domain.SeatId;
 import com.lilamaris.cozyr.reservation.jdbc.sql.SeatOccupancySql;
 import lombok.RequiredArgsConstructor;
@@ -20,14 +21,14 @@ public class SeatOccupancyStoreJpaAdapter implements SeatOccupancyStore {
     private final JdbcClient jdbcClient;
 
     @Override
-    public boolean tryOccupy(UUID reservationId, LocalDate occupancyDate, SeatId seatId, Set<UUID> scheduleSlotIds) {
+    public boolean tryOccupy(ReservationId reservationId, LocalDate occupancyDate, SeatId seatId, Set<UUID> scheduleSlotIds) {
         var sql = SeatOccupancySql.INSERT_BY_SCHEDULE_SLOT_IDS;
 
         UUID[] slotIds = scheduleSlotIds.toArray(UUID[]::new);
 
         try {
             int rowCount = jdbcClient.sql(sql)
-                    .param("reservationId", reservationId)
+                    .param("reservationId", reservationId.getValue())
                     .param("occupancyDate", occupancyDate)
                     .param("roomId", seatId.getRoomId())
                     .param("seatId", seatId.getSeatId())
@@ -41,11 +42,11 @@ public class SeatOccupancyStoreJpaAdapter implements SeatOccupancyStore {
     }
 
     @Override
-    public boolean tryRelease(UUID reservationId, Instant releasedAt) {
+    public boolean tryRelease(ReservationId reservationId, Instant releasedAt) {
         var sql = SeatOccupancySql.RELEASE_BY_RESERVATION_ID;
 
         int rowCount = jdbcClient.sql(sql)
-                    .param("reservationId", reservationId)
+                    .param("reservationId", reservationId.getValue())
                 .param("releasedAt", Timestamp.from(releasedAt))
                     .update();
 

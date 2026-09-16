@@ -13,4 +13,6 @@ dependencies {
     implementation(project(":reservation-service:reservation-contract"))
 
     testImplementation(project(":kernel:kernel-test"))
+
+    implementation(libs.uuid.creator)
 }

@@ -51,7 +51,7 @@ public class CancelReserveService implements CancelReserveUseCase {
         var schedules = context.schedules().stream()
                 .map(RoomSchedule::toLocalTimeSchedule)
                 .toList();
-        var event = ReservationCanceledEvent.of(reservationId, context.reservationDate(), context.seatId().getRoomId(), context.seatId().getSeatId(), context.reservedUser().userId(), schedules);
+        var event = ReservationCanceledEvent.of(reservationId.getValue(), context.reservationDate(), context.seatId().getRoomId(), context.seatId().getSeatId(), context.reservedUser().userId(), schedules);
         messagePublisher.publish(event.toMessage(now));
 
         return CancelReserveResult.of(reservationId, now);

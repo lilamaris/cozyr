@@ -16,9 +16,8 @@ import java.util.UUID;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Reservation {
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    @EmbeddedId
+    private ReservationId id;
 
     @Column(name = "reserved_user_id", nullable = false)
     private UUID reservedUserId;
@@ -39,8 +38,9 @@ public class Reservation {
     @Column(name = "updated_at")
     private Instant updatedAt;
 
-    private Reservation(UUID reservedUserId, SeatId seatId, LocalDate occupancyDate,
+    private Reservation(ReservationId id, UUID reservedUserId, SeatId seatId, LocalDate occupancyDate,
                         ReservationStatus status, Instant createdAt, Instant updatedAt) {
+        this.id = ObjectPrecondition.requireNonNull(id, "id");
         this.reservedUserId = ObjectPrecondition.requireNonNull(reservedUserId, "reservedUserId");
         this.seatId = ObjectPrecondition.requireNonNull(seatId, "seatId");
         this.occupancyDate = ObjectPrecondition.requireNonNull(occupancyDate, "occupancyDate");
@@ -52,7 +52,7 @@ public class Reservation {
         }
     }
 
-    public static Reservation of(UUID reservedUserId, SeatId seatId, LocalDate occupancyDate, Instant createdAt) {
-        return new Reservation(reservedUserId, seatId, occupancyDate, ReservationStatus.RESERVED, createdAt, createdAt);
+    public static Reservation of(ReservationId id, UUID reservedUserId, SeatId seatId, LocalDate occupancyDate, Instant createdAt) {
+        return new Reservation(id, reservedUserId, seatId, occupancyDate, ReservationStatus.RESERVED, createdAt, createdAt);
     }
 }

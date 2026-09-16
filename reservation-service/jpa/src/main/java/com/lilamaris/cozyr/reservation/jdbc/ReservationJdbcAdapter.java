@@ -5,6 +5,7 @@ import com.lilamaris.cozyr.reservation.application.port.out.ReservationContextRe
 import com.lilamaris.cozyr.reservation.application.port.out.ReservationDetailReader;
 import com.lilamaris.cozyr.reservation.application.port.out.ReservationStatusStore;
 import com.lilamaris.cozyr.reservation.application.port.out.ReservationSummaryReader;
+import com.lilamaris.cozyr.reservation.domain.ReservationId;
 import com.lilamaris.cozyr.reservation.jdbc.row.ReservationRow;
 import com.lilamaris.cozyr.reservation.jdbc.sql.ReservationSql;
 import com.lilamaris.shrturl.kernel.application.model.cursor.CursorRequest;
@@ -101,11 +102,11 @@ public class ReservationJdbcAdapter implements
     }
 
     @Override
-    public Optional<ReservationContext> findById(UUID reservationId) {
+    public Optional<ReservationContext> findById(ReservationId reservationId) {
         var sql = ReservationSql.FIND_CONTEXT_BY_ID;
 
         var rows = jdbcClient.sql(sql)
-                .param("reservationId", reservationId)
+                .param("reservationId", reservationId.getValue())
                 .query(ReservationRow.Context.class)
                 .list();
 
@@ -126,11 +127,11 @@ public class ReservationJdbcAdapter implements
     }
 
     @Override
-    public boolean cancel(UUID reservationId, Instant canceledAt) {
+    public boolean cancel(ReservationId reservationId, Instant canceledAt) {
         var sql = ReservationSql.CANCEL_BY_ID;
 
         int rowCount = jdbcClient.sql(sql)
-                .param("reservationId", reservationId)
+                .param("reservationId", reservationId.getValue())
                 .param("canceledAt", Timestamp.from(canceledAt))
                 .update();
 
