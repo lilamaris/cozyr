@@ -14,7 +14,6 @@ import com.lilamaris.cozyr.reservation.application.port.in.query.ListReservation
 import com.lilamaris.cozyr.reservation.application.port.in.result.CancelReserveResult;
 import com.lilamaris.cozyr.reservation.application.port.in.result.ReserveSeatResult;
 import com.lilamaris.cozyr.reservation.domain.ReservationStatus;
-import com.lilamaris.cozyr.reservation.domain.SeatId;
 import com.lilamaris.cozyr.reservation.web.request.ReserveSeatRequest;
 import com.lilamaris.shrturl.kernel.application.model.cursor.CursorResult;
 import io.swagger.v3.oas.annotations.Operation;
@@ -70,10 +69,10 @@ public class ReservationController {
             @RequestParam(name = "uid", required = false) UUID userId,
             @Parameter(description = "예약 상태 목록", schema = @Schema(type = "string", example = "RESERVED,CANCELED"))
             @RequestParam(name = "statuses", required = false) Set<ReservationStatus> statuses,
-            @Parameter(description = "방 ID", schema = @Schema(type = "integer", format = "int64"))
-            @RequestParam(name = "roomId", required = false) Long roomId,
-            @Parameter(description = "좌석 식별자", schema = @Schema(type = "string", example = "A1"))
-            @RequestParam(name = "seatId", required = false) String seatId,
+            @Parameter(description = "방 ID", schema = @Schema(type = "string", format = "uuid", example = "d2f3a8c1-4b7e-4c9d-8a5f-1e6b7c8d9e0f"))
+            @RequestParam(name = "roomId", required = false) UUID roomId,
+            @Parameter(description = "좌석 ID", schema = @Schema(type = "string", format = "uuid", example = "a9c4e2f7-3b8d-4e1a-9f6c-5d0b8e1f2a3c"))
+            @RequestParam(name = "seatId", required = false) UUID seatId,
             @Parameter(description = "커서 생성 시각", schema = @Schema(type = "string", format = "date-time"))
             @RequestParam(name = "ca", required = false) Instant createdAt,
             @Parameter(description = "커서 예약 ID", schema = @Schema(type = "string", format = "uuid"))
@@ -116,15 +115,15 @@ public class ReservationController {
             @Parameter(
                     description = "방 ID",
                     required = true,
-                    schema = @Schema(type = "integer", format = "int64")
+                    schema = @Schema(type = "string", format = "uuid", example = "d2f3a8c1-4b7e-4c9d-8a5f-1e6b7c8d9e0f")
             )
-            @PathVariable("roomId") long roomId,
+            @PathVariable("roomId") UUID roomId,
             @Parameter(
-                    description = "좌석 식별자",
+                    description = "좌석 ID",
                     required = true,
-                    schema = @Schema(type = "string", example = "A1")
+                    schema = @Schema(type = "string", format = "uuid", example = "a9c4e2f7-3b8d-4e1a-9f6c-5d0b8e1f2a3c")
             )
-            @PathVariable("seatId") String seatId,
+            @PathVariable("seatId") UUID seatId,
             @Parameter(
                     description = "조회할 날짜. 미지정 시 현재 날짜",
                     schema = @Schema(type = "string", format = "date", example = "2026-01-15")
@@ -132,7 +131,7 @@ public class ReservationController {
             @RequestParam(name = "targetDate", required = false) LocalDate targetDate
     ) {
         var targetDateOrDefault = targetDate != null ? targetDate : LocalDate.now(clock);
-        var query = FindReservableSeatScheduleQuery.of(targetDateOrDefault, SeatId.of(roomId, seatId));
+        var query = FindReservableSeatScheduleQuery.of(targetDateOrDefault, roomId, seatId);
         var result = findReservableSeatScheduleUseCase.find(query);
 
         return ResponseEntity.ok(result);
@@ -232,19 +231,19 @@ public class ReservationController {
             @Parameter(
                     description = "방 ID",
                     required = true,
-                    schema = @Schema(type = "integer", format = "int64")
+                    schema = @Schema(type = "string", format = "uuid", example = "d2f3a8c1-4b7e-4c9d-8a5f-1e6b7c8d9e0f")
             )
-            @PathVariable("roomId") long roomId,
+            @PathVariable("roomId") UUID roomId,
             @Parameter(
-                    description = "좌석 식별자",
+                    description = "좌석 ID",
                     required = true,
-                    schema = @Schema(type = "string", example = "A1")
+                    schema = @Schema(type = "string", format = "uuid", example = "a9c4e2f7-3b8d-4e1a-9f6c-5d0b8e1f2a3c")
             )
-            @PathVariable("seatId") String seatId,
+            @PathVariable("seatId") UUID seatId,
             @Valid @RequestBody ReserveSeatRequest body
     ) {
         var identity = identityContextHolder.get();
-        var command = body.toCommand(identity.id(), SeatId.of(roomId, seatId));
+        var command = body.toCommand(identity.id(), roomId, seatId);
         var result = reserveSeatUseCase.reserve(command);
 
         var location = ServletUriComponentsBuilder.fromCurrentContextPath()

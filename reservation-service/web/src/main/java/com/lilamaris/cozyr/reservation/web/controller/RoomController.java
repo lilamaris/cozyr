@@ -30,6 +30,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.time.Instant;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/rooms")
@@ -61,8 +62,8 @@ public class RoomController {
             @RequestParam(name = "name", required = false) String name,
             @Parameter(description = "방 설명 검색어", schema = @Schema(type = "string", example = "VIP 전용"))
             @RequestParam(name = "description", required = false) String description,
-            @Parameter(description = "커서 방 ID", schema = @Schema(type = "integer", format = "int64"))
-            @RequestParam(name = "rid", required = false) Long roomId,
+            @Parameter(description = "커서 방 ID", schema = @Schema(type = "string", format = "uuid", example = "d2f3a8c1-4b7e-4c9d-8a5f-1e6b7c8d9e0f"))
+            @RequestParam(name = "rid", required = false) UUID roomId,
             @Parameter(description = "커서 생성 시각", schema = @Schema(type = "string", format = "date-time"))
             @RequestParam(name = "ca", required = false) Instant createdAt,
             @Parameter(description = "조회 개수", required = true, schema = @Schema(type = "integer", minimum = "1", example = "20"))
@@ -100,9 +101,9 @@ public class RoomController {
             @Parameter(
                     description = "방 ID",
                     required = true,
-                    schema = @Schema(type = "integer", format = "int64")
+                    schema = @Schema(type = "string", format = "uuid", example = "d2f3a8c1-4b7e-4c9d-8a5f-1e6b7c8d9e0f")
             )
-            @PathVariable("roomId") long roomId
+            @PathVariable("roomId") UUID roomId
     ) {
         var query = FindRoomDetailQuery.of(roomId);
         var result = findRoomDetailUseCase.find(query);
@@ -159,9 +160,9 @@ public class RoomController {
             @Parameter(
                     description = "방 ID",
                     required = true,
-                    schema = @Schema(type = "integer", format = "int64")
+                    schema = @Schema(type = "string", format = "uuid", example = "d2f3a8c1-4b7e-4c9d-8a5f-1e6b7c8d9e0f")
             )
-            @PathVariable("roomId") long roomId,
+            @PathVariable("roomId") UUID roomId,
             @Valid @RequestBody UpdateRoomRequest body
     ) {
         var command = body.toCommand(roomId);
