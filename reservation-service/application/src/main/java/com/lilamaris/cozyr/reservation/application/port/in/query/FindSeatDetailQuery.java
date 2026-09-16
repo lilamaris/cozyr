@@ -1,16 +1,22 @@
 package com.lilamaris.cozyr.reservation.application.port.in.query;
 
 import com.lilamaris.cozyr.kernel.core.condition.ObjectPrecondition;
-import com.lilamaris.cozyr.reservation.domain.SeatId;
+import com.lilamaris.cozyr.reservation.application.model.seat.SeatLocator;
+
+import java.util.UUID;
 
 public record FindSeatDetailQuery(
-        SeatId id
+        SeatLocator seatLocator
 ) {
     public FindSeatDetailQuery {
-        ObjectPrecondition.requireNonNull(id, "id");
+        ObjectPrecondition.requireNonNull(seatLocator, "seatLocator");
     }
 
-    public static FindSeatDetailQuery of(SeatId id) {
-        return new FindSeatDetailQuery(id);
+    public static FindSeatDetailQuery of(SeatLocator seatLocator) {
+        return new FindSeatDetailQuery(seatLocator);
+    }
+
+    public static FindSeatDetailQuery of(UUID roomId, UUID seatId) {
+        return new FindSeatDetailQuery(SeatLocator.of(roomId, seatId));
     }
 }

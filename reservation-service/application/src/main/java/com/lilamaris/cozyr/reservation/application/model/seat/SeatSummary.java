@@ -1,21 +1,25 @@
 package com.lilamaris.cozyr.reservation.application.model.seat;
 
 import com.lilamaris.cozyr.kernel.core.condition.ObjectPrecondition;
-import com.lilamaris.cozyr.reservation.domain.SeatId;
 
 import java.time.Instant;
+import java.util.UUID;
 
 public record SeatSummary(
-        SeatId seatId,
+        SeatLocator seatLocator,
         Instant createdAt,
         Instant updatedAt
 ) {
     public SeatSummary {
-        ObjectPrecondition.requireNonNull(seatId, "seatId");
+        ObjectPrecondition.requireNonNull(seatLocator, "seatLocator");
         ObjectPrecondition.requireNonNull(createdAt, "createdAt");
     }
 
-    public static SeatSummary of(SeatId seatId, Instant createdAt, Instant updatedAt) {
-        return new SeatSummary(seatId, createdAt, updatedAt);
+    public static SeatSummary of(SeatLocator seatLocator, Instant createdAt, Instant updatedAt) {
+        return new SeatSummary(seatLocator, createdAt, updatedAt);
+    }
+
+    public static SeatSummary of(UUID roomId, UUID seatId, Instant createdAt, Instant updatedAt) {
+        return new SeatSummary(SeatLocator.of(roomId, seatId), createdAt, updatedAt);
     }
 }

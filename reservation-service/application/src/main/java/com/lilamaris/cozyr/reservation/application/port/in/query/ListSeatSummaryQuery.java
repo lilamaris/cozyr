@@ -1,15 +1,18 @@
 package com.lilamaris.cozyr.reservation.application.port.in.query;
 
-import com.lilamaris.cozyr.kernel.core.condition.NumberPrecondition;
+import com.lilamaris.cozyr.kernel.core.condition.ObjectPrecondition;
+import com.lilamaris.cozyr.reservation.domain.RoomId;
+
+import java.util.UUID;
 
 public record ListSeatSummaryQuery(
-        long roomId
+        RoomId roomId
 ) {
     public ListSeatSummaryQuery {
-        NumberPrecondition.requireNonNegative(roomId, "roomId");
+        ObjectPrecondition.requireNonNull(roomId, "roomId");
     }
 
-    public static ListSeatSummaryQuery of(long roomId) {
-        return new ListSeatSummaryQuery(roomId);
+    public static ListSeatSummaryQuery of(UUID roomId) {
+        return new ListSeatSummaryQuery(RoomId.of(roomId));
     }
 }
