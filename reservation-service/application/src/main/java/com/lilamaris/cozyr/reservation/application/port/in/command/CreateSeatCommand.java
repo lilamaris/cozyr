@@ -8,18 +8,18 @@ import java.util.UUID;
 
 public record CreateSeatCommand(
         RoomId roomId,
-        String seatCode
+        String code
 ) {
     public CreateSeatCommand {
         ObjectPrecondition.requireNonNull(roomId, "roomId");
-        StringPrecondition.requireNonBlank(seatCode, "seatCode");
+        StringPrecondition.requireNonBlank(code, "code");
     }
 
-    public static CreateSeatCommand of(RoomId roomId, String seatCode) {
-        return new CreateSeatCommand(roomId, seatCode);
+    public static CreateSeatCommand of(RoomId roomId, String code) {
+        return new CreateSeatCommand(roomId, code);
     }
 
-    public static CreateSeatCommand of(UUID roomId, String seatCode) {
-        return new CreateSeatCommand(RoomId.of(roomId), seatCode);
+    public static CreateSeatCommand of(UUID roomId, String code) {
+        return new CreateSeatCommand(RoomId.of(roomId), code);
     }
 }
