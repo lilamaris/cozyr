@@ -21,7 +21,7 @@ public class RoomOpPolicy {
     private UUID id;
 
     @Embedded
-    @AttributeOverride(name = "id", column = @Column(name = "room_id", updatable = false, nullable = false))
+    @AttributeOverride(name = "value", column = @Column(name = "room_id", updatable = false, nullable = false))
     private RoomId roomId;
 
     @Column(name = "max_reservation_per_user_per_day", nullable = false)

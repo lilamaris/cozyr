@@ -23,11 +23,11 @@ public class Reservation {
     private UUID reservedUserId;
 
     @Embedded
-    @AttributeOverride(name = "id", column = @Column(name = "room_id", updatable = false, nullable = false))
+    @AttributeOverride(name = "value", column = @Column(name = "room_id", updatable = false, nullable = false))
     private RoomId roomId;
 
     @Embedded
-    @AttributeOverride(name = "id", column = @Column(name = "seat_id", updatable = false, nullable = false))
+    @AttributeOverride(name = "value", column = @Column(name = "seat_id", updatable = false, nullable = false))
     private SeatId seatId;
 
     @Column(name = "occupancy_date", nullable = false)

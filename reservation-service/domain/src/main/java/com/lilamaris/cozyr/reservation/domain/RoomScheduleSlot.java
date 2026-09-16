@@ -19,7 +19,7 @@ public class RoomScheduleSlot {
     private UUID id;
 
     @Embedded
-    @AttributeOverride(name = "id", column = @Column(name = "room_id", updatable = false, nullable = false))
+    @AttributeOverride(name = "value", column = @Column(name = "room_id", updatable = false, nullable = false))
     private RoomId roomId;
 
     @Column(name = "start_at", nullable = false)

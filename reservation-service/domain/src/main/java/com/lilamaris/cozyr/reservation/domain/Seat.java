@@ -19,7 +19,7 @@ public class Seat {
     private SeatId id;
 
     @Embedded
-    @AttributeOverride(name = "id", column = @Column(name = "room_id", updatable = false, nullable = false))
+    @AttributeOverride(name = "value", column = @Column(name = "room_id", updatable = false, nullable = false))
     private RoomId roomId;
 
     @Column(name = "code", nullable = false)
