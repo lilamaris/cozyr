@@ -15,13 +15,15 @@ ALTER TABLE room
     ALTER COLUMN id SET DEFAULT uuidv7();
 
 ALTER TABLE seat
+    ALTER COLUMN room_id TYPE UUID USING NULL::uuid,
     ADD COLUMN id UUID DEFAULT uuidv7() NOT NULL,
     ADD COLUMN code VARCHAR(20) NOT NULL;
 
 ALTER TABLE seat
     DROP CONSTRAINT pk_seat,
+    DROP COLUMN seat_id,
     ADD CONSTRAINT pk_seat PRIMARY KEY (id),
-    ADD CONSTRAINT uk_seat_room_id_seat_id UNIQUE (room_id, seat_id);
+    ADD CONSTRAINT uk_seat_id_room_id UNIQUE (id, room_id);
 
 ALTER TABLE room_schedule_slot
     ALTER COLUMN room_id TYPE UUID USING NULL::uuid;
