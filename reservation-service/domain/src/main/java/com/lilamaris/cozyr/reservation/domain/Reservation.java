@@ -23,6 +23,11 @@ public class Reservation {
     private UUID reservedUserId;
 
     @Embedded
+    @AttributeOverride(name = "id", column = @Column(name = "room_id", updatable = false, nullable = false))
+    private RoomId roomId;
+
+    @Embedded
+    @AttributeOverride(name = "id", column = @Column(name = "seat_id", updatable = false, nullable = false))
     private SeatId seatId;
 
     @Column(name = "occupancy_date", nullable = false)
@@ -38,10 +43,11 @@ public class Reservation {
     @Column(name = "updated_at")
     private Instant updatedAt;
 
-    private Reservation(ReservationId id, UUID reservedUserId, SeatId seatId, LocalDate occupancyDate,
+    private Reservation(ReservationId id, UUID reservedUserId, RoomId roomId, SeatId seatId, LocalDate occupancyDate,
                         ReservationStatus status, Instant createdAt, Instant updatedAt) {
         this.id = ObjectPrecondition.requireNonNull(id, "id");
         this.reservedUserId = ObjectPrecondition.requireNonNull(reservedUserId, "reservedUserId");
+        this.roomId = ObjectPrecondition.requireNonNull(roomId, "roomId");
         this.seatId = ObjectPrecondition.requireNonNull(seatId, "seatId");
         this.occupancyDate = ObjectPrecondition.requireNonNull(occupancyDate, "occupancyDate");
         this.status = ObjectPrecondition.requireNonNull(status, "status");
@@ -52,7 +58,7 @@ public class Reservation {
         }
     }
 
-    public static Reservation of(ReservationId id, UUID reservedUserId, SeatId seatId, LocalDate occupancyDate, Instant createdAt) {
-        return new Reservation(id, reservedUserId, seatId, occupancyDate, ReservationStatus.RESERVED, createdAt, createdAt);
+    public static Reservation of(ReservationId id, UUID reservedUserId, RoomId roomId, SeatId seatId, LocalDate occupancyDate, Instant createdAt) {
+        return new Reservation(id, reservedUserId, roomId, seatId, occupancyDate, ReservationStatus.RESERVED, createdAt, createdAt);
     }
 }

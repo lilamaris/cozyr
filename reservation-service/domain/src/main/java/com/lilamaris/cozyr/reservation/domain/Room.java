@@ -3,7 +3,10 @@ package com.lilamaris.cozyr.reservation.domain;
 import com.lilamaris.cozyr.kernel.core.condition.ObjectPrecondition;
 import com.lilamaris.cozyr.kernel.core.condition.StringPrecondition;
 import com.lilamaris.cozyr.kernel.core.condition.TimePrecondition;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.EmbeddedId;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,9 +18,8 @@ import java.time.Instant;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Room {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    @EmbeddedId
+    private RoomId id;
 
     @Column(name = "name", nullable = false)
     private String name;
@@ -31,7 +33,8 @@ public class Room {
     @Column(name = "updated_at")
     private Instant updatedAt;
 
-    private Room(String name, String description, Instant createdAt, Instant updatedAt) {
+    private Room(RoomId id, String name, String description, Instant createdAt, Instant updatedAt) {
+        this.id = ObjectPrecondition.requireNonNull(id, "id");
         this.name = StringPrecondition.requireNonBlank(name, "name");
         this.description = StringPrecondition.requireNonBlank(description, "description");
         this.createdAt = ObjectPrecondition.requireNonNull(createdAt, "createdAt");
@@ -41,8 +44,8 @@ public class Room {
         }
     }
 
-    public static Room of(String name, String description, Instant createdAt) {
-        return new Room(name, description, createdAt, createdAt);
+    public static Room of(RoomId id, String name, String description, Instant createdAt) {
+        return new Room(id, name, description, createdAt, createdAt);
     }
 
     public void updateName(String name, Instant updatedAt) {

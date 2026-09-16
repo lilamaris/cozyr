@@ -2,10 +2,7 @@ package com.lilamaris.cozyr.reservation.domain;
 
 import com.lilamaris.cozyr.kernel.core.condition.NumberPrecondition;
 import com.lilamaris.cozyr.kernel.core.condition.ObjectPrecondition;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -23,8 +20,9 @@ public class RoomOpPolicy {
     @UuidGenerator(style = UuidGenerator.Style.VERSION_7)
     private UUID id;
 
-    @Column(name = "room_id", nullable = false)
-    private Long roomId;
+    @Embedded
+    @AttributeOverride(name = "id", column = @Column(name = "room_id", updatable = false, nullable = false))
+    private RoomId roomId;
 
     @Column(name = "max_reservation_per_user_per_day", nullable = false)
     private int maxReservationPerUserPerDay;
@@ -35,14 +33,14 @@ public class RoomOpPolicy {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
-    private RoomOpPolicy(Long roomId, int maxReservationPerUserPerDay, int maxSchedulePerReservation, Instant updatedAt) {
+    private RoomOpPolicy(RoomId roomId, int maxReservationPerUserPerDay, int maxSchedulePerReservation, Instant updatedAt) {
         this.roomId = ObjectPrecondition.requireNonNull(roomId, "roomId");
         this.maxReservationPerUserPerDay = NumberPrecondition.requirePositive(maxReservationPerUserPerDay, "maxReservationPerUserPerDay");
         this.maxSchedulePerReservation = NumberPrecondition.requirePositive(maxSchedulePerReservation, "maxSchedulePerReservation");
         this.updatedAt = ObjectPrecondition.requireNonNull(updatedAt, "updatedAt");
     }
 
-    public static RoomOpPolicy of(Long roomId, int maxReservationPerUserPerDay, int maxSchedulePerReservation, Instant createdAt) {
+    public static RoomOpPolicy of(RoomId roomId, int maxReservationPerUserPerDay, int maxSchedulePerReservation, Instant createdAt) {
         return new RoomOpPolicy(roomId, maxReservationPerUserPerDay, maxSchedulePerReservation, createdAt);
     }
 

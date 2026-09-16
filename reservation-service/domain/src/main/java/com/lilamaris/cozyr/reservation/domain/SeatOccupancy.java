@@ -23,6 +23,11 @@ public class SeatOccupancy {
     private UUID reservationId;
 
     @Embedded
+    @AttributeOverride(name = "id", column = @Column(name = "room_id", updatable = false, nullable = false))
+    private RoomId roomId;
+
+    @Embedded
+    @AttributeOverride(name = "id", column = @Column(name = "seat_id", updatable = false, nullable = false))
     private SeatId seatId;
 
     @Column(name = "occupancy_date", nullable = false)
@@ -34,15 +39,16 @@ public class SeatOccupancy {
     @Column(name = "released_at")
     private Instant releasedAt;
 
-    private SeatOccupancy(UUID reservationId, SeatId seatId, LocalDate occupancyDate, UUID scheduleSlotId, Instant releasedAt) {
+    private SeatOccupancy(UUID reservationId, RoomId roomId, SeatId seatId, LocalDate occupancyDate, UUID scheduleSlotId, Instant releasedAt) {
         this.reservationId = ObjectPrecondition.requireNonNull(reservationId, "reservationId");
+        this.roomId = ObjectPrecondition.requireNonNull(roomId, "roomId");
         this.seatId = ObjectPrecondition.requireNonNull(seatId, "seatId");
         this.occupancyDate = ObjectPrecondition.requireNonNull(occupancyDate, "occupancyDate");
         this.scheduleSlotId = ObjectPrecondition.requireNonNull(scheduleSlotId, "scheduleSlotId");
         this.releasedAt = releasedAt;
     }
 
-    public static SeatOccupancy of(UUID reservationId, SeatId seatId, LocalDate occupancyDate, UUID scheduleSlotId) {
-        return new SeatOccupancy(reservationId, seatId, occupancyDate, scheduleSlotId, null);
+    public static SeatOccupancy of(UUID reservationId, RoomId roomId, SeatId seatId, LocalDate occupancyDate, UUID scheduleSlotId) {
+        return new SeatOccupancy(reservationId, roomId, seatId, occupancyDate, scheduleSlotId, null);
     }
 }
