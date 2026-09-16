@@ -1,26 +1,25 @@
 package com.lilamaris.cozyr.reservation.contract.event;
 
-import com.lilamaris.cozyr.kernel.core.condition.NumberPrecondition;
 import com.lilamaris.cozyr.kernel.core.condition.ObjectPrecondition;
-import com.lilamaris.cozyr.kernel.core.condition.StringPrecondition;
 import com.lilamaris.cozyr.kernel.message.MessageEnvelope;
 import com.lilamaris.cozyr.kernel.message.MessageKind;
 import com.lilamaris.cozyr.kernel.message.MessagePayload;
 
 import java.time.Instant;
+import java.util.UUID;
 
 public record SeatCreatedEvent(
-        Long roomId,
-        String seatId,
+        UUID roomId,
+        UUID seatId,
         Instant createdAt
 ) implements MessagePayload {
     public SeatCreatedEvent {
-        NumberPrecondition.requireNonNegative(roomId, "roomId");
-        StringPrecondition.requireNonBlank(seatId, "seatId");
+        ObjectPrecondition.requireNonNull(roomId, "roomId");
+        ObjectPrecondition.requireNonNull(seatId, "seatId");
         ObjectPrecondition.requireNonNull(createdAt, "createdAt");
     }
 
-    public static SeatCreatedEvent of(Long roomId, String seatId, Instant createdAt) {
+    public static SeatCreatedEvent of(UUID roomId, UUID seatId, Instant createdAt) {
         return new SeatCreatedEvent(roomId, seatId, createdAt);
     }
 
@@ -34,6 +33,6 @@ public record SeatCreatedEvent(
     }
 
     private String keyOf(SeatCreatedEvent event) {
-        return "%d-%s".formatted(event.roomId, event.seatId);
+        return "%s-%s".formatted(event.roomId, event.seatId);
     }
 }
