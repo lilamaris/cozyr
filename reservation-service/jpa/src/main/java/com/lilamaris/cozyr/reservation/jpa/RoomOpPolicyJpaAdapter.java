@@ -12,7 +12,7 @@ public class RoomOpPolicyJpaAdapter implements RoomPolicyStore {
     private final RoomOpPolicyRepository repository;
 
     @Override
-    public RoomOpPolicy saveOp(RoomOpPolicy policy) {
+    public RoomOpPolicy save(RoomOpPolicy policy) {
         return repository.save(policy);
     }
 }

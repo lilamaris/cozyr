@@ -14,7 +14,7 @@ import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
-public class UserSnapshotStoreJpaAdapter implements UserSnapshotStore {
+public class UserSnapshotStoreJdbcAdapter implements UserSnapshotStore {
     private final JdbcClient jdbcClient;
 
     @Override

@@ -69,11 +69,11 @@ public class ReservationJdbcAdapter implements
     }
 
     @Override
-    public Optional<ReservationDetail> find(UUID reservationId) {
+    public Optional<ReservationDetail> find(ReservationId reservationId) {
         var sql = ReservationSql.FIND_DETAIL_BY_ID;
 
         var rows = jdbcClient.sql(sql)
-                .param("reservationId", reservationId)
+                .param("reservationId", reservationId.getValue())
                 .query(ReservationRow.Detail.class)
                 .list();
 
@@ -91,7 +91,7 @@ public class ReservationJdbcAdapter implements
         return Optional.of(
                 ReservationDetail.of(
                         first.reservationId(),
-                        first.toSeatId(),
+                        first.toSeatLocator(),
                         first.status(),
                         schedules,
                         first.createdAt(),
@@ -116,7 +116,7 @@ public class ReservationJdbcAdapter implements
 
         if (first == null) return Optional.empty();
 
-        var seatId = first.toSeatId();
+        var seatId = first.toSeatLocator();
         var reservedUser = first.toUserProjection();
         var schedules = rows.stream()
                 .filter(Objects::nonNull)

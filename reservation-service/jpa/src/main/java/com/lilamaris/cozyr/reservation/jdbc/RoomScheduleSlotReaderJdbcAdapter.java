@@ -2,6 +2,7 @@ package com.lilamaris.cozyr.reservation.jdbc;
 
 import com.lilamaris.cozyr.reservation.application.model.room.RoomSchedule;
 import com.lilamaris.cozyr.reservation.application.port.out.RoomScheduleSlotReader;
+import com.lilamaris.cozyr.reservation.domain.RoomId;
 import com.lilamaris.cozyr.reservation.jdbc.sql.RoomScheduleSlotSql;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,11 +20,11 @@ public class RoomScheduleSlotReaderJdbcAdapter implements RoomScheduleSlotReader
     private final JdbcClient jdbcClient;
 
     @Override
-    public List<RoomSchedule> findAllByRoomId(long roomId, Collection<UUID> scheduleSlotIds) {
+    public List<RoomSchedule> findAllByRoomId(RoomId roomId, Collection<UUID> scheduleSlotIds) {
         var sql = RoomScheduleSlotSql.FIND_ALL_BY_SLOT_IDS;
 
         return jdbcClient.sql(sql)
-                .param("roomId", roomId)
+                .param("roomId", roomId.getValue())
                 .param("scheduleSlotIds", scheduleSlotIds)
                 .query(RoomSchedule.class)
                 .list();
