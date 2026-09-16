@@ -3,6 +3,7 @@ package com.lilamaris.cozyr.reservation.jpa;
 import com.lilamaris.cozyr.reservation.application.port.out.ReservationReader;
 import com.lilamaris.cozyr.reservation.application.port.out.ReservationStore;
 import com.lilamaris.cozyr.reservation.domain.Reservation;
+import com.lilamaris.cozyr.reservation.domain.ReservationId;
 import com.lilamaris.cozyr.reservation.jpa.repository.ReservationRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -16,12 +17,12 @@ public class ReservationJpaAdapter implements ReservationStore, ReservationReade
     private final ReservationRepository repository;
 
     @Override
-    public boolean existsById(UUID reservationId) {
+    public boolean existsById(ReservationId reservationId) {
         return repository.existsById(reservationId);
     }
 
     @Override
-    public Optional<Reservation> findById(UUID reservationId) {
+    public Optional<Reservation> findById(ReservationId reservationId) {
         return repository.findById(reservationId);
     }
 

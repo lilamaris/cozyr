@@ -13,7 +13,7 @@ public record ReserveSeatResult(
 ) {
     public static ReserveSeatResult from(Reservation reservation) {
         return new ReserveSeatResult(
-                reservation.getId(),
+                reservation.getId().getValue(),
                 reservation.getReservedUserId(),
                 reservation.getCreatedAt(),
                 reservation.getUpdatedAt()

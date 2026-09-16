@@ -2,12 +2,14 @@ package com.lilamaris.cozyr.reservation.jpa;
 
 import com.lilamaris.cozyr.kernel.message.MessagePublisher;
 import com.lilamaris.cozyr.reservation.application.exception.ReservationServiceProgressCode;
+import com.lilamaris.cozyr.reservation.application.internal.id.IdGenerator;
 import com.lilamaris.cozyr.reservation.application.port.in.ReserveSeatUseCase;
 import com.lilamaris.cozyr.reservation.application.port.in.command.ReserveSeatCommand;
 import com.lilamaris.cozyr.reservation.application.port.in.result.ReserveSeatResult;
 import com.lilamaris.cozyr.reservation.application.port.out.SeatOccupancyStore;
 import com.lilamaris.cozyr.reservation.application.service.ReserveSeatService;
 import com.lilamaris.cozyr.reservation.domain.Reservation;
+import com.lilamaris.cozyr.reservation.domain.ReservationId;
 import com.lilamaris.cozyr.reservation.domain.ReservationStatus;
 import com.lilamaris.cozyr.reservation.domain.SeatId;
 import com.lilamaris.cozyr.reservation.jdbc.DailyUsageJdbcAdapter;
@@ -183,6 +185,11 @@ class ReserveSeatConcurrencyTest {
         }
 
         @Bean
+        IdGenerator<UUID> idGenerator() {
+            return UUID::randomUUID;
+        }
+
+        @Bean
         MessagePublisher messagePublisher() {
             return message -> {
             };
@@ -194,7 +201,7 @@ class ReserveSeatConcurrencyTest {
             var barrier = new CyclicBarrier(2);
             return new SeatOccupancyStore() {
                 @Override
-                public boolean tryOccupy(UUID reservationId, LocalDate date, SeatId seatId, Set<UUID> slotIds) {
+                public boolean tryOccupy(ReservationId reservationId, LocalDate date, SeatId seatId, Set<UUID> slotIds) {
                     assertThat(TransactionSynchronizationManager.isActualTransactionActive()).isTrue();
                     try {
                         barrier.await(10, TimeUnit.SECONDS);
@@ -208,7 +215,7 @@ class ReserveSeatConcurrencyTest {
                 }
 
                 @Override
-                public boolean tryRelease(UUID reservationId, Instant releasedAt) {
+                public boolean tryRelease(ReservationId reservationId, Instant releasedAt) {
                     return delegate.tryRelease(reservationId, releasedAt);
                 }
             };
