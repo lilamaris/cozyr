@@ -16,4 +16,12 @@ dependencies {
     implementation(libs.flyway.database.postgresql)
 
     testImplementation(libs.spring.boot.starter.data.jpa.test)
+    testImplementation(project(":kernel:kernel-message"))
+    testImplementation(project(":reservation-service:reservation-contract"))
+}
+
+tasks.processTestResources {
+    from(project(":reservation-service:launcher").file("src/main/resources")) {
+        include("db/migration/**")
+    }
 }
