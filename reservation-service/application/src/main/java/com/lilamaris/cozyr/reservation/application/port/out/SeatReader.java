@@ -1,7 +1,7 @@
 package com.lilamaris.cozyr.reservation.application.port.out;
 
-import com.lilamaris.cozyr.reservation.domain.SeatId;
+import com.lilamaris.cozyr.reservation.application.model.seat.SeatLocator;
 
 public interface SeatReader {
-    boolean existsById(SeatId id);
+    boolean existsByLocator(SeatLocator seatLocator);
 }
