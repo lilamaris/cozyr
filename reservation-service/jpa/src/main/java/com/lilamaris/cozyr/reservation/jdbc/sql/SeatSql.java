@@ -9,7 +9,7 @@ public class SeatSql {
                 s.updated_at AS updatedAt
             FROM seat s
             WHERE s.room_id = :roomId
-            ORDER BY s.seat_id ASC, s.created_at DESC
+            ORDER BY s.room_id ASC, s.id ASC, s.created_at DESC
             """;
 
     public static final String FIND_DETAIL_BY_ID = """
