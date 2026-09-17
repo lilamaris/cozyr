@@ -2,9 +2,6 @@ cozyr:
   reservation-service:
     web:
       baseUrl: ${BASE_URL:http://cozyr}
-  identity-service:
-    resource-server:
-      jwksUri: ${JWKS_URL:http://localhost:8080/.well-known/jwks.json}
 
 server:
   port: ${PORT:8084}
@@ -14,6 +11,12 @@ logging:
     name: ${LOG_DIR:./log}/${spring.application.name}.log
 
 spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: ${JWKS_URL:http://localhost:8080/.well-known/jwks.json}
+
   application:
     name: ${APPLICATION_NAME:reservation-service}
 
