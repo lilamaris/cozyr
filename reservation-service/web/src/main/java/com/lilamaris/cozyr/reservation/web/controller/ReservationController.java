@@ -1,6 +1,5 @@
 package com.lilamaris.cozyr.reservation.web.controller;
 
-import com.lilamaris.cozyr.identity.contract.context.IdentityContextHolder;
 import com.lilamaris.cozyr.reservation.application.model.reservation.ReservationCursor;
 import com.lilamaris.cozyr.reservation.application.model.reservation.ReservationDetail;
 import com.lilamaris.cozyr.reservation.application.model.reservation.ReservationFilter;
@@ -27,6 +26,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -47,7 +48,6 @@ public class ReservationController {
     private final ListReservationSummaryUseCase listReservationSummaryUseCase;
     private final FindReservationDetailUseCase findReservationDetailUseCase;
 
-    private final IdentityContextHolder identityContextHolder;
     private final Clock clock;
 
     @Operation(summary = "예약 요약 목록 조회", description = "예약 요약을 커서 기반으로 조회합니다. 필터 조건을 제공하지 않으면 전체 예약을 조회합니다.")
@@ -240,10 +240,11 @@ public class ReservationController {
                     schema = @Schema(type = "string", format = "uuid", example = "a9c4e2f7-3b8d-4e1a-9f6c-5d0b8e1f2a3c")
             )
             @PathVariable("seatId") UUID seatId,
-            @Valid @RequestBody ReserveSeatRequest body
+            @Valid @RequestBody ReserveSeatRequest body,
+            @Parameter(hidden = true) @AuthenticationPrincipal Jwt jwt
     ) {
-        var identity = identityContextHolder.get();
-        var command = body.toCommand(identity.id(), roomId, seatId);
+        var userId = UUID.fromString(jwt.getSubject());
+        var command = body.toCommand(userId, roomId, seatId);
         var result = reserveSeatUseCase.reserve(command);
 
         var location = ServletUriComponentsBuilder.fromCurrentContextPath()
