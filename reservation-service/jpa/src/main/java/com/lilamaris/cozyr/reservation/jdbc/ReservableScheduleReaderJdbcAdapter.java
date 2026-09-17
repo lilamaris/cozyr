@@ -1,8 +1,8 @@
 package com.lilamaris.cozyr.reservation.jdbc;
 
 import com.lilamaris.cozyr.reservation.application.model.seat.ReservableSeatSchedule;
+import com.lilamaris.cozyr.reservation.application.model.seat.SeatLocator;
 import com.lilamaris.cozyr.reservation.application.port.out.ReservableScheduleReader;
-import com.lilamaris.cozyr.reservation.domain.SeatId;
 import com.lilamaris.cozyr.reservation.jdbc.row.RoomScheduleRow;
 import com.lilamaris.cozyr.reservation.jdbc.sql.ReservableScheduleSql;
 import lombok.RequiredArgsConstructor;
@@ -21,14 +21,14 @@ public class ReservableScheduleReaderJdbcAdapter implements ReservableScheduleRe
     private final Clock clock;
 
     @Override
-    public ReservableSeatSchedule findBySeat(LocalDate targetDate, SeatId seatId) {
+    public ReservableSeatSchedule findBySeat(LocalDate targetDate, SeatLocator seatLocator) {
         var sql = ReservableScheduleSql.FIND_BY_SEAT;
         var now = clock.instant();
 
         var rows = jdbcClient.sql(sql)
+                .param("roomId", seatLocator.roomId().getValue())
+                .param("seatId", seatLocator.seatId().getValue())
                 .param("occupancyDate", targetDate)
-                .param("roomId", seatId.getRoomId())
-                .param("seatId", seatId.getSeatId())
                 .param("now", Timestamp.from(now))
                 .query(RoomScheduleRow.class)
                 .list();
@@ -40,7 +40,8 @@ public class ReservableScheduleReaderJdbcAdapter implements ReservableScheduleRe
 
         return ReservableSeatSchedule.of(
                 targetDate,
-                seatId,
+                seatLocator.roomId(),
+                seatLocator.seatId(),
                 schedules
         );
     }

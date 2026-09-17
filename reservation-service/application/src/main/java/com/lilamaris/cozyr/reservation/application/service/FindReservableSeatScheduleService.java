@@ -19,11 +19,11 @@ public class FindReservableSeatScheduleService implements FindReservableSeatSche
     @Override
     public ReservableSeatSchedule find(FindReservableSeatScheduleQuery query) {
         var targetDate = query.targetDate();
-        var seatId = query.seatId();
+        var seatLocator = query.seatLocator();
 
-        var seatExists = seatReader.existsById(seatId);
+        var seatExists = seatReader.existsByLocator(seatLocator);
         if (!seatExists) throw new ApplicationException(ReservationServiceProgressCode.SEAT_NOT_FOUND);
 
-        return reader.findBySeat(targetDate, seatId);
+        return reader.findBySeat(targetDate, seatLocator);
     }
 }

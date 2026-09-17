@@ -1,6 +1,6 @@
 package com.lilamaris.cozyr.reservation.jpa.support;
 
-import com.lilamaris.cozyr.reservation.domain.SeatId;
+import com.lilamaris.cozyr.reservation.application.model.seat.SeatLocator;
 import org.springframework.jdbc.core.simple.JdbcClient;
 
 import java.sql.Timestamp;
@@ -14,8 +14,8 @@ public class RoomTestSupport {
     private static final LocalTime SLOT_END_AT = LocalTime.of(9, 0);
     private static final int MAX_RESERVATION_PER_USER_PER_DAY = 3;
     private static final int MAX_SCHEDULE_PER_RESERVATION = 1;
-    private static final String TARGET_SEAT_ID = "A1";
-    private static final String OTHER_SEAT_ID = "B1";
+    private static final String TARGET_SEAT_CODE = "A1";
+    private static final String SECOND_SEAT_CODE = "B1";
 
     private static final String INSERT_ROOM = """
             INSERT INTO room (name, description, created_at)
@@ -36,9 +36,9 @@ public class RoomTestSupport {
             """;
 
     private static final String INSERT_SEAT = """
-            INSERT INTO seat (room_id, seat_id, created_at)
-            VALUES (:roomId, :seatId, :now)
-            RETURNING room_id AS roomId, seat_id AS seatId
+            INSERT INTO seat (room_id, code, created_at)
+            VALUES (:roomId, :code, :now)
+            RETURNING room_id AS roomId, id AS seatId
             """;
 
     private static final String DELETE_ROOM = """
@@ -72,7 +72,7 @@ public class RoomTestSupport {
     public static TestContext createContext(JdbcClient jdbcClient, Instant now) {
         var roomId = jdbcClient.sql(INSERT_ROOM)
                 .param("now", Timestamp.from(now))
-                .query(Long.class)
+                .query(UUID.class)
                 .single();
 
         var slotId = jdbcClient.sql(INSERT_SLOT)
@@ -90,21 +90,21 @@ public class RoomTestSupport {
                 .query(UUID.class)
                 .single();
 
-        var targetSeatId = jdbcClient.sql(INSERT_SEAT)
+        var targetSeatLocator = jdbcClient.sql(INSERT_SEAT)
                 .param("roomId", roomId)
-                .param("seatId", TARGET_SEAT_ID)
+                .param("code", TARGET_SEAT_CODE)
                 .param("now", Timestamp.from(now))
-                .query(SeatIdRow.class)
+                .query(SeatLocatorRow.class)
                 .single();
 
-        var secondSeatId = jdbcClient.sql(INSERT_SEAT)
+        var secondSeatLocator = jdbcClient.sql(INSERT_SEAT)
                 .param("roomId", roomId)
-                .param("seatId", OTHER_SEAT_ID)
+                .param("code", SECOND_SEAT_CODE)
                 .param("now", Timestamp.from(now))
-                .query(SeatIdRow.class)
+                .query(SeatLocatorRow.class)
                 .single();
 
-        return new TestContext(roomId, slotId, roomOpId, targetSeatId.toId(), secondSeatId.toId());
+        return new TestContext(roomId, slotId, roomOpId, targetSeatLocator.toLocator(), secondSeatLocator.toLocator());
     }
 
     public static void cleanup(JdbcClient jdbcClient, TestContext roomContext) {
@@ -137,12 +137,13 @@ public class RoomTestSupport {
                 .update();
     }
 
-    public record SeatIdRow(long roomId, String seatId) {
-        public SeatId toId() {
-            return SeatId.of(roomId, seatId);
+    public record SeatLocatorRow(UUID roomId, UUID seatId) {
+        public SeatLocator toLocator() {
+            return SeatLocator.of(roomId, seatId);
         }
     }
 
-    public record TestContext(long roomId, UUID slotId, UUID roomOpId, SeatId targetSeatId, SeatId otherSeatId) {
+    public record TestContext(UUID roomId, UUID slotId, UUID roomOpId, SeatLocator targetSeatLocator,
+                              SeatLocator secondSeatLocator) {
     }
 }

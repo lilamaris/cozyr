@@ -8,7 +8,6 @@ import com.lilamaris.cozyr.reservation.application.port.in.ListSeatSummaryUseCas
 import com.lilamaris.cozyr.reservation.application.port.in.query.FindSeatDetailQuery;
 import com.lilamaris.cozyr.reservation.application.port.in.query.ListSeatSummaryQuery;
 import com.lilamaris.cozyr.reservation.application.port.in.result.SeatCreatedResult;
-import com.lilamaris.cozyr.reservation.domain.SeatId;
 import com.lilamaris.cozyr.reservation.web.request.CreateSeatRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -26,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/rooms/{roomId}/seats")
@@ -54,9 +54,9 @@ public class SeatController {
             @Parameter(
                     description = "방 ID",
                     required = true,
-                    schema = @Schema(type = "integer", format = "int64")
+                    schema = @Schema(type = "string", format = "uuid", example = "d2f3a8c1-4b7e-4c9d-8a5f-1e6b7c8d9e0f")
             )
-            @PathVariable("roomId") long roomId
+            @PathVariable("roomId") UUID roomId
     ) {
         var query = ListSeatSummaryQuery.of(roomId);
         var result = listSeatSummaryUseCase.list(query);
@@ -92,9 +92,9 @@ public class SeatController {
             @Parameter(
                     description = "방 ID",
                     required = true,
-                    schema = @Schema(type = "integer", format = "int64")
+                    schema = @Schema(type = "string", format = "uuid", example = "d2f3a8c1-4b7e-4c9d-8a5f-1e6b7c8d9e0f")
             )
-            @PathVariable("roomId") long roomId,
+            @PathVariable("roomId") UUID roomId,
             @Valid @RequestBody CreateSeatRequest body
     ) {
         var command = body.toCommand(roomId);
@@ -125,17 +125,17 @@ public class SeatController {
             @Parameter(
                     description = "방 ID",
                     required = true,
-                    schema = @Schema(type = "integer", format = "int64")
+                    schema = @Schema(type = "string", format = "uuid", example = "d2f3a8c1-4b7e-4c9d-8a5f-1e6b7c8d9e0f")
             )
-            @PathVariable("roomId") long roomId,
+            @PathVariable("roomId") UUID roomId,
             @Parameter(
-                    description = "좌석 식별자",
+                    description = "좌석 ID",
                     required = true,
-                    schema = @Schema(type = "string", example = "A1")
+                    schema = @Schema(type = "string", format = "uuid", example = "a9c4e2f7-3b8d-4e1a-9f6c-5d0b8e1f2a3c")
             )
-            @PathVariable("seatId") String seatId
+            @PathVariable("seatId") UUID seatId
     ) {
-        var query = FindSeatDetailQuery.of(SeatId.of(roomId, seatId));
+        var query = FindSeatDetailQuery.of(roomId, seatId);
         var result = findSeatDetailUseCase.find(query);
         return ResponseEntity.ok(result);
     }

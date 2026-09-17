@@ -16,8 +16,8 @@ public class FindSeatDetailService implements FindSeatDetailUseCase {
 
     @Override
     public SeatDetail find(FindSeatDetailQuery query) {
-        var id = query.id();
-        return reader.findById(id)
+        var seatLocator = query.seatLocator();
+        return reader.findByLocator(seatLocator)
                 .orElseThrow(() -> new ApplicationException(ReservationServiceProgressCode.SEAT_NOT_FOUND));
     }
 }

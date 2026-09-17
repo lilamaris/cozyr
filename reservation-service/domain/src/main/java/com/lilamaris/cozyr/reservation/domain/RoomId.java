@@ -14,16 +14,16 @@ import java.util.UUID;
 @Getter
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class SeatId {
+public class RoomId {
     @EqualsAndHashCode.Include
     @Column(name = "id", updatable = false, nullable = false)
     private UUID value;
 
-    private SeatId(UUID value) {
+    private RoomId(UUID value) {
         this.value = ObjectPrecondition.requireNonNull(value, "value");
     }
 
-    public static SeatId of(UUID value) {
-        return new SeatId(value);
+    public static RoomId of(UUID value) {
+        return new RoomId(value);
     }
 }

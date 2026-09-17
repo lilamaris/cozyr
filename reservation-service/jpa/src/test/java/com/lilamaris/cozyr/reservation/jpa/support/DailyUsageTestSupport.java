@@ -36,7 +36,7 @@ public class DailyUsageTestSupport {
                 AND reservation_date = :reservationDate
             """;
 
-    public static ListAssert<DailyReservationUsageAssertRow> assertDailyReservationUsageThat(JdbcClient jdbcClient, long roomId, LocalDate reservationDate) {
+    public static ListAssert<DailyReservationUsageAssertRow> assertDailyReservationUsageThat(JdbcClient jdbcClient, UUID roomId, LocalDate reservationDate) {
         var usages = jdbcClient.sql(FIND_USAGE_BY_ROOM_ID_RESERVATION_DATE)
                 .param("roomId", roomId)
                 .param("reservationDate", reservationDate)
@@ -46,7 +46,7 @@ public class DailyUsageTestSupport {
         return new ListAssert<>(usages);
     }
 
-    public static DailyReservationUsageAssert assertDailyReservationUsageThat(JdbcClient jdbcClient, UUID userId, long roomId, LocalDate reservationDate) {
+    public static DailyReservationUsageAssert assertDailyReservationUsageThat(JdbcClient jdbcClient, UUID userId, UUID roomId, LocalDate reservationDate) {
         var usages = jdbcClient.sql(FIND_USAGE_BY_USER_ID_ROOM_ID_RESERVATION_DATE)
                 .param("userId", userId)
                 .param("roomId", roomId)
@@ -57,7 +57,7 @@ public class DailyUsageTestSupport {
         return new DailyReservationUsageAssert(usages);
     }
 
-    public record DailyReservationUsageAssertRow(UUID id, UUID userId, long roomId, LocalDate reservationDate,
+    public record DailyReservationUsageAssertRow(UUID id, UUID userId, UUID roomId, LocalDate reservationDate,
                                                  int reservationCount) {
     }
 
@@ -72,7 +72,7 @@ public class DailyUsageTestSupport {
             return actual.orElse(null);
         }
 
-        public DailyReservationUsageAssert hasRoomId(long roomId) {
+        public DailyReservationUsageAssert hasRoomId(UUID roomId) {
             assertThat(extractOptional().roomId)
                     .isEqualTo(roomId);
             return this;

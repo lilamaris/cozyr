@@ -1,6 +1,5 @@
 package com.lilamaris.cozyr.reservation.domain;
 
-import com.lilamaris.cozyr.kernel.core.condition.NumberPrecondition;
 import com.lilamaris.cozyr.kernel.core.condition.ObjectPrecondition;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -19,8 +18,9 @@ public class RoomScheduleSlot {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(name = "room_id", nullable = false)
-    private long roomId;
+    @Embedded
+    @AttributeOverride(name = "value", column = @Column(name = "room_id", updatable = false, nullable = false))
+    private RoomId roomId;
 
     @Column(name = "start_at", nullable = false)
     private LocalTime start_at;
@@ -28,13 +28,13 @@ public class RoomScheduleSlot {
     @Column(name = "end_at", nullable = false)
     private LocalTime end_at;
 
-    private RoomScheduleSlot(long roomId, LocalTime start_at, LocalTime end_at) {
-        this.roomId = NumberPrecondition.requireNonNegative(roomId, "roomId");
+    private RoomScheduleSlot(RoomId roomId, LocalTime start_at, LocalTime end_at) {
+        this.roomId = ObjectPrecondition.requireNonNull(roomId, "roomId");
         this.start_at = ObjectPrecondition.requireNonNull(start_at, "start_at");
         this.end_at = ObjectPrecondition.requireNonNull(end_at, "end_at");
     }
 
-    public static RoomScheduleSlot of(long roomId, LocalTime start_at, LocalTime end_at) {
+    public static RoomScheduleSlot of(RoomId roomId, LocalTime start_at, LocalTime end_at) {
         return new RoomScheduleSlot(roomId, start_at, end_at);
     }
 }

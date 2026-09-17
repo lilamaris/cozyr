@@ -1,10 +1,10 @@
 package com.lilamaris.cozyr.reservation.application.port.out;
 
 import com.lilamaris.cozyr.reservation.application.model.reservation.ReservationDetail;
+import com.lilamaris.cozyr.reservation.domain.ReservationId;
 
 import java.util.Optional;
-import java.util.UUID;
 
 public interface ReservationDetailReader {
-    Optional<ReservationDetail> find(UUID reservationId);
+    Optional<ReservationDetail> find(ReservationId reservationId);
 }

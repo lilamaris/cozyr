@@ -6,6 +6,7 @@ import com.lilamaris.cozyr.reservation.application.model.room.RoomFilter;
 import com.lilamaris.cozyr.reservation.application.model.room.RoomSummary;
 import com.lilamaris.cozyr.reservation.application.port.out.RoomDetailReader;
 import com.lilamaris.cozyr.reservation.application.port.out.RoomSummaryReader;
+import com.lilamaris.cozyr.reservation.domain.RoomId;
 import com.lilamaris.cozyr.reservation.jdbc.row.RoomRow;
 import com.lilamaris.cozyr.reservation.jdbc.sql.RoomSql;
 import com.lilamaris.shrturl.kernel.application.model.cursor.CursorRequest;
@@ -51,7 +52,7 @@ public class RoomJdbcAdapter implements RoomSummaryReader, RoomDetailReader {
         var content = rows.stream()
                 .limit(request.size())
                 .filter(Objects::nonNull)
-                .map(RoomRow.Summary::toSummary)
+                .map(RoomRow.Summary::toModel)
                 .toList();
 
         RoomCursor nextCursor = null;
@@ -65,11 +66,11 @@ public class RoomJdbcAdapter implements RoomSummaryReader, RoomDetailReader {
     }
 
     @Override
-    public Optional<RoomDetail> findById(long id) {
+    public Optional<RoomDetail> findById(RoomId roomId) {
         var sql = RoomSql.FIND_DETAIL_BY_ID;
 
         var rows = jdbcClient.sql(sql)
-                .param("roomId", id)
+                .param("roomId", roomId.getValue())
                 .query(RoomRow.Detail.class)
                 .list();
 
@@ -84,7 +85,7 @@ public class RoomJdbcAdapter implements RoomSummaryReader, RoomDetailReader {
                 .toList();
 
         return Optional.of(
-                first.toDetail(schedules)
+                first.toModel(schedules)
         );
     }
 

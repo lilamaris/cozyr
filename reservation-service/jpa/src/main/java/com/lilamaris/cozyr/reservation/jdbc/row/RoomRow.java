@@ -11,19 +11,19 @@ import java.util.UUID;
 
 public class RoomRow {
     public record Summary(
-            long roomId,
+            UUID roomId,
             String name,
             String description,
             Instant createdAt,
             Instant updatedAt
     ) {
-        public RoomSummary toSummary() {
+        public RoomSummary toModel() {
             return RoomSummary.of(roomId, name, description, createdAt, updatedAt);
         }
     }
 
     public record Detail(
-            long roomId,
+            UUID roomId,
             String name,
             String description,
             Instant createdAt,
@@ -32,7 +32,7 @@ public class RoomRow {
             LocalTime startAt,
             LocalTime endAt
     ) {
-        public RoomDetail toDetail(List<RoomSchedule> schedules) {
+        public RoomDetail toModel(List<RoomSchedule> schedules) {
             return RoomDetail.of(roomId, name, description, createdAt, updatedAt, schedules);
         }
 

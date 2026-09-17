@@ -1,9 +1,7 @@
 package com.lilamaris.cozyr.reservation.contract.event;
 
 import com.lilamaris.cozyr.kernel.core.condition.CollectionPrecondition;
-import com.lilamaris.cozyr.kernel.core.condition.NumberPrecondition;
 import com.lilamaris.cozyr.kernel.core.condition.ObjectPrecondition;
-import com.lilamaris.cozyr.kernel.core.condition.StringPrecondition;
 import com.lilamaris.cozyr.kernel.message.MessageEnvelope;
 import com.lilamaris.cozyr.kernel.message.MessageKind;
 import com.lilamaris.cozyr.kernel.message.MessagePayload;
@@ -17,21 +15,21 @@ import java.util.UUID;
 public record ReservationCreatedEvent(
         UUID reservationId,
         LocalDate reservationDate,
-        Long roomId,
-        String seatId,
+        UUID roomId,
+        UUID seatId,
         UUID requestedUserId,
         List<LocalTimeSchedule> schedules
 ) implements MessagePayload {
     public ReservationCreatedEvent {
         ObjectPrecondition.requireNonNull(reservationId, "reservationId");
         ObjectPrecondition.requireNonNull(reservationDate, "reservationDate");
-        NumberPrecondition.requireNonNegative(roomId, "roomId");
-        StringPrecondition.requireNonBlank(seatId, "seatId");
+        ObjectPrecondition.requireNonNull(roomId, "roomId");
+        ObjectPrecondition.requireNonNull(seatId, "seatId");
         ObjectPrecondition.requireNonNull(requestedUserId, "requestedUserId");
         CollectionPrecondition.requireNonNullElements(schedules, "schedules");
     }
 
-    public static ReservationCreatedEvent of(UUID reservationId, LocalDate reservationDate, Long roomId, String seatId, UUID requestedUserId, List<LocalTimeSchedule> schedules) {
+    public static ReservationCreatedEvent of(UUID reservationId, LocalDate reservationDate, UUID roomId, UUID seatId, UUID requestedUserId, List<LocalTimeSchedule> schedules) {
         return new ReservationCreatedEvent(reservationId, reservationDate, roomId, seatId, requestedUserId, schedules);
     }
 

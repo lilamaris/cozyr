@@ -1,15 +1,18 @@
 package com.lilamaris.cozyr.reservation.application.port.in.query;
 
-import com.lilamaris.cozyr.kernel.core.condition.NumberPrecondition;
+import com.lilamaris.cozyr.kernel.core.condition.ObjectPrecondition;
+import com.lilamaris.cozyr.reservation.domain.RoomId;
+
+import java.util.UUID;
 
 public record FindRoomDetailQuery(
-        long roomId
+        RoomId roomId
 ) {
     public FindRoomDetailQuery {
-        NumberPrecondition.requireNonNegative(roomId, "roomId");
+        ObjectPrecondition.requireNonNull(roomId, "roomId");
     }
 
-    public static FindRoomDetailQuery of(long roomId) {
-        return new FindRoomDetailQuery(roomId);
+    public static FindRoomDetailQuery of(UUID roomId) {
+        return new FindRoomDetailQuery(RoomId.of(roomId));
     }
 }

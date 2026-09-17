@@ -2,6 +2,7 @@ package com.lilamaris.cozyr.reservation.application.internal;
 
 import com.lilamaris.cozyr.reservation.application.config.ApplicationProperties;
 import com.lilamaris.cozyr.reservation.application.model.schedule.ScheduleFactory;
+import com.lilamaris.cozyr.reservation.domain.RoomId;
 import com.lilamaris.cozyr.reservation.domain.RoomScheduleSlot;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -15,7 +16,7 @@ public class RoomScheduleSlotFactory {
     private final ApplicationProperties properties;
     private final ScheduleFactory scheduleFactory;
 
-    public List<RoomScheduleSlot> fromProperties(long roomId) {
+    public List<RoomScheduleSlot> fromProperties(RoomId roomId) {
         var props = properties.room();
         var steps = Duration.ofMinutes(props.slotMinute());
         var schedules = scheduleFactory.create(props.openTime(), props.closeTime(), steps);

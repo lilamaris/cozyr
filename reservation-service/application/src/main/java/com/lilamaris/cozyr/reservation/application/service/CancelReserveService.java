@@ -44,14 +44,14 @@ public class CancelReserveService implements CancelReserveUseCase {
         if (!isReleased)
             throw new ApplicationException(ReservationServiceProgressCode.RESERVATION_ALREADY_CANCELED);
 
-        var counterAcquired = dailyUsageCounter.tryDecrease(context.reservedUser().userId(), context.seatId().getRoomId(), context.reservationDate());
+        var counterAcquired = dailyUsageCounter.tryDecrease(context.reservedUser().userId(), context.seatLocator().roomId(), context.reservationDate());
         if (!counterAcquired)
             throw new ApplicationException(ReservationServiceProgressCode.RESERVATION_ALREADY_CANCELED);
 
         var schedules = context.schedules().stream()
                 .map(RoomSchedule::toLocalTimeSchedule)
                 .toList();
-        var event = ReservationCanceledEvent.of(reservationId.getValue(), context.reservationDate(), context.seatId().getRoomId(), context.seatId().getSeatId(), context.reservedUser().userId(), schedules);
+        var event = ReservationCanceledEvent.of(reservationId.getValue(), context.reservationDate(), context.seatLocator().roomId().getValue(), context.seatLocator().seatId().getValue(), context.reservedUser().userId(), schedules);
         messagePublisher.publish(event.toMessage(now));
 
         return CancelReserveResult.of(reservationId, now);

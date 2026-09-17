@@ -1,8 +1,8 @@
 package com.lilamaris.cozyr.reservation.jdbc;
 
+import com.lilamaris.cozyr.reservation.application.model.seat.SeatLocator;
 import com.lilamaris.cozyr.reservation.application.port.out.SeatOccupancyStore;
 import com.lilamaris.cozyr.reservation.domain.ReservationId;
-import com.lilamaris.cozyr.reservation.domain.SeatId;
 import com.lilamaris.cozyr.reservation.jdbc.sql.SeatOccupancySql;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DuplicateKeyException;
@@ -17,21 +17,21 @@ import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
-public class SeatOccupancyStoreJpaAdapter implements SeatOccupancyStore {
+public class SeatOccupancyStoreJdbcAdapter implements SeatOccupancyStore {
     private final JdbcClient jdbcClient;
 
     @Override
-    public boolean tryOccupy(ReservationId reservationId, LocalDate occupancyDate, SeatId seatId, Set<UUID> scheduleSlotIds) {
+    public boolean tryOccupy(ReservationId reservationId, LocalDate occupancyDate, SeatLocator seatLocator, Set<UUID> scheduleSlotIds) {
         var sql = SeatOccupancySql.INSERT_BY_SCHEDULE_SLOT_IDS;
 
         UUID[] slotIds = scheduleSlotIds.toArray(UUID[]::new);
 
         try {
             int rowCount = jdbcClient.sql(sql)
+                    .param("roomId", seatLocator.roomId().getValue())
+                    .param("seatId", seatLocator.seatId().getValue())
                     .param("reservationId", reservationId.getValue())
                     .param("occupancyDate", occupancyDate)
-                    .param("roomId", seatId.getRoomId())
-                    .param("seatId", seatId.getSeatId())
                     .param("scheduleSlotIds", slotIds)
                     .update();
 

@@ -1,7 +1,6 @@
 package com.lilamaris.cozyr.reservation.web.request;
 
 import com.lilamaris.cozyr.reservation.application.port.in.command.ReserveSeatCommand;
-import com.lilamaris.cozyr.reservation.domain.SeatId;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -17,7 +16,7 @@ public record ReserveSeatRequest(
         @Schema(description = "예약할 스케줄 슬롯 ID 목록")
         @NotEmpty Set<@NotNull UUID> scheduleSlotIds
 ) {
-    public ReserveSeatCommand toCommand(UUID reserveUserId, SeatId reserveSeatId) {
-        return ReserveSeatCommand.of(reserveUserId, reserveSeatId, reserveDate, scheduleSlotIds);
+    public ReserveSeatCommand toCommand(UUID reserveUserId, UUID roomId, UUID seatId) {
+        return ReserveSeatCommand.of(reserveUserId, roomId, seatId, reserveDate, scheduleSlotIds);
     }
 }

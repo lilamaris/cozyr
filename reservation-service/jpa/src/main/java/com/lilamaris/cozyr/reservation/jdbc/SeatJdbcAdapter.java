@@ -1,10 +1,11 @@
 package com.lilamaris.cozyr.reservation.jdbc;
 
 import com.lilamaris.cozyr.reservation.application.model.seat.SeatDetail;
+import com.lilamaris.cozyr.reservation.application.model.seat.SeatLocator;
 import com.lilamaris.cozyr.reservation.application.model.seat.SeatSummary;
 import com.lilamaris.cozyr.reservation.application.port.out.SeatDetailReader;
 import com.lilamaris.cozyr.reservation.application.port.out.SeatSummaryReader;
-import com.lilamaris.cozyr.reservation.domain.SeatId;
+import com.lilamaris.cozyr.reservation.domain.RoomId;
 import com.lilamaris.cozyr.reservation.jdbc.row.SeatRow;
 import com.lilamaris.cozyr.reservation.jdbc.sql.SeatSql;
 import lombok.RequiredArgsConstructor;
@@ -21,11 +22,11 @@ public class SeatJdbcAdapter implements SeatSummaryReader, SeatDetailReader {
     private final JdbcClient jdbcClient;
 
     @Override
-    public List<SeatSummary> find(long roomId) {
+    public List<SeatSummary> find(RoomId roomId) {
         var sql = SeatSql.LIST_SUMMARIES;
 
         var rows = jdbcClient.sql(sql)
-                .param("roomId", roomId)
+                .param("roomId", roomId.getValue())
                 .query(SeatRow.Summary.class)
                 .list();
 
@@ -36,12 +37,12 @@ public class SeatJdbcAdapter implements SeatSummaryReader, SeatDetailReader {
     }
 
     @Override
-    public Optional<SeatDetail> findById(SeatId id) {
+    public Optional<SeatDetail> findByLocator(SeatLocator seatLocator) {
         var sql = SeatSql.FIND_DETAIL_BY_ID;
 
         return jdbcClient.sql(sql)
-                .param("roomId", id.getRoomId())
-                .param("seatId", id.getSeatId())
+                .param("roomId", seatLocator.roomId().getValue())
+                .param("seatId", seatLocator.seatId().getValue())
                 .query(SeatRow.Detail.class)
                 .optional()
                 .map(SeatRow.Detail::toModel);

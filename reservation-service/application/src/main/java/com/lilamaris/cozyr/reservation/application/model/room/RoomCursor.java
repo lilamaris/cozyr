@@ -1,20 +1,20 @@
 package com.lilamaris.cozyr.reservation.application.model.room;
 
-import com.lilamaris.cozyr.kernel.core.condition.NumberPrecondition;
 import com.lilamaris.cozyr.kernel.core.condition.ObjectPrecondition;
 
 import java.time.Instant;
+import java.util.UUID;
 
 public record RoomCursor(
         Instant createdAt,
-        long roomId
+        UUID roomId
 ) {
     public RoomCursor {
         ObjectPrecondition.requireNonNull(createdAt, "createdAt");
-        NumberPrecondition.requireNonNegative(roomId, "roomId");
+        ObjectPrecondition.requireNonNull(roomId, "roomId");
     }
 
-    public static RoomCursor of(Instant createdAt, long roomId) {
+    public static RoomCursor of(Instant createdAt, UUID roomId) {
         return new RoomCursor(createdAt, roomId);
     }
 }
