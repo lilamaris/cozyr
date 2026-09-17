@@ -3,6 +3,7 @@ package com.lilamaris.cozyr.reservation.jpa;
 import com.lilamaris.cozyr.kernel.message.MessagePublisher;
 import com.lilamaris.cozyr.reservation.application.exception.ReservationServiceProgressCode;
 import com.lilamaris.cozyr.reservation.application.internal.id.IdGenerator;
+import com.lilamaris.cozyr.reservation.application.model.seat.SeatLocator;
 import com.lilamaris.cozyr.reservation.application.port.in.ReserveSeatUseCase;
 import com.lilamaris.cozyr.reservation.application.port.in.command.ReserveSeatCommand;
 import com.lilamaris.cozyr.reservation.application.port.in.result.ReserveSeatResult;
@@ -11,11 +12,10 @@ import com.lilamaris.cozyr.reservation.application.service.ReserveSeatService;
 import com.lilamaris.cozyr.reservation.domain.Reservation;
 import com.lilamaris.cozyr.reservation.domain.ReservationId;
 import com.lilamaris.cozyr.reservation.domain.ReservationStatus;
-import com.lilamaris.cozyr.reservation.domain.SeatId;
 import com.lilamaris.cozyr.reservation.jdbc.DailyUsageJdbcAdapter;
 import com.lilamaris.cozyr.reservation.jdbc.RoomContextJdbcAdapter;
 import com.lilamaris.cozyr.reservation.jdbc.RoomScheduleSlotReaderJdbcAdapter;
-import com.lilamaris.cozyr.reservation.jdbc.SeatOccupancyStoreJpaAdapter;
+import com.lilamaris.cozyr.reservation.jdbc.SeatOccupancyStoreJdbcAdapter;
 import com.lilamaris.cozyr.reservation.jpa.assertion.ReservationAssertion;
 import com.lilamaris.cozyr.reservation.jpa.assertion.SeatOccupancyAssertion;
 import com.lilamaris.cozyr.reservation.jpa.repository.ReservationRepository;
@@ -108,8 +108,8 @@ class ReserveSeatConcurrencyTest {
     @Test
     @DisplayName("서로 다른 두 사용자가 같은 좌석·날짜·시간을 동시에 예약하면 한 건만 커밋된다")
     void onlyOneReservationCommitsForTheSameSeatAndSlot() throws Exception {
-        var firstCommand = ReserveSeatCommand.of(userContext.firstUserId(), roomContext.targetSeatId(), DATE, Set.of(roomContext.slotId()));
-        var secondCommand = ReserveSeatCommand.of(userContext.secondUserId(), roomContext.targetSeatId(), DATE, Set.of(roomContext.slotId()));
+        var firstCommand = ReserveSeatCommand.of(userContext.firstUserId(), roomContext.targetSeatLocator(), DATE, Set.of(roomContext.slotId()));
+        var secondCommand = ReserveSeatCommand.of(userContext.secondUserId(), roomContext.targetSeatLocator(), DATE, Set.of(roomContext.slotId()));
 
         List<Outcome> outcomes;
         var executor = Executors.newFixedThreadPool(2);
@@ -142,12 +142,12 @@ class ReserveSeatConcurrencyTest {
 
         assertReservationThat(jdbcClient, winner.reservationId())
                 .isNotEmpty()
-                .hasSeatId(roomContext.targetSeatId())
+                .hasSeatLocator(roomContext.targetSeatLocator())
                 .hasStatus(ReservationStatus.RESERVED)
                 .hasOccupancyDate(DATE)
                 .hasReservedUserId(winner.reserveUserId());
 
-        assertActiveOccupanciesThat(jdbcClient, roomContext.targetSeatId(), DATE)
+        assertActiveOccupanciesThat(jdbcClient, roomContext.targetSeatLocator(), DATE)
                 .extracting(
                         SeatOccupancyAssertion.SeatOccupancyAssertRow::reservationId,
                         SeatOccupancyAssertion.SeatOccupancyAssertRow::slotId
@@ -197,11 +197,11 @@ class ReserveSeatConcurrencyTest {
 
         @Bean
         SeatOccupancyStore seatOccupancyStore(JdbcClient jdbc) {
-            var delegate = new SeatOccupancyStoreJpaAdapter(jdbc);
+            var delegate = new SeatOccupancyStoreJdbcAdapter(jdbc);
             var barrier = new CyclicBarrier(2);
             return new SeatOccupancyStore() {
                 @Override
-                public boolean tryOccupy(ReservationId reservationId, LocalDate date, SeatId seatId, Set<UUID> slotIds) {
+                public boolean tryOccupy(ReservationId reservationId, LocalDate date, SeatLocator seatLocator, Set<UUID> slotIds) {
                     assertThat(TransactionSynchronizationManager.isActualTransactionActive()).isTrue();
                     try {
                         barrier.await(10, TimeUnit.SECONDS);
@@ -211,7 +211,7 @@ class ReserveSeatConcurrencyTest {
                     } catch (BrokenBarrierException | TimeoutException exception) {
                         throw new IllegalStateException("Both reservations must reach the occupancy boundary", exception);
                     }
-                    return delegate.tryOccupy(reservationId, date, seatId, slotIds);
+                    return delegate.tryOccupy(reservationId, date, seatLocator, slotIds);
                 }
 
                 @Override

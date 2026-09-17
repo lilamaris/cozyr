@@ -1,6 +1,6 @@
 package com.lilamaris.cozyr.reservation.jpa.assertion;
 
-import com.lilamaris.cozyr.reservation.domain.SeatId;
+import com.lilamaris.cozyr.reservation.application.model.seat.SeatLocator;
 import org.assertj.core.api.ListAssert;
 import org.springframework.jdbc.core.simple.JdbcClient;
 
@@ -48,10 +48,10 @@ public class SeatOccupancyAssertion {
         return new ListAssert<>(occupancies);
     }
 
-    public static ListAssert<SeatOccupancyAssertRow> assertActiveOccupanciesThat(JdbcClient jdbcClient, SeatId seatId, LocalDate date) {
+    public static ListAssert<SeatOccupancyAssertRow> assertActiveOccupanciesThat(JdbcClient jdbcClient, SeatLocator seatLocator, LocalDate date) {
         var occupancies = jdbcClient.sql(FIND_ACTIVE_BY_SEAT_ID)
-                .param("roomId", seatId.getRoomId())
-                .param("seatId", seatId.getSeatId())
+                .param("roomId", seatLocator.roomId().getValue())
+                .param("seatId", seatLocator.seatId().getValue())
                 .param("occupancyDate", date)
                 .query(SeatOccupancyAssertRow.class)
                 .list();
@@ -62,8 +62,8 @@ public class SeatOccupancyAssertion {
     public record SeatOccupancyAssertRow(
             UUID id,
             UUID reservationId,
-            long roomId,
-            String seatId,
+            UUID roomId,
+            UUID seatId,
             LocalDate occupancyDate,
             Instant releasedAt,
             UUID slotId

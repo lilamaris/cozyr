@@ -1,7 +1,7 @@
 package com.lilamaris.cozyr.reservation.jpa.assertion;
 
+import com.lilamaris.cozyr.reservation.application.model.seat.SeatLocator;
 import com.lilamaris.cozyr.reservation.domain.ReservationStatus;
-import com.lilamaris.cozyr.reservation.domain.SeatId;
 import org.assertj.core.api.AbstractOptionalAssert;
 import org.assertj.core.api.ListAssert;
 import org.springframework.jdbc.core.simple.JdbcClient;
@@ -42,7 +42,7 @@ public class ReservationAssertion {
             WHERE room_id = :roomId
             """;
 
-    public static ListAssert<ReservationAssertRow> assertReservationByRoomThat(JdbcClient jdbcClient, long roomId) {
+    public static ListAssert<ReservationAssertRow> assertReservationByRoomThat(JdbcClient jdbcClient, UUID roomId) {
         var reservations = jdbcClient.sql(FIND_RESERVATIONS_BY_ROOM_ID)
                 .param("roomId", roomId)
                 .query(ReservationAssertRow.class)
@@ -60,7 +60,7 @@ public class ReservationAssertion {
         return new ReservationAssert(reservation);
     }
 
-    public record ReservationAssertRow(UUID id, UUID reservedUserId, long roomId, String seatId,
+    public record ReservationAssertRow(UUID id, UUID reservedUserId, UUID roomId, UUID seatId,
                                        LocalDate occupancyDate, ReservationStatus status, Instant createdAt,
                                        Instant updatedAt) {
     }
@@ -76,24 +76,24 @@ public class ReservationAssertion {
             return actual.orElse(null);
         }
 
-        public ReservationAssert hasRoomId(long roomId) {
+        public ReservationAssert hasRoomId(UUID roomId) {
             assertThat(extractOptional().roomId).isEqualTo(roomId);
             return this;
         }
 
-        public ReservationAssert hasSeatId(String seatId) {
+        public ReservationAssert hasSeatId(UUID seatId) {
             assertThat(extractOptional().seatId).isEqualTo(seatId);
             return this;
         }
 
-        public ReservationAssert hasSeatId(SeatId seatId) {
+        public ReservationAssert hasSeatLocator(SeatLocator seatLocator) {
             assertThat(extractOptional())
                     .as("reservation.[roomId, seatId]")
                     .extracting(
                             ReservationAssertRow::roomId,
                             ReservationAssertRow::seatId
                     )
-                    .containsExactly(seatId.getRoomId(), seatId.getSeatId());
+                    .containsExactly(seatLocator.roomId().getValue(), seatLocator.seatId().getValue());
             return this;
         }
 
