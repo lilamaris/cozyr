@@ -5,6 +5,7 @@ public class SeatSql {
             SELECT
                 s.id AS seatId,
                 s.room_id AS roomId,
+                s.code AS code,
                 s.created_at AS createdAt,
                 s.updated_at AS updatedAt
             FROM seat s
@@ -16,6 +17,7 @@ public class SeatSql {
             SELECT
                 s.id AS seatId,
                 s.room_id AS roomId,
+                s.code AS code,
                 s.created_at AS createdAt,
                 s.updated_at AS updatedAt
             FROM seat s

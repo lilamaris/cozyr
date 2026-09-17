@@ -11,22 +11,24 @@ public class SeatRow {
     public record Summary(
             UUID roomId,
             UUID seatId,
+            String code,
             Instant createdAt,
             Instant updatedAt
     ) {
         public SeatSummary toSummary() {
-            return SeatSummary.of(SeatLocator.of(roomId, seatId), createdAt, updatedAt);
+            return SeatSummary.of(SeatLocator.of(roomId, seatId), code, createdAt, updatedAt);
         }
     }
 
     public record Detail(
             UUID roomId,
             UUID seatId,
+            String code,
             Instant createdAt,
             Instant updatedAt
     ) {
         public SeatDetail toModel() {
-            return SeatDetail.of(SeatLocator.of(roomId, seatId), createdAt, updatedAt);
+            return SeatDetail.of(SeatLocator.of(roomId, seatId), code, createdAt, updatedAt);
         }
     }
 }
