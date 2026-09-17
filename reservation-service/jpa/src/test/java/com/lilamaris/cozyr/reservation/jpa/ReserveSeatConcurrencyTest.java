@@ -1,25 +1,18 @@
 package com.lilamaris.cozyr.reservation.jpa;
 
-import com.lilamaris.cozyr.kernel.message.MessagePublisher;
 import com.lilamaris.cozyr.reservation.application.exception.ReservationServiceProgressCode;
-import com.lilamaris.cozyr.reservation.application.internal.id.IdGenerator;
 import com.lilamaris.cozyr.reservation.application.model.seat.SeatLocator;
 import com.lilamaris.cozyr.reservation.application.port.in.ReserveSeatUseCase;
 import com.lilamaris.cozyr.reservation.application.port.in.command.ReserveSeatCommand;
 import com.lilamaris.cozyr.reservation.application.port.in.result.ReserveSeatResult;
 import com.lilamaris.cozyr.reservation.application.port.out.SeatOccupancyStore;
-import com.lilamaris.cozyr.reservation.application.service.ReserveSeatService;
-import com.lilamaris.cozyr.reservation.domain.Reservation;
 import com.lilamaris.cozyr.reservation.domain.ReservationId;
 import com.lilamaris.cozyr.reservation.domain.ReservationStatus;
-import com.lilamaris.cozyr.reservation.jdbc.DailyUsageJdbcAdapter;
-import com.lilamaris.cozyr.reservation.jdbc.RoomContextJdbcAdapter;
-import com.lilamaris.cozyr.reservation.jdbc.RoomScheduleSlotReaderJdbcAdapter;
 import com.lilamaris.cozyr.reservation.jdbc.SeatOccupancyStoreJdbcAdapter;
 import com.lilamaris.cozyr.reservation.jpa.assertion.ReservationAssertion;
 import com.lilamaris.cozyr.reservation.jpa.assertion.SeatOccupancyAssertion;
-import com.lilamaris.cozyr.reservation.jpa.repository.ReservationRepository;
 import com.lilamaris.cozyr.reservation.jpa.support.DailyUsageTestSupport;
+import com.lilamaris.cozyr.reservation.jpa.support.ReservationTestConfiguration;
 import com.lilamaris.cozyr.reservation.jpa.support.RoomTestSupport;
 import com.lilamaris.cozyr.reservation.jpa.support.UserTestSupport;
 import com.lilamaris.shrturl.kernel.application.exception.ApplicationException;
@@ -27,11 +20,9 @@ import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
-import org.springframework.boot.persistence.autoconfigure.EntityScan;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -41,10 +32,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 
-import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -54,6 +43,7 @@ import static com.lilamaris.cozyr.reservation.jpa.assertion.ReservationAssertion
 import static com.lilamaris.cozyr.reservation.jpa.assertion.ReservationAssertion.assertReservationThat;
 import static com.lilamaris.cozyr.reservation.jpa.assertion.SeatOccupancyAssertion.assertActiveOccupanciesThat;
 import static com.lilamaris.cozyr.reservation.jpa.support.DailyUsageTestSupport.assertDailyReservationUsageThat;
+import static com.lilamaris.cozyr.reservation.jpa.support.ReservationTestConfiguration.NOW;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 
@@ -63,14 +53,13 @@ import static org.assertj.core.api.Assertions.tuple;
         "spring.flyway.enabled=true"
 })
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@ContextConfiguration(classes = ReserveSeatConcurrencyTest.TestConfig.class)
+@ContextConfiguration(classes = {ReserveSeatConcurrencyTest.TestConfig.class, ReservationTestConfiguration.class})
 @Transactional(propagation = Propagation.NOT_SUPPORTED)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @DisplayName("Reserve Seat 동시성 테스트")
 class ReserveSeatConcurrencyTest {
     // V4 uses uuidv7(), which requires PostgreSQL 18.
     private static final PostgreSQLContainer POSTGRES = new PostgreSQLContainer("postgres:18.3-alpine");
-    private static final Instant NOW = Instant.parse("2026-09-12T00:00:00Z");
     private static final LocalDate DATE = LocalDate.of(2026, 9, 13);
     private UserTestSupport.TestContext userContext;
     private RoomTestSupport.TestContext roomContext;
@@ -174,27 +163,8 @@ class ReserveSeatConcurrencyTest {
     }
 
     @Configuration(proxyBeanMethods = false)
-    @EntityScan(basePackageClasses = Reservation.class)
-    @EnableJpaRepositories(basePackageClasses = ReservationRepository.class)
-    @Import({ReserveSeatService.class, ReservationJpaAdapter.class, SeatJpaAdapter.class,
-            RoomContextJdbcAdapter.class, RoomScheduleSlotReaderJdbcAdapter.class, DailyUsageJdbcAdapter.class})
     static class TestConfig {
-        @Bean
-        Clock clock() {
-            return Clock.fixed(NOW, ZoneOffset.UTC);
-        }
-
-        @Bean
-        IdGenerator<UUID> idGenerator() {
-            return UUID::randomUUID;
-        }
-
-        @Bean
-        MessagePublisher messagePublisher() {
-            return message -> {
-            };
-        }
-
+        @Primary
         @Bean
         SeatOccupancyStore seatOccupancyStore(JdbcClient jdbc) {
             var delegate = new SeatOccupancyStoreJdbcAdapter(jdbc);
