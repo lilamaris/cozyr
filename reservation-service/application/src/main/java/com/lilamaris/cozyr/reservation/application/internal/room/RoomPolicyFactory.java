@@ -1,4 +1,4 @@
-package com.lilamaris.cozyr.reservation.application.internal;
+package com.lilamaris.cozyr.reservation.application.internal.room;
 
 import com.lilamaris.cozyr.reservation.application.config.ApplicationProperties;
 import com.lilamaris.cozyr.reservation.domain.RoomId;
