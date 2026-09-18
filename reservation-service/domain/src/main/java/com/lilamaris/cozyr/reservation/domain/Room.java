@@ -12,6 +12,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.Instant;
+import java.util.UUID;
 
 @Entity
 @Table(name = "room")
@@ -27,16 +28,20 @@ public class Room {
     @Column(name = "description", nullable = false)
     private String description;
 
+    @Column(name = "user_id", nullable = false)
+    private UUID userId;
+
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
     @Column(name = "updated_at")
     private Instant updatedAt;
 
-    private Room(RoomId id, String name, String description, Instant createdAt, Instant updatedAt) {
+    private Room(RoomId id, String name, String description, UUID userId, Instant createdAt, Instant updatedAt) {
         this.id = ObjectPrecondition.requireNonNull(id, "id");
         this.name = StringPrecondition.requireNonBlank(name, "name");
         this.description = StringPrecondition.requireNonBlank(description, "description");
+        this.userId = ObjectPrecondition.requireNonNull(userId, "userId");
         this.createdAt = ObjectPrecondition.requireNonNull(createdAt, "createdAt");
 
         if (updatedAt != null) {
@@ -44,8 +49,8 @@ public class Room {
         }
     }
 
-    public static Room of(RoomId id, String name, String description, Instant createdAt) {
-        return new Room(id, name, description, createdAt, createdAt);
+    public static Room of(RoomId id, String name, String description, UUID userId, Instant createdAt) {
+        return new Room(id, name, description, userId, createdAt, createdAt);
     }
 
     public void updateName(String name, Instant updatedAt) {
