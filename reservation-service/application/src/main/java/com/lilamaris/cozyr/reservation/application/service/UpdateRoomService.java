@@ -2,7 +2,11 @@ package com.lilamaris.cozyr.reservation.application.service;
 
 import com.lilamaris.cozyr.reservation.application.exception.ReservationServiceProgressCode;
 import com.lilamaris.cozyr.reservation.application.internal.room.RoomInternalUpdateService;
+import com.lilamaris.cozyr.reservation.application.port.in.ActivateRoomUseCase;
+import com.lilamaris.cozyr.reservation.application.port.in.DeactivateRoomUseCase;
 import com.lilamaris.cozyr.reservation.application.port.in.UpdateRoomUseCase;
+import com.lilamaris.cozyr.reservation.application.port.in.command.ActivateRoomCommand;
+import com.lilamaris.cozyr.reservation.application.port.in.command.DeactivateRoomCommand;
 import com.lilamaris.cozyr.reservation.application.port.in.command.UpdateRoomCommand;
 import com.lilamaris.cozyr.reservation.application.port.in.result.RoomUpdatedResult;
 import com.lilamaris.cozyr.reservation.application.port.out.RoomReader;
@@ -15,7 +19,7 @@ import java.time.Clock;
 
 @Service
 @RequiredArgsConstructor
-public class UpdateRoomService implements UpdateRoomUseCase {
+public class UpdateRoomService implements UpdateRoomUseCase, ActivateRoomUseCase, DeactivateRoomUseCase {
     private final RoomInternalUpdateService roomInternalUpdateService;
     private final RoomReader roomReader;
     private final Clock clock;
@@ -33,5 +37,31 @@ public class UpdateRoomService implements UpdateRoomUseCase {
         return roomReader.findById(roomId)
                 .map(RoomUpdatedResult::from)
                 .orElseThrow(() -> new ApplicationException(ReservationServiceProgressCode.ROOM_NOT_FOUND));
+    }
+
+    @Override
+    @Transactional
+    public void activate(ActivateRoomCommand command) {
+        var now = clock.instant();
+
+        roomInternalUpdateService.activate(
+                command.roomId(),
+                command.userId(),
+                now,
+                now
+        );
+    }
+
+    @Override
+    @Transactional
+    public void deactivate(DeactivateRoomCommand command) {
+        var now = clock.instant();
+
+        roomInternalUpdateService.deactivate(
+                command.roomId(),
+                command.userId(),
+                command.deactivatedAt(),
+                now
+        );
     }
 }
