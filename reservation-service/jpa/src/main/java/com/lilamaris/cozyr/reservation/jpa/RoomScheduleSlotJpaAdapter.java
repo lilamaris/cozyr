@@ -14,7 +14,7 @@ public class RoomScheduleSlotJpaAdapter implements RoomScheduleSlotStore {
     private final RoomScheduleSlotRepository repository;
 
     @Override
-    public List<RoomScheduleSlot> saveAll(Iterable<RoomScheduleSlot> slots) {
-        return repository.saveAll(slots).stream().toList();
+    public void saveAll(Iterable<RoomScheduleSlot> slots) {
+        repository.saveAll(slots);
     }
 }
