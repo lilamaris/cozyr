@@ -30,4 +30,11 @@ public class RoomSql {
                 ON rss.room_id = r.id
             WHERE r.id = :roomId
             """;
+
+    public static final String UPDATE_BY_OWNER = """
+            UPDATE room
+            SET %s
+            WHERE room_id = :roomId
+                AND user_id = :userId
+            """;
 }

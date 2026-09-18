@@ -13,7 +13,7 @@ public record UpdateRoomRequest(
         @Schema(description = "방 설명", example = "최상위 좌석을 갖춘 VIP 전용 방입니다.")
         @NotBlank String description
 ) {
-    public UpdateRoomCommand toCommand(UUID roomId) {
-        return UpdateRoomCommand.of(roomId, name, description);
+    public UpdateRoomCommand toCommand(UUID roomId, UUID userId) {
+        return UpdateRoomCommand.of(roomId, name, description, userId);
     }
 }
