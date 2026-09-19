@@ -11,6 +11,7 @@ public enum ReservationServiceProgressCode implements ApplicationProgressCode {
     RESERVATION_NOT_FOUND(ProcessReason.REJECTED, "reservation", "not-found", "예약을 찾을 수 없습니다."),
     SCHEDULE_NOT_FOUND(ProcessReason.REJECTED, "schedule", "not-found", "예약 가능한 시간을 찾을 수 없습니다."),
 
+    FORBIDDEN(ProcessReason.REJECTED, "resource", "forbidden", "접근 권한이 없습니다."),
     SEAT_ID_DUPLICATED(ProcessReason.REJECTED, "seat", "duplicated", "동일한 좌석이 이미 존재합니다."),
 
     SCHEDULE_ALREADY_OCCUPIED(ProcessReason.REJECTED, "reservation", "duplicated", "해당 시간의 좌석은 이미 예약되었습니다."),

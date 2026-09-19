@@ -26,6 +26,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -125,9 +127,11 @@ public class RoomController {
     })
     @PostMapping
     public ResponseEntity<RoomCreatedResult> createRoom(
-            @Valid @RequestBody CreateRoomRequest body
+            @Valid @RequestBody CreateRoomRequest body,
+            @AuthenticationPrincipal Jwt jwt
     ) {
-        var command = body.toCommand();
+        var userId = UUID.fromString(jwt.getSubject());
+        var command = body.toCommand(userId);
         var result = createRoomUseCase.create(command);
         var location = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}")
@@ -163,9 +167,11 @@ public class RoomController {
                     schema = @Schema(type = "string", format = "uuid", example = "d2f3a8c1-4b7e-4c9d-8a5f-1e6b7c8d9e0f")
             )
             @PathVariable("roomId") UUID roomId,
-            @Valid @RequestBody UpdateRoomRequest body
+            @Valid @RequestBody UpdateRoomRequest body,
+            @AuthenticationPrincipal Jwt jwt
     ) {
-        var command = body.toCommand(roomId);
+        var userId = UUID.fromString(jwt.getSubject());
+        var command = body.toCommand(roomId, userId);
         var result = updateRoomUseCase.update(command);
 
         return ResponseEntity.ok(result);

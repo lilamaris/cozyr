@@ -5,7 +5,10 @@ import com.lilamaris.cozyr.reservation.application.model.room.RoomDetail;
 import com.lilamaris.cozyr.reservation.application.model.room.RoomFilter;
 import com.lilamaris.cozyr.reservation.application.model.room.RoomSummary;
 import com.lilamaris.cozyr.reservation.application.port.out.RoomDetailReader;
+import com.lilamaris.cozyr.reservation.application.port.out.RoomOwnerStore;
 import com.lilamaris.cozyr.reservation.application.port.out.RoomSummaryReader;
+import com.lilamaris.cozyr.reservation.application.port.out.status.RoomUpdateParams;
+import com.lilamaris.cozyr.reservation.application.port.out.status.RoomUpdateStatus;
 import com.lilamaris.cozyr.reservation.domain.RoomId;
 import com.lilamaris.cozyr.reservation.jdbc.row.RoomRow;
 import com.lilamaris.cozyr.reservation.jdbc.sql.RoomSql;
@@ -17,14 +20,13 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.util.*;
 
 @Component
 @RequiredArgsConstructor
-public class RoomJdbcAdapter implements RoomSummaryReader, RoomDetailReader {
+public class RoomJdbcAdapter implements RoomSummaryReader, RoomDetailReader, RoomOwnerStore {
     private final JdbcClient jdbcClient;
 
     @Override
@@ -122,5 +124,38 @@ public class RoomJdbcAdapter implements RoomSummaryReader, RoomDetailReader {
                 .replace("\\", "\\\\")
                 .replace("%", "\\%")
                 .replace("_", "\\_");
+    }
+
+    @Override
+    public RoomUpdateStatus updateByOwned(RoomId roomId, UUID userId, RoomUpdateParams params, Instant updatedAt) {
+        var cond = new ArrayList<String>();
+        var paramSource = new MapSqlParameterSource();
+
+        cond.add("updated_at = :updatedAt");
+        paramSource.addValue("updatedAt", Timestamp.from(updatedAt));
+        paramSource.addValue("roomId", roomId.getValue());
+        paramSource.addValue("userId", userId);
+
+        Optional.ofNullable(params.name())
+                .filter(s -> !s.isBlank())
+                .ifPresent(name -> {
+                    cond.add("name = :name");
+                    paramSource.addValue("name", name);
+                });
+
+        Optional.ofNullable(params.description())
+                .filter(s -> !s.isBlank())
+                .ifPresent(description -> {
+                    cond.add("description = :description");
+                    paramSource.addValue("description", description);
+                });
+
+        var sql = RoomSql.UPDATE_BY_OWNER.formatted(String.join(",", cond));
+
+        var updated = jdbcClient.sql(sql)
+                .paramSource(paramSource)
+                .update();
+
+        return updated > 0 ? RoomUpdateStatus.UPDATED : RoomUpdateStatus.NOT_OWNED;
     }
 }

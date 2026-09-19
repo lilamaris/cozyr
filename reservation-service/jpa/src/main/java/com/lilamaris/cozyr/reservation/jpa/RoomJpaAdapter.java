@@ -26,8 +26,8 @@ public class RoomJpaAdapter implements RoomStore, RoomReader {
     }
 
     @Override
-    public Room save(Room room) {
-        return repository.save(room);
+    public void save(Room room) {
+        repository.save(room);
     }
 
 }

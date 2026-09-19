@@ -1,6 +1,7 @@
 package com.lilamaris.cozyr.reservation.application.service;
 
 import com.lilamaris.cozyr.reservation.application.exception.ReservationServiceProgressCode;
+import com.lilamaris.cozyr.reservation.application.internal.room.RoomInternalUpdateService;
 import com.lilamaris.cozyr.reservation.application.port.in.UpdateRoomUseCase;
 import com.lilamaris.cozyr.reservation.application.port.in.command.UpdateRoomCommand;
 import com.lilamaris.cozyr.reservation.application.port.in.result.RoomUpdatedResult;
@@ -15,23 +16,22 @@ import java.time.Clock;
 @Service
 @RequiredArgsConstructor
 public class UpdateRoomService implements UpdateRoomUseCase {
-    private final RoomReader reader;
+    private final RoomInternalUpdateService roomInternalUpdateService;
+    private final RoomReader roomReader;
     private final Clock clock;
 
     @Override
     @Transactional
     public RoomUpdatedResult update(UpdateRoomCommand command) {
-        var roomId = command.roomId();
-        var room = reader.findById(roomId)
-                .orElseThrow(() -> new ApplicationException(ReservationServiceProgressCode.ROOM_NOT_FOUND));
-
         var now = clock.instant();
-        var name = command.name();
-        var description = command.description();
 
-        room.updateName(name, now);
-        room.updateDescription(description, now);
+        var roomId = command.roomId();
+        var userId = command.userId();
+        var params = command.params();
+        roomInternalUpdateService.update(roomId, params, userId, now);
 
-        return RoomUpdatedResult.from(room);
+        return roomReader.findById(roomId)
+                .map(RoomUpdatedResult::from)
+                .orElseThrow(() -> new ApplicationException(ReservationServiceProgressCode.ROOM_NOT_FOUND));
     }
 }
