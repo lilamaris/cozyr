@@ -13,6 +13,8 @@ public interface RoomPolicyStore {
 
     Optional<RoomOpPolicy> findForUpdate(RoomId roomId);
 
+    Optional<RoomOpPolicy> findForShare(RoomId roomId);
+
     RoomUpdateStatus updateDeactivatedAtWithAwareByOwner(RoomId roomId, UUID userId, Instant deactivatedAt, Instant updatedAt);
 
     RoomUpdateStatus updateActivatedAtWithAwareByOwner(RoomId roomId, UUID userId, Instant activatedAt, Instant updatedAt);

@@ -28,6 +28,11 @@ public class RoomOpPolicyJpaAdapter implements RoomPolicyStore {
     }
 
     @Override
+    public Optional<RoomOpPolicy> findForShare(RoomId roomId) {
+        return repository.findForShare(roomId);
+    }
+
+    @Override
     public RoomUpdateStatus updateDeactivatedAtWithAwareByOwner(RoomId roomId, UUID userId, Instant deactivatedAt, Instant updatedAt) {
         var updated = repository.updateDeactivatedAtWithAwareByOwner(roomId, userId, deactivatedAt, updatedAt);
 

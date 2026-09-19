@@ -74,6 +74,12 @@ public class RoomOpPolicy {
         return scheduleCount <= maxSchedulePerReservation;
     }
 
+    public boolean allowsReservation(Instant startAt, Instant endsAt) {
+        return activatedAt != null
+                ? !startAt.isBefore(activatedAt)
+                : !endsAt.isAfter(deactivatedAt);
+    }
+
     public boolean isActiveAt(Instant now) {
         return activatedAt != null
                 ? !now.isBefore(activatedAt)

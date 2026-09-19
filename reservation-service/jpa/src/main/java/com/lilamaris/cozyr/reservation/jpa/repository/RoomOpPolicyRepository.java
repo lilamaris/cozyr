@@ -18,6 +18,10 @@ public interface RoomOpPolicyRepository extends JpaRepository<RoomOpPolicy, UUID
     @Query("SELECT p FROM RoomOpPolicy p WHERE p.roomId = :roomId")
     Optional<RoomOpPolicy> findForUpdate(@Param("roomId") RoomId roomId);
 
+    @Lock(LockModeType.PESSIMISTIC_READ)
+    @Query("SELECT p FROM RoomOpPolicy p WHERE p.roomId = :roomId")
+    Optional<RoomOpPolicy> findForShare(@Param("roomId") RoomId roomId);
+
     @Modifying
     @Query("""
             UPDATE RoomOpPolicy p
