@@ -34,7 +34,7 @@ public class RoomSql {
     public static final String UPDATE_BY_OWNER = """
             UPDATE room
             SET %s
-            WHERE room_id = :roomId
+            WHERE id = :roomId
                 AND user_id = :userId
             """;
 }
