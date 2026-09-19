@@ -72,7 +72,7 @@ class ReserveSeatLifecycleTest {
     @BeforeAll
     void setup() {
         userContext = UserTestSupport.createContext(jdbcClient, NOW);
-        roomContext = RoomTestSupport.createContext(jdbcClient, NOW);
+        roomContext = RoomTestSupport.createContext(jdbcClient, userContext.firstUserId(), NOW);
     }
 
     @AfterEach
@@ -103,14 +103,14 @@ class ReserveSeatLifecycleTest {
                 .containsExactly(reserved.reservationId());
 
         // firstUserId가 예약을 생성해야함
-        assertThat(reserved.reserveUserId()).isEqualTo(userContext.firstUserId());
+        assertThat(reserved.reservationUserId()).isEqualTo(userContext.firstUserId());
 
         // targetSeatLocator에 대해 DATE에 생성된 firstUserId를 위한 예약이 생성되야함
         assertReservationThat(jdbcClient, reserved.reservationId())
                 .hasStatus(ReservationStatus.RESERVED)
                 .hasSeatLocator(roomContext.targetSeatLocator())
                 .hasOccupancyDate(DATE)
-                .hasReservedUserId(reserved.reserveUserId());
+                .hasReservedUserId(reserved.reservationUserId());
 
         // 생성된 예약에 대해서 좌석 점유가 유효해야함
         assertSeatOccupancyThat(jdbcClient, reserved.reservationId())

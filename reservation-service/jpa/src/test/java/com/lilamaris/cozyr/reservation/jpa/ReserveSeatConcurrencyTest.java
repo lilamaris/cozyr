@@ -53,7 +53,7 @@ import static org.assertj.core.api.Assertions.tuple;
         "spring.flyway.enabled=true"
 })
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@ContextConfiguration(classes = {ReserveSeatConcurrencyTest.TestConfig.class, ReservationTestConfiguration.class})
+@ContextConfiguration(classes = {ReservationTestConfiguration.class, ReserveSeatConcurrencyTest.TestConfig.class})
 @Transactional(propagation = Propagation.NOT_SUPPORTED)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @DisplayName("Reserve Seat 동시성 테스트")
@@ -81,7 +81,7 @@ class ReserveSeatConcurrencyTest {
     @BeforeAll
     void setup() {
         userContext = UserTestSupport.createContext(jdbcClient, NOW);
-        roomContext = RoomTestSupport.createContext(jdbcClient, NOW);
+        roomContext = RoomTestSupport.createContext(jdbcClient, userContext.firstUserId(), NOW);
     }
 
     @AfterAll
@@ -122,7 +122,7 @@ class ReserveSeatConcurrencyTest {
 
         var winner = successes.getFirst().result();
 
-        assertThat(winner.reserveUserId())
+        assertThat(winner.reservationUserId())
                 .isIn(userContext.firstUserId(), userContext.secondUserId());
 
         assertReservationByRoomThat(jdbcClient, roomContext.roomId())
@@ -134,7 +134,7 @@ class ReserveSeatConcurrencyTest {
                 .hasSeatLocator(roomContext.targetSeatLocator())
                 .hasStatus(ReservationStatus.RESERVED)
                 .hasOccupancyDate(DATE)
-                .hasReservedUserId(winner.reserveUserId());
+                .hasReservedUserId(winner.reservationUserId());
 
         assertActiveOccupanciesThat(jdbcClient, roomContext.targetSeatLocator(), DATE)
                 .extracting(
@@ -145,9 +145,9 @@ class ReserveSeatConcurrencyTest {
 
         assertDailyReservationUsageThat(jdbcClient, roomContext.roomId(), DATE)
                 .extracting(DailyUsageTestSupport.DailyReservationUsageAssertRow::userId)
-                .containsExactly(winner.reserveUserId());
+                .containsExactly(winner.reservationUserId());
 
-        assertDailyReservationUsageThat(jdbcClient, winner.reserveUserId(), roomContext.roomId(), DATE)
+        assertDailyReservationUsageThat(jdbcClient, winner.reservationUserId(), roomContext.roomId(), DATE)
                 .hasCount(1);
     }
 
