@@ -12,9 +12,11 @@ public enum ReservationServiceProgressCode implements ApplicationProgressCode {
     SCHEDULE_NOT_FOUND(ProcessReason.REJECTED, "schedule", "not-found", "예약 가능한 시간을 찾을 수 없습니다."),
 
     FORBIDDEN(ProcessReason.REJECTED, "resource", "forbidden", "접근 권한이 없습니다."),
+    ROOM_DEACTIVATION_TOO_EARLY(ProcessReason.REJECTED, "room", "deactivation-too-early", "방 비활성화 시각은 현재 시각과 마지막 예약 종료 시각보다 이르게 지정할 수 없습니다."),
     SEAT_ID_DUPLICATED(ProcessReason.REJECTED, "seat", "duplicated", "동일한 좌석이 이미 존재합니다."),
 
     SCHEDULE_ALREADY_OCCUPIED(ProcessReason.REJECTED, "reservation", "duplicated", "해당 시간의 좌석은 이미 예약되었습니다."),
+    RESERVATION_OUTSIDE_OPERATING_HOURS(ProcessReason.REJECTED, "reservation", "outside-operating-hours", "예약 시간은 방의 운영 가능 시간 내에 있어야 합니다."),
     RESERVATION_ALREADY_CANCELED(ProcessReason.REJECTED, "reservation", "duplicated", "해당 예약은 이미 취소되었습니다."),
 
     MAX_RESERVABLE_COUNT_EXCEEDED(ProcessReason.REJECTED, "reservation", "daily-reservation-limit-exceeded", "해당 방의 일일 예약 가능 횟수를 초과했습니다."),

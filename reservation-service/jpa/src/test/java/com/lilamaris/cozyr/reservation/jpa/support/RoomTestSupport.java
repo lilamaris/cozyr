@@ -18,8 +18,8 @@ public class RoomTestSupport {
     private static final String SECOND_SEAT_CODE = "B1";
 
     private static final String INSERT_ROOM = """
-            INSERT INTO room (name, description, created_at)
-            VALUES ('Test room', 'Test room description', :now)
+            INSERT INTO room (name, description, created_at, updated_at, user_id)
+            VALUES ('Test room', 'Test room description', :now, :now, :userId)
             RETURNING id
             """;
 
@@ -30,8 +30,8 @@ public class RoomTestSupport {
             """;
 
     private static final String INSERT_ROOM_OP = """
-            INSERT INTO room_op_policy (room_id, max_reservation_per_user_per_day, max_schedule_per_reservation, updated_at)
-            VALUES (:roomId, :maxReservationPerUserPerDay, :maxSchedulePerReservation, :now)
+            INSERT INTO room_op_policy (room_id, max_reservation_per_user_per_day, max_schedule_per_reservation, activated_at, deactivated_at, created_at, updated_at)
+            VALUES (:roomId, :maxReservationPerUserPerDay, :maxSchedulePerReservation, :now, NULL, :now, :now)
             RETURNING id
             """;
 
@@ -69,9 +69,10 @@ public class RoomTestSupport {
             DELETE FROM daily_reservation_usage WHERE room_id = :roomId
             """;
 
-    public static TestContext createContext(JdbcClient jdbcClient, Instant now) {
+    public static TestContext createContext(JdbcClient jdbcClient, UUID userId, Instant now) {
         var roomId = jdbcClient.sql(INSERT_ROOM)
                 .param("now", Timestamp.from(now))
+                .param("userId", userId)
                 .query(UUID.class)
                 .single();
 

@@ -3,6 +3,7 @@ package com.lilamaris.cozyr.reservation.jdbc;
 import com.lilamaris.cozyr.reservation.application.model.seat.ReservableSeatSchedule;
 import com.lilamaris.cozyr.reservation.application.model.seat.SeatLocator;
 import com.lilamaris.cozyr.reservation.application.port.out.ReservableScheduleReader;
+import com.lilamaris.cozyr.reservation.domain.RoomId;
 import com.lilamaris.cozyr.reservation.jdbc.row.RoomScheduleRow;
 import com.lilamaris.cozyr.reservation.jdbc.sql.ReservableScheduleSql;
 import lombok.RequiredArgsConstructor;
@@ -10,9 +11,9 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
 
 import java.sql.Timestamp;
-import java.time.Clock;
-import java.time.LocalDate;
+import java.time.*;
 import java.util.Objects;
+import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -44,5 +45,17 @@ public class ReservableScheduleReaderJdbcAdapter implements ReservableScheduleRe
                 seatLocator.seatId(),
                 schedules
         );
+    }
+
+    @Override
+    public Optional<Instant> findLatestReservedEndAtByRoomId(RoomId roomId, Instant asOf, ZoneId timezone) {
+        var sql = ReservableScheduleSql.FIND_LATEST_RESERVED_END_AT;
+
+        return jdbcClient.sql(sql)
+                .param("roomId", roomId.getValue())
+                .param("asOf", Timestamp.from(asOf))
+                .param("timezone", timezone.getId())
+                .query(Instant.class)
+                .optional();
     }
 }

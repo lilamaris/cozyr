@@ -19,4 +19,17 @@ public class ReservableScheduleSql {
                         AND o.released_at IS NULL
                 )
             """;
+
+    public static final String FIND_LATEST_RESERVED_END_AT = """
+            SELECT
+                MAX(
+                    (o.occupancy_date + s.end_at) AT TIME ZONE :timezone
+                ) AS latest_reserved_end_at
+            FROM seat_occupancy o
+            JOIN room_schedule_slot s
+                ON s.id = o.schedule_slot_id
+            WHERE o.room_id = :roomId
+                AND o.released_at IS NULL
+                AND (o.occupancy_date + s.end_at) AT TIME ZONE :timezone > :asOf
+            """;
 }

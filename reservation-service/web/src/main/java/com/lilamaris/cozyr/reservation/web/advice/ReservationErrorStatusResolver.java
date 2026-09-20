@@ -11,7 +11,7 @@ public class ReservationErrorStatusResolver implements ErrorStatusResolver {
         return switch (errorType) {
             case "bad-request", "bad_request" -> HttpStatus.BAD_REQUEST;
             case "not-found" -> HttpStatus.NOT_FOUND;
-            case "duplicated", "daily-reservation-limit-exceeded" -> HttpStatus.CONFLICT;
+            case "duplicated", "daily-reservation-limit-exceeded", "outside-operating-hours" -> HttpStatus.CONFLICT;
             case "schedule-count-limit-exceeded" -> HttpStatus.UNPROCESSABLE_CONTENT;
             case "access-denied", "forbidden" -> HttpStatus.FORBIDDEN;
             case "unauthorized" -> HttpStatus.UNAUTHORIZED;
