@@ -8,7 +8,10 @@ import org.springframework.context.annotation.Configuration;
 import java.time.Clock;
 
 @Configuration
-@EnableConfigurationProperties(ApplicationProperties.class)
+@EnableConfigurationProperties({
+        ApplicationProperties.class,
+        RoomProperties.class
+})
 public class ApplicationConfiguration {
     @Bean
     Clock clock(ApplicationProperties properties) {

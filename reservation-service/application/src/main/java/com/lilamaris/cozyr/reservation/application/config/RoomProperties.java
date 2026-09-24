@@ -1,0 +1,34 @@
+package com.lilamaris.cozyr.reservation.application.config;
+
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.bind.DefaultValue;
+import org.springframework.validation.annotation.Validated;
+
+import java.time.LocalTime;
+
+@Validated
+@ConfigurationProperties(prefix = "cozyr.application.room")
+public record RoomProperties(
+        @DefaultValue("06:00")
+        @NotNull
+        LocalTime openTime,
+
+        @DefaultValue("22:00")
+        @NotNull
+        LocalTime closeTime,
+
+        @DefaultValue("60")
+        @Positive
+        int slotMinute,
+
+        @DefaultValue("3")
+        @Positive
+        int maxReservationPerUserPerDay,
+
+        @DefaultValue("5")
+        @Positive
+        int maxSchedulePerReservation
+) {
+}
