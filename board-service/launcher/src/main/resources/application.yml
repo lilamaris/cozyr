@@ -1,7 +1,8 @@
 cozyr:
-  board-service:
-    web:
-      baseUrl: ${BASE_URL:http://cozyr}
+  application:
+    timezone: ${COZYR_TIMEZONE:UTC}
+  web:
+    baseUrl: ${COZYR_BASE_URL:http://cozyr}
 
 server:
   port: ${PORT:8082}
