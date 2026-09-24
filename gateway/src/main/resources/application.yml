@@ -12,11 +12,6 @@ spring:
       server:
         webflux:
           routes:
-            - id: identity-service
-              uri: ${IDENTITY_SERVICE_URI:http://identity-service:8081}
-              predicates:
-                - Path=/api/v1/auth/**, /api/v1/user/**, /.well-known/jwks.json
-
             - id: board-service
               uri: ${BOARD_SERVICE_URI:http://board-service:8082}
               predicates:
