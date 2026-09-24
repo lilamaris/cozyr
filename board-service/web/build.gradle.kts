@@ -10,5 +10,7 @@ dependencies {
     implementation(project(":kernel:kernel-web"))
     implementation(project(":board-service:application"))
     implementation(project(":board-service:domain"))
-    implementation(project(":identity-service:identity-contract"))
+
+    implementation(libs.spring.security.core)
+    implementation(libs.spring.security.jose)
 }

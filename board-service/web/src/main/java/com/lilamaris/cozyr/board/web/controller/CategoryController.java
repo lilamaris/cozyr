@@ -8,7 +8,6 @@ import com.lilamaris.cozyr.board.application.port.in.result.CreatedCategoryResul
 import com.lilamaris.cozyr.board.application.port.in.result.UpdatedCategoryResult;
 import com.lilamaris.cozyr.board.web.request.CreateCategoryRequest;
 import com.lilamaris.cozyr.board.web.request.UpdateCategoryRequest;
-import com.lilamaris.cozyr.identity.contract.context.IdentityContextHolder;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
@@ -22,6 +21,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -35,8 +36,6 @@ public class CategoryController {
     private final CreateCategoryUseCase createCategoryUseCase;
     private final UpdateCategoryUseCase updateCategoryUseCase;
     private final DeleteCategoryUseCase deleteCategoryUseCase;
-
-    private final IdentityContextHolder identityContextHolder;
 
     @Operation(summary = "카테고리 생성", description = "게시판에 새 카테고리를 생성합니다.")
     @Parameters({
@@ -62,10 +61,11 @@ public class CategoryController {
     @PostMapping
     public ResponseEntity<CreatedCategoryResult> create(
             @PathVariable("boardId") UUID boardId,
-            @Valid @RequestBody CreateCategoryRequest body
+            @Valid @RequestBody CreateCategoryRequest body,
+            @AuthenticationPrincipal Jwt jwt
     ) {
-        var identity = identityContextHolder.get();
-        var command = body.toCommand(boardId, identity.id());
+        var userId = UUID.fromString(jwt.getSubject());
+        var command = body.toCommand(boardId, userId);
         var result = createCategoryUseCase.create(command);
 
         var location = ServletUriComponentsBuilder.fromCurrentRequest()
@@ -100,10 +100,11 @@ public class CategoryController {
     @PostMapping("/{categoryId}")
     public ResponseEntity<UpdatedCategoryResult> update(
             @PathVariable("categoryId") UUID categoryId,
-            @Valid @RequestBody UpdateCategoryRequest body
+            @Valid @RequestBody UpdateCategoryRequest body,
+            @AuthenticationPrincipal Jwt jwt
     ) {
-        var identity = identityContextHolder.get();
-        var command = body.toCommand(categoryId, identity.id());
+        var userId = UUID.fromString(jwt.getSubject());
+        var command = body.toCommand(categoryId, userId);
         var result = updateCategoryUseCase.update(command);
         return ResponseEntity.ok(result);
     }
@@ -128,10 +129,11 @@ public class CategoryController {
     })
     @DeleteMapping("/{categoryId}")
     public ResponseEntity<Void> delete(
-            @PathVariable("categoryId") UUID categoryId
+            @PathVariable("categoryId") UUID categoryId,
+            @AuthenticationPrincipal Jwt jwt
     ) {
-        var identity = identityContextHolder.get();
-        var command = DeleteCategoryCommand.of(categoryId, identity.id());
+        var userId = UUID.fromString(jwt.getSubject());
+        var command = DeleteCategoryCommand.of(categoryId, userId);
         deleteCategoryUseCase.delete(command);
         return ResponseEntity.noContent().build();
     }
