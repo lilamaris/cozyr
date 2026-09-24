@@ -8,7 +8,7 @@ import org.springframework.validation.annotation.Validated;
 import java.time.ZoneId;
 
 @Validated
-@ConfigurationProperties
+@ConfigurationProperties(prefix = "cozyr.application")
 public record ApplicationProperties(
         @NotNull
         @DefaultValue("UTC")
