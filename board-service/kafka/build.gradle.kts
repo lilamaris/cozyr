@@ -8,9 +8,8 @@ group = "com.lilamaris.cozyr"
 version = "0.0.1-SNAPSHOT"
 
 dependencies {
-    implementation(project(":kernel:kernel-core"))
+    implementation(project(":kernel:kernel-message"))
     implementation(project(":board-service:application"))
-    implementation(project(":identity-service:identity-contract"))
     implementation(libs.tools.jackson.databind)
 
     testImplementation(project(":kernel:kernel-test"))

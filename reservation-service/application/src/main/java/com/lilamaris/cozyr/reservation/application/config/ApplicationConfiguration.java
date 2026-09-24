@@ -1,8 +1,6 @@
 package com.lilamaris.cozyr.reservation.application.config;
 
-import com.lilamaris.cozyr.identity.contract.provider.ServiceDescriptor;
 import com.lilamaris.cozyr.reservation.application.model.schedule.ScheduleFactory;
-import com.lilamaris.cozyr.reservation.contract.provider.ReservationServiceDescriptor;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,10 +18,5 @@ public class ApplicationConfiguration {
     @Bean
     ScheduleFactory scheduleFactory() {
         return new ScheduleFactory();
-    }
-
-    @Bean
-    ServiceDescriptor serviceDescriptor() {
-        return new ReservationServiceDescriptor();
     }
 }
