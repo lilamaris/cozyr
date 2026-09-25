@@ -28,7 +28,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: ${DDL_AUTO:validate}
 
   flyway:
     enabled: true
@@ -84,7 +84,7 @@ management:
         liveness:
           include: "livenessState"
         readiness:
-          include: "readinessState"
+          include: "readinessState,db"
   metrics:
     distribution:
       percentiles-histogram:
@@ -92,6 +92,9 @@ management:
   tracing:
     sampling:
       probability: 0.1
+    export:
+      otlp:
+        enabled: ${OTLP_ENABLED:false}
   otlp:
     metrics:
       export:
