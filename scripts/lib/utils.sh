@@ -60,7 +60,7 @@ run_no_output() {
   printf " %q" "$@"
   printf "\n"
 
-  "$@" 2>1 1>/dev/null
+  "$@" >/dev/null 2>&1
 }
 
 run() {
@@ -123,7 +123,7 @@ validate_gradle_module() {
 convert_to_gradle_path() {
   local tasks=()
   for target in "$@"; do
-    tasks+=(":${target//\//:}:build")
+    tasks+=(":${target//\//:}:bootJar")
   done
   echo "${tasks[@]}"
 }
