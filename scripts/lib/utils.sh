@@ -16,7 +16,7 @@ error_badge() {
 }
 
 warn_badge() {
-  printf '%s[WARN]%s ' "$YELLO" "$NC"
+  printf '%s[WARN]%s ' "$YELLOW" "$NC"
 }
 
 log_info() {
@@ -49,14 +49,14 @@ fail() {
 }
 
 type_and_reason() {
-  printf "[%-8s] - %-30s" "$1" "$2"
+  printf "[%-8s] - %-25s" "$1" "$2"
 }
 
 run_no_output() {
   info_badge
   type_and_reason "RUN" "$1"
   shift
-  printf "\t>"
+  printf " > "
   printf " %q" "$@"
   printf "\n"
 
@@ -67,7 +67,7 @@ run() {
   info_badge
   type_and_reason "RUN" "$1"
   shift
-  printf "\t>"
+  printf " > "
   printf " %q" "$@"
   printf "\n"
 

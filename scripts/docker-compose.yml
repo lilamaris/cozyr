@@ -39,8 +39,16 @@ services:
       start_period: 20s
       retries: 15
 
+  client:
+    image: ${COZYR_REGISTRY_HOST}/${COZYR_IMAGE_NAMESPACE:-cozyr}/client:${COZYR_CLIENT_IMAGE_TAG:-local}
+    environment:
+      HOST: 0.0.0.0
+      PORT: "5175"
+    ports:
+      - "127.0.0.1:5175:5175"
+
   gateway:
-    image: ${COZYR_REGISTRY_HOST}/${COZYR_IMAGE_NAMESPACE}/gateway:${COZYR_IMAGE_TAG}
+    image: ${COZYR_REGISTRY_HOST}/${COZYR_IMAGE_NAMESPACE:-cozyr}/gateway:${COZYR_IMAGE_TAG:-local}
     ports:
       - '127.0.0.1:8080:8080'
     environment:
@@ -53,7 +61,7 @@ services:
     healthcheck: *app-healthcheck
 
   board-service:
-    image: ${COZYR_REGISTRY_HOST}/${COZYR_IMAGE_NAMESPACE}/board-service/launcher:${COZYR_IMAGE_TAG}
+    image: ${COZYR_REGISTRY_HOST}/${COZYR_IMAGE_NAMESPACE:-cozyr}/board-service/launcher:${COZYR_IMAGE_TAG:-local}
     depends_on:
       postgres: {condition: service_healthy}
       kafka: {condition: service_healthy}
@@ -71,7 +79,7 @@ services:
     healthcheck: *app-healthcheck
 
   reservation-service:
-    image: ${COZYR_REGISTRY_HOST}/${COZYR_IMAGE_NAMESPACE}/reservation-service/launcher:${COZYR_IMAGE_TAG}
+    image: ${COZYR_REGISTRY_HOST}/${COZYR_IMAGE_NAMESPACE:-cozyr}/reservation-service/launcher:${COZYR_IMAGE_TAG:-local}
     depends_on:
       postgres: {condition: service_healthy}
       kafka: {condition: service_healthy}
@@ -83,7 +91,7 @@ services:
     healthcheck: *app-healthcheck
 
   statistics-service:
-    image: ${COZYR_REGISTRY_HOST}/${COZYR_IMAGE_NAMESPACE}/statistics-service/launcher:${COZYR_IMAGE_TAG}
+    image: ${COZYR_REGISTRY_HOST}/${COZYR_IMAGE_NAMESPACE:-cozyr}/statistics-service/launcher:${COZYR_IMAGE_TAG:-local}
     depends_on:
       postgres: {condition: service_healthy}
       kafka: {condition: service_healthy}

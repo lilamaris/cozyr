@@ -1,12 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-usage() {
-  cat >&2 <<EOF
-
-EOF
-}
-
 # Initial script variables
 script_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 project_root="$(cd -- "${script_root}/.." && pwd)"
@@ -14,12 +8,8 @@ cd -- "$project_root"
 
 source "${script_root}/lib/utils.sh"
 
-log_info "script root: $script_root"
-log_info "project root: $project_root"
-log_info "pwd: $(pwd)"
-
 registry_host="localhost"
-namespace="cozyr"
+namespace="lilamaris/cozyr"
 tag="local"
 host_os="$(uname -s)"
 host_arch="$(uname -m)"
@@ -71,6 +61,16 @@ run_no_output "check docker compose" docker compose version || {
 command -v git 1>/dev/null 2>&1 && tag=$(git rev-parse --short HEAD)
 log_info "Image tag: $tag"
 
+state_file="${script_root}/.demo-temp-dir"
+image_state_file="${script_root}/.demo-docker-image"
+if [[ -e "$state_file" || -e "$image_state_file" ]]; then
+  log_info "Existing demo state found. Stopping the previous demo first."
+  bash "${script_root}/cleanup-demo.sh"
+fi
+temp_dir="$(mktemp -d "${TMPDIR:-/tmp}/cozyr-api-demo.XXXXXXXX")"
+printf '%s\n' "$temp_dir" > "$state_file"
+
+# Build docker image
 for module in "${modules[@]}"; do
   image="${registry_host}/${namespace}/${module}:${tag}"
   log_info "Build image: $image"
@@ -85,22 +85,46 @@ for module in "${modules[@]}"; do
     "$module"
   )
 
-  run "build $module image" "${build_command[@]}"
+  run "build docker image" "${build_command[@]}"
+  printf '%s\n' "$image" >> "$image_state_file"
 done
 
-compose=(docker compose -p cozyr-demo-$$ -f "$script_root/docker-compose.yml")
+mkdir -p "$temp_dir/client" "$temp_dir/auth"
+run_no_output "clone client repository" git clone https://github.com/lilamaris/cozyr-client.git "$temp_dir/client"
+run_no_output "clone auth api repository" git clone https://github.com/lilamaris/lauth.git "$temp_dir/auth"
+run "run auth api demo" bash "$temp_dir/auth/script/run-demo.sh"
 
-cleanup() {
-  "${compose[@]}" down --volumes --remove-orphans
-}
-trap cleanup EXIT
-trap 'exit 130' INT
-trap 'exit 143' TERM
+client_tag="$(git -C "$temp_dir/client" rev-parse --short HEAD)"
+client_image="${registry_host}/${namespace}/client:${client_tag}"
+log_info "Client image tag: $client_tag"
+
+run "build client docker image" docker buildx build \
+  --platform "$host_platform" \
+  --load \
+  --file "$temp_dir/client/docker/Dockerfile" \
+  --tag "$client_image" \
+  "$temp_dir/client"
+printf '%s\n' "$client_image" >> "$image_state_file"
+
+compose_project="lilamaris-cozyr-api-demo"
+compose=(docker compose -p "$compose_project" -f "$script_root/docker-compose.yml")
 
 export COZYR_REGISTRY_HOST="$registry_host"
 export COZYR_IMAGE_NAMESPACE="$namespace"
 export COZYR_IMAGE_TAG="$tag"
+export COZYR_CLIENT_IMAGE_TAG="$client_tag"
 
-"${compose[@]}" up --wait
-log_info "Demo is running at http://localhost:8080 (Ctrl-C to stop and remove demo data)."
-"${compose[@]}" logs --follow gateway board-service reservation-service statistics-service
+run "start docker compose" "${compose[@]}" up --remove-orphans --wait
+log_info "Demo is now running."
+log_warn "Script exit does not remove generated files, containers, or images. Run bash script/cleanup-demo.sh to remove them."
+log_info "Created containers:"
+docker ps -a --filter "label=com.docker.compose.project=${compose_project}" --format '  {{.Names}}'
+log_info "Created images:"
+for module in "${modules[@]}"; do
+  printf '  %s/%s/%s:%s\n' "$registry_host" "$namespace" "$module" "$tag"
+done
+printf '  %s\n' "$client_image"
+log_info "Created temporary files:"
+printf '  %s\n' "$state_file" "$image_state_file"
+printf '  %s\n' "$temp_dir/client"
+printf '  %s\n' "$temp_dir/auth"
