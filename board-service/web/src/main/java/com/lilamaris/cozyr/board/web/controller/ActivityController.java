@@ -14,7 +14,6 @@ import com.lilamaris.cozyr.board.application.port.in.ListPostSummaryUseCase;
 import com.lilamaris.cozyr.board.application.port.in.query.ListCommentDetailQuery;
 import com.lilamaris.cozyr.board.application.port.in.query.ListPostReactionActivityQuery;
 import com.lilamaris.cozyr.board.application.port.in.query.ListPostSummaryQuery;
-import com.lilamaris.cozyr.identity.contract.context.IdentityContextHolder;
 import com.lilamaris.shrturl.kernel.application.model.cursor.CursorResult;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -27,6 +26,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -44,8 +45,6 @@ public class ActivityController {
     private final ListPostSummaryUseCase listPostSummaryUseCase;
     private final ListCommentDetailUseCase listCommentDetailUseCase;
     private final ListPostReactionActivityUseCase listPostReactionActivityUseCase;
-
-    private final IdentityContextHolder identityContextHolder;
 
     @Operation(summary = "사용자 게시글 활동 목록 조회", description = "사용자가 작성한 게시글을 커서 기반으로 조회합니다.")
     @ApiResponses({
@@ -104,16 +103,17 @@ public class ActivityController {
             @Parameter(description = "커서 생성 시각", schema = @Schema(type = "string", format = "date-time"))
             @RequestParam(name = "ca", required = false) Instant createdAt,
             @Parameter(description = "조회 개수", required = true, example = "20", schema = @Schema(type = "integer", minimum = "1"))
-            @RequestParam(name = "size") int size
+            @RequestParam(name = "size") int size,
+            @AuthenticationPrincipal Jwt jwt
     ) {
         PostCursor cursor = null;
         if (createdAt != null && postId != null) {
             cursor = PostCursor.of(createdAt, postId);
         }
 
-        var identity = identityContextHolder.get();
+        var userId = UUID.fromString(jwt.getSubject());
         var filter = PostFilter.empty()
-                .withAuthorUserId(identity.id());
+                .withAuthorUserId(userId);
 
         var query = ListPostSummaryQuery.of(filter, cursor, size);
         var result = listPostSummaryUseCase.list(query);
@@ -140,14 +140,15 @@ public class ActivityController {
             @Parameter(description = "커서 반응 시각", schema = @Schema(type = "string", format = "date-time"))
             @RequestParam(name = "ca", required = false) Instant reactedAt,
             @Parameter(description = "조회 개수", required = true, example = "20", schema = @Schema(type = "integer", minimum = "1"))
-            @RequestParam(name = "size") int size
+            @RequestParam(name = "size") int size,
+            @AuthenticationPrincipal Jwt jwt
     ) {
-        var identity = identityContextHolder.get();
+        var userId = UUID.fromString(jwt.getSubject());
         PostReactionCursor cursor = null;
         if (reactedAt != null && postId != null) {
             cursor = PostReactionCursor.of(reactedAt, postId);
         }
-        var query = ListPostReactionActivityQuery.of(identity.id(), cursor, size);
+        var query = ListPostReactionActivityQuery.of(userId, cursor, size);
         var result = listPostReactionActivityUseCase.list(query);
         return ResponseEntity.ok(result);
     }
@@ -209,16 +210,17 @@ public class ActivityController {
             @Parameter(description = "커서 생성 시각", schema = @Schema(type = "string", format = "date-time"))
             @RequestParam(name = "ca", required = false) Instant createdAt,
             @Parameter(description = "조회 개수", required = true, example = "20", schema = @Schema(type = "integer", minimum = "1"))
-            @RequestParam(name = "size") int size
+            @RequestParam(name = "size") int size,
+            @AuthenticationPrincipal Jwt jwt
     ) {
         CommentCursor cursor = null;
         if (createdAt != null && commentId != null) {
             cursor = CommentCursor.of(createdAt, commentId);
         }
 
-        var identity = identityContextHolder.get();
+        var userId = UUID.fromString(jwt.getSubject());
         var filter = CommentFilter.empty()
-                .withAuthorUserId(identity.id());
+                .withAuthorUserId(userId);
 
         var query = ListCommentDetailQuery.of(filter, cursor, size);
         var result = listCommentDetailUseCase.list(query);

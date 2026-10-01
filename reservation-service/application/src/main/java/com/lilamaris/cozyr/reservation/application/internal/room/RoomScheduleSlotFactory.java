@@ -1,6 +1,6 @@
 package com.lilamaris.cozyr.reservation.application.internal.room;
 
-import com.lilamaris.cozyr.reservation.application.config.ApplicationProperties;
+import com.lilamaris.cozyr.reservation.application.config.RoomProperties;
 import com.lilamaris.cozyr.reservation.application.model.schedule.ScheduleFactory;
 import com.lilamaris.cozyr.reservation.domain.RoomId;
 import com.lilamaris.cozyr.reservation.domain.RoomScheduleSlot;
@@ -13,13 +13,12 @@ import java.util.List;
 @Component
 @RequiredArgsConstructor
 public class RoomScheduleSlotFactory {
-    private final ApplicationProperties properties;
+    private final RoomProperties properties;
     private final ScheduleFactory scheduleFactory;
 
     public List<RoomScheduleSlot> fromProperties(RoomId roomId) {
-        var props = properties.room();
-        var steps = Duration.ofMinutes(props.slotMinute());
-        var schedules = scheduleFactory.create(props.openTime(), props.closeTime(), steps);
+        var steps = Duration.ofMinutes(properties.slotMinute());
+        var schedules = scheduleFactory.create(properties.openTime(), properties.closeTime(), steps);
 
         return schedules.stream()
                 .map(schedule -> RoomScheduleSlot.of(roomId, schedule.from(), schedule.to()))

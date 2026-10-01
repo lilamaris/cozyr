@@ -5,7 +5,7 @@ x-app-healthcheck-defaults: &app-healthcheck-defaults
   start_period: 45s
   test:
     - CMD-SHELL
-    - 'curl -fsS "http://127.0.0.1:$${SERVER_PORT}/actuator/health/readiness" >/dev/null'
+    - 'curl -fsS "http://127.0.0.1:$${PORT}/actuator/health/readiness" >/dev/null'
 
 services:
   gateway:
@@ -19,34 +19,10 @@ services:
     env_file:
       - .env.app
     environment:
-      SERVER_PORT: "${GATEWAY_SERVICE_PORT:?GATEWAY_SERVICE_PORT must be provided}"
-      IDENTITY_SERVICE_URI: "http://${IDENTITY_SERVICE_NAME:-identity-service}:${IDENTITY_SERVICE_PORT:-8081}"
+      PORT: "${GATEWAY_SERVICE_PORT:?GATEWAY_SERVICE_PORT must be provided}"
       BOARD_SERVICE_URI: "http://${BOARD_SERVICE_NAME:-board-service}:${BOARD_SERVICE_PORT:-8082}"
       STATISTICS_SERVICE_URI: "http://${STATISTICS_SERVICE_NAME:-statistics-service}:${STATISTICS_SERVICE_PORT:-8083}"
       RESERVATION_SERVICE_URI: "http://${RESERVATION_SERVICE_NAME:-reservation-service}:${RESERVATION_SERVICE_PORT:-8084}"
-    healthcheck:
-      <<: *app-healthcheck-defaults
-
-  identity-service:
-    image: "${REGISTRY_HOST}/${NAMESPACE}/identity-service:${IMAGE_TAG}"
-    restart: unless-stopped
-    container_name: cozyr-identity
-    cpus: 1.0
-    mem_limit: 1g
-    expose:
-      - "${IDENTITY_SERVICE_PORT:?IDENTITY_SERVICE_PORT must be provided}"
-    env_file:
-      - .env.app
-    volumes:
-      - "/run/cozyr/secrets/:${IDENTITY_SERVICE_KEY_BASE_PATH:?IDENTITY_SERVICE_KEY_BASE_PATH must be provided}"
-    environment:
-      SPRING_APPLICATION_NAME: "${IDENTITY_SERVICE_NAME:-identity-service}"
-      SERVER_PORT: "${IDENTITY_SERVICE_PORT:?IDENTITY_SERVICE_PORT must be provided}"
-      DB_URL: "${DB_BASE_URL:?DB_BASE_URL must be provided}?currentSchema=${IDENTITY_SERVICE_DB_SCHEMA:?IDENTITY_SERVICE_DB_SCHEMA must be provided}"
-      DB_USERNAME: "${IDENTITY_SERVICE_DB_USERNAME:?IDENTITY_SERVICE_DB_USERNAME must be provided}"
-      DB_PASSWORD: "${IDENTITY_SERVICE_DB_PASSWORD:?IDENTITY_SERVICE_DB_PASSWORD must be provided}"
-      ACTIVE_KID: "${IDENTITY_SERVICE_ACTIVE_KID:?IDENTITY_SERVICE_ACTIVE_KID must be provided}"
-      KEY_BASE_PATH: "${IDENTITY_SERVICE_KEY_BASE_PATH:?IDENTITY_SERVICE_KEY_BASE_PATH must be provided}"
     healthcheck:
       <<: *app-healthcheck-defaults
 
@@ -62,7 +38,7 @@ services:
       - .env.app
     environment:
       SPRING_APPLICATION_NAME: "${BOARD_SERVICE_NAME:-board-service}"
-      SERVER_PORT: "${BOARD_SERVICE_PORT:?BOARD_SERVICE_PORT must be provided}"
+      PORT: "${BOARD_SERVICE_PORT:?BOARD_SERVICE_PORT must be provided}"
       DB_URL: "${DB_BASE_URL:?DB_BASE_URL must be provided}?currentSchema=${BOARD_SERVICE_DB_SCHEMA:?BOARD_SERVICE_DB_SCHEMA must be provided}"
       DB_USERNAME: "${BOARD_SERVICE_DB_USERNAME:?BOARD_SERVICE_DB_USERNAME must be provided}"
       DB_PASSWORD: "${BOARD_SERVICE_DB_PASSWORD:?BOARD_SERVICE_DB_PASSWORD must be provided}"
@@ -81,7 +57,7 @@ services:
       - .env.app
     environment:
       SPRING_APPLICATION_NAME: "${STATISTICS_SERVICE_NAME:-statistics-service}"
-      SERVER_PORT: "${STATISTICS_SERVICE_PORT:?STATISTICS_SERVICE_PORT must be provided}"
+      PORT: "${STATISTICS_SERVICE_PORT:?STATISTICS_SERVICE_PORT must be provided}"
       DB_URL: "${DB_BASE_URL:?DB_BASE_URL must be provided}?currentSchema=${STATISTICS_SERVICE_DB_SCHEMA:?STATISTICS_SERVICE_DB_SCHEMA must be provided}"
       DB_USERNAME: "${STATISTICS_SERVICE_DB_USERNAME:?STATISTICS_SERVICE_DB_USERNAME must be provided}"
       DB_PASSWORD: "${STATISTICS_SERVICE_DB_PASSWORD:?STATISTICS_SERVICE_DB_PASSWORD must be provided}"
@@ -100,7 +76,7 @@ services:
       - .env.app
     environment:
       SPRING_APPLICATION_NAME: "${RESERVATION_SERVICE_NAME:-reservation-service}"
-      SERVER_PORT: "${RESERVATION_SERVICE_PORT:?RESERVATION_SERVICE_PORT must be provided}"
+      PORT: "${RESERVATION_SERVICE_PORT:?RESERVATION_SERVICE_PORT must be provided}"
       DB_URL: "${DB_BASE_URL:?DB_BASE_URL must be provided}?currentSchema=${RESERVATION_SERVICE_DB_SCHEMA:?RESERVATION_SERVICE_DB_SCHEMA must be provided}"
       DB_USERNAME: "${RESERVATION_SERVICE_DB_USERNAME:?RESERVATION_SERVICE_DB_USERNAME must be provided}"
       DB_PASSWORD: "${RESERVATION_SERVICE_DB_PASSWORD:?RESERVATION_SERVICE_DB_PASSWORD must be provided}"

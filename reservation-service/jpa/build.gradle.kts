@@ -19,9 +19,3 @@ dependencies {
     testImplementation(project(":kernel:kernel-message"))
     testImplementation(project(":reservation-service:reservation-contract"))
 }
-
-tasks.processTestResources {
-    from(project(":reservation-service:launcher").file("src/main/resources")) {
-        include("db/migration/**")
-    }
-}

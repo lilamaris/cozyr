@@ -1,4 +1,4 @@
-package com.lilamaris.cozyr.statistics.application.config;
+package com.lilamaris.cozyr.board.application.config;
 
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;

@@ -12,7 +12,6 @@ import com.lilamaris.cozyr.board.application.port.in.result.UpdatedCommentResult
 import com.lilamaris.cozyr.board.web.request.CreateCommentRequest;
 import com.lilamaris.cozyr.board.web.request.ReplyCommentRequest;
 import com.lilamaris.cozyr.board.web.request.UpdateCommentRequest;
-import com.lilamaris.cozyr.identity.contract.context.IdentityContextHolder;
 import com.lilamaris.shrturl.kernel.application.model.cursor.CursorResult;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -27,10 +26,13 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.time.Instant;
+import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
@@ -43,8 +45,6 @@ public class CommentController {
     private final DeleteCommentUseCase deleteCommentUseCase;
 
     private final ListCommentDetailUseCase listCommentDetailUseCase;
-
-    private final IdentityContextHolder identityContextHolder;
 
     @Operation(summary = "댓글 생성", description = "게시글에 루트 댓글을 생성합니다.")
     @Parameters({
@@ -66,10 +66,11 @@ public class CommentController {
     @PostMapping
     public ResponseEntity<CreatedCommentResult> create(
             @PathVariable("postId") Long postId,
-            @Valid @RequestBody CreateCommentRequest body
+            @Valid @RequestBody CreateCommentRequest body,
+            @AuthenticationPrincipal Jwt jwt
     ) {
-        var identity = identityContextHolder.get();
-        var command = body.toCommand(postId, identity.id());
+        var userId = UUID.fromString(jwt.getSubject());
+        var command = body.toCommand(postId, userId);
         var result = createCommentUseCase.create(command);
 
         var location = ServletUriComponentsBuilder.fromCurrentRequest()
@@ -105,10 +106,11 @@ public class CommentController {
     @PostMapping("/{commentId}")
     public ResponseEntity<RepliedCommentResult> reply(
             @PathVariable("commentId") Long parentId,
-            @Valid @RequestBody ReplyCommentRequest body
+            @Valid @RequestBody ReplyCommentRequest body,
+            @AuthenticationPrincipal Jwt jwt
     ) {
-        var identity = identityContextHolder.get();
-        var command = body.toCommand(parentId, identity.id());
+        var userId = UUID.fromString(jwt.getSubject());
+        var command = body.toCommand(parentId, userId);
         var result = replyCommentUseCase.reply(command);
         var location = ServletUriComponentsBuilder.fromCurrentContextPath()
                 .path("replies")
@@ -143,10 +145,11 @@ public class CommentController {
     @PutMapping("/{commentId}")
     public ResponseEntity<UpdatedCommentResult> update(
             @PathVariable("commentId") Long commentId,
-            @Valid @RequestBody UpdateCommentRequest body
+            @Valid @RequestBody UpdateCommentRequest body,
+            @AuthenticationPrincipal Jwt jwt
     ) {
-        var identity = identityContextHolder.get();
-        var command = body.toCommand(commentId, identity.id());
+        var userId = UUID.fromString(jwt.getSubject());
+        var command = body.toCommand(commentId, userId);
         var result = updateCommentUseCase.update(command);
         return ResponseEntity.ok(result);
     }
@@ -253,10 +256,11 @@ public class CommentController {
     })
     @DeleteMapping("/{commentId}")
     public ResponseEntity<Void> delete(
-            @PathVariable("commentId") Long commentId
+            @PathVariable("commentId") Long commentId,
+            @AuthenticationPrincipal Jwt jwt
     ) {
-        var identity = identityContextHolder.get();
-        var command = DeleteCommentCommand.of(commentId, identity.id());
+        var userId = UUID.fromString(jwt.getSubject());
+        var command = DeleteCommentCommand.of(commentId, userId);
         deleteCommentUseCase.delete(command);
         return ResponseEntity.noContent().build();
     }

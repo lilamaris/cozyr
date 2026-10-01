@@ -1,0 +1,3 @@
+CREATE DATABASE board;
+CREATE DATABASE reservation;
+CREATE DATABASE statistics;

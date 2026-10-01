@@ -17,7 +17,6 @@ import com.lilamaris.cozyr.board.application.port.in.result.UpdatedPostResult;
 import com.lilamaris.cozyr.board.web.request.CreatePostRequest;
 import com.lilamaris.cozyr.board.web.request.ReactPostRequest;
 import com.lilamaris.cozyr.board.web.request.UpdatePostRequest;
-import com.lilamaris.cozyr.identity.contract.context.IdentityContextHolder;
 import com.lilamaris.shrturl.kernel.application.model.cursor.CursorResult;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -32,6 +31,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -52,8 +53,6 @@ public class PostController {
     private final FindPostDetailUseCase findPostDetailUseCase;
     private final ListPostSummaryUseCase listPostSummaryUseCase;
     private final FindPostReactionSummaryUseCase findPostReactionSummaryUseCase;
-
-    private final IdentityContextHolder identityContextHolder;
 
     @Operation(summary = "게시글 생성", description = "게시판 카테고리에 새 게시글을 생성합니다.")
     @ApiResponses({
@@ -81,10 +80,11 @@ public class PostController {
                     schema = @Schema(type = "string", format = "uuid")
             )
             @PathVariable("boardId") UUID boardId,
-            @Valid @RequestBody CreatePostRequest body
+            @Valid @RequestBody CreatePostRequest body,
+            @AuthenticationPrincipal Jwt jwt
     ) {
-        var identity = identityContextHolder.get();
-        var command = body.toCommand(boardId, identity.id());
+        var userId = UUID.fromString(jwt.getSubject());
+        var command = body.toCommand(boardId, userId);
         var result = createPostUseCase.create(command);
 
         var location = ServletUriComponentsBuilder.fromCurrentRequest()
@@ -119,10 +119,11 @@ public class PostController {
     @PostMapping("/{postId}/reactions")
     public ResponseEntity<ReactedPostResult> reaction(
             @PathVariable("postId") long postId,
-            @Valid @RequestBody ReactPostRequest body
+            @Valid @RequestBody ReactPostRequest body,
+            @AuthenticationPrincipal Jwt jwt
     ) {
-        var identity = identityContextHolder.get();
-        var command = body.toCommand(postId, identity.id());
+        var userId = UUID.fromString(jwt.getSubject());
+        var command = body.toCommand(postId, userId);
         var result = reactPostUseCase.react(command);
         return ResponseEntity.ok(result);
     }
@@ -152,10 +153,11 @@ public class PostController {
     @PutMapping("/{postId}")
     public ResponseEntity<UpdatedPostResult> update(
             @PathVariable("postId") long postId,
-            @Valid @RequestBody UpdatePostRequest body
+            @Valid @RequestBody UpdatePostRequest body,
+            @AuthenticationPrincipal Jwt jwt
     ) {
-        var identity = identityContextHolder.get();
-        var command = body.toCommand(postId, identity.id());
+        var userId = UUID.fromString(jwt.getSubject());
+        var command = body.toCommand(postId, userId);
         var result = updatePostUseCase.update(command);
         return ResponseEntity.ok(result);
     }
@@ -294,10 +296,11 @@ public class PostController {
     })
     @GetMapping("/{postId}/reactions/me")
     public ResponseEntity<PostReactionSummary> findMeReactionSummaries(
-            @PathVariable("postId") Long postId
+            @PathVariable("postId") Long postId,
+            @AuthenticationPrincipal Jwt jwt
     ) {
-        var identity = identityContextHolder.get();
-        var query = FindPostReactionSummaryQuery.of(postId, identity.id());
+        var userId = UUID.fromString(jwt.getSubject());
+        var query = FindPostReactionSummaryQuery.of(postId, userId);
         var result = findPostReactionSummaryUseCase.find(query);
         return ResponseEntity.ok(result);
     }
@@ -322,10 +325,11 @@ public class PostController {
     })
     @DeleteMapping("/{postId}")
     public ResponseEntity<Void> delete(
-            @PathVariable("postId") Long postId
+            @PathVariable("postId") Long postId,
+            @AuthenticationPrincipal Jwt jwt
     ) {
-        var identity = identityContextHolder.get();
-        var command = DeletePostCommand.of(postId, identity.id());
+        var userId = UUID.fromString(jwt.getSubject());
+        var command = DeletePostCommand.of(postId, userId);
         deletePostUseCase.delete(command);
         return ResponseEntity.noContent().build();
     }
@@ -351,10 +355,11 @@ public class PostController {
     })
     @DeleteMapping("/{postId}/reactions/{reactionId}")
     public ResponseEntity<Void> cancelReaction(
-            @PathVariable("reactionId") UUID reactionId
+            @PathVariable("reactionId") UUID reactionId,
+            @AuthenticationPrincipal Jwt jwt
     ) {
-        var identity = identityContextHolder.get();
-        var command = CancelReactPostCommand.of(reactionId, identity.id());
+        var userId = UUID.fromString(jwt.getSubject());
+        var command = CancelReactPostCommand.of(reactionId, userId);
         cancelReactPostUseCase.cancel(command);
         return ResponseEntity.noContent().build();
     }

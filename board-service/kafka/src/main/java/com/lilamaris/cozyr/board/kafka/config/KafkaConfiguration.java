@@ -1,5 +1,6 @@
-package com.lilamaris.cozyr.reservation.kafka.config;
+package com.lilamaris.cozyr.board.kafka.config;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
@@ -9,6 +10,7 @@ import org.springframework.kafka.listener.ContainerProperties;
 @Configuration
 public class KafkaConfiguration {
     @Bean
+    @ConditionalOnMissingBean
     public ConcurrentKafkaListenerContainerFactory<String, Object> concurrentKafkaListenerContainerFactory(
             ConsumerFactory<String, Object> consumerFactory
     ) {

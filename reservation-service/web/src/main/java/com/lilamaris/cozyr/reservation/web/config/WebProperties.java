@@ -7,7 +7,7 @@ import org.springframework.validation.annotation.Validated;
 import java.net.URI;
 
 @Validated
-@ConfigurationProperties(prefix = "cozyr.reservation-service.web")
+@ConfigurationProperties(prefix = "cozyr.web")
 public record WebProperties(
         @NotNull
         URI baseUrl
