@@ -1,2 +1,2 @@
-/.demo-docker-image
-/.demo-temp-dir
+.state.tmp
+.state.img
