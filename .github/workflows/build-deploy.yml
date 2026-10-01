@@ -59,7 +59,6 @@ jobs:
         run: |
           ./gradlew \
             :gateway:bootJar \
-            :identity-service:launcher:bootJar \
             :board-service:launcher:bootJar \
             :statistics-service:launcher:bootJar \
             :reservation-service:launcher:bootJar \
@@ -70,14 +69,6 @@ jobs:
         with:
           name: gateway-jar
           path: gateway/build/libs/app.jar
-          if-no-files-found: error
-          retention-days: 1
-
-      - name: Upload identity-service JAR
-        uses: actions/upload-artifact@v4
-        with:
-          name: identity-service-jar
-          path: identity-service/launcher/build/libs/app.jar
           if-no-files-found: error
           retention-days: 1
 
@@ -133,9 +124,6 @@ jobs:
         include:
           - service: gateway
             dockerfile: gateway/Dockerfile
-
-          - service: identity-service
-            dockerfile: identity-service/launcher/Dockerfile
 
           - service: board-service
             dockerfile: board-service/launcher/Dockerfile
